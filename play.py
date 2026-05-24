@@ -49,7 +49,26 @@ def player_label(player: int, colored: bool = True) -> str:
     return colorize(name, player) if colored else name
 
 
-def colorize_marble_cell(cell_text: str, tint_player: int | None = None) -> str:
+def marble_label(marble_id: int) -> str:
+    """Backward-compatible marble index label."""
+    return str(marble_id + 1)
+
+
+def marble_token(player: int, marble_id: int) -> str:
+    """Two-character user-facing marble token, e.g. A1, B3."""
+    return f"{chr(ord('A') + player)}{marble_id + 1}"
+
+
+def colored_marble_token(player: int, marble_id: int) -> str:
+    """Colorized user-facing marble token."""
+    return colorize(marble_token(player, marble_id), player)
+
+
+def colorize_marble_cell(
+    cell_text: str,
+    tint_player: int | None = None,
+    marble_player: int | None = None,
+) -> str:
     """Color marble tokens; optionally tint empty '..' cells for ownership."""
     raw = cell_text.rstrip()
     if len(raw) < 2:
@@ -58,10 +77,8 @@ def colorize_marble_cell(cell_text: str, tint_player: int | None = None) -> str:
     prefix = raw[:-2]
     trailing_spaces = " " * (len(cell_text) - len(raw))
 
-    if token[0].isdigit() and token[1].isdigit():
-        player = int(token[0])
-        if 0 <= player < NUM_PLAYERS:
-            return f"{prefix}{colorize(token, player)}{trailing_spaces}"
+    if marble_player is not None and 0 <= marble_player < NUM_PLAYERS and token != "..":
+        return f"{prefix}{colorize(token, marble_player)}{trailing_spaces}"
 
     if token == ".." and tint_player is not None and 0 <= tint_player < NUM_PLAYERS:
         return f"{prefix}{colorize(token, tint_player)}{trailing_spaces}"
@@ -74,21 +91,30 @@ def render_board(state: GameState) -> str:
 
     CELL_W = 4
 
-    def draw_token(p: int, m: int | None) -> str:
+    def draw_token(player: int | None, m: int | None) -> str:
         if m is None:
-            return f"{p}."
-        return f"{p}{m}"
+            return ".."
+        return marble_token(player, m)
 
     def cell(text: str) -> str:
         """Render a fixed-width cell to keep board columns aligned."""
         return text[:CELL_W].center(CELL_W)
 
     owner_tints = [[None for _ in range(21)] for _ in range(21)]
+    marble_owners = [[None for _ in range(21)] for _ in range(21)]
 
-    def put(grid: list, r: int, c: int, value: str, tint_player: int | None = None) -> None:
+    def put(
+        grid: list,
+        r: int,
+        c: int,
+        value: str,
+        tint_player: int | None = None,
+        marble_player: int | None = None,
+    ) -> None:
         if 0 <= r < len(grid) and 0 <= c < len(grid[0]):
             grid[r][c] = cell(value)
             owner_tints[r][c] = tint_player
+            marble_owners[r][c] = marble_player
 
     # Absolute loop index -> board coordinate for a physical-style plus outline.
     # Each player segment has: inward spoke (0-5), armpit (6-10), outward spoke (11-13),
@@ -119,10 +145,11 @@ def render_board(state: GameState) -> str:
 
     for idx, (r, c) in enumerate(track_coords):
         occ = state.marble_at_track(idx)
-        occ_token = ".." if occ is None else f"{occ[0]}{occ[1]}"
+        occ_token = ".." if occ is None else draw_token(occ[0], occ[1])
         marker = "  "
         tint_player = exit_owner_by_idx.get(idx)
-        put(grid, r, c, f"{marker}{occ_token}", tint_player=tint_player)
+        marble_player = None if occ is None else occ[0]
+        put(grid, r, c, f"{marker}{occ_token}", tint_player=tint_player, marble_player=marble_player)
 
     # Home rows: 4 slots each, parallel to the player's inward spoke, toward center.
     home_coords = {
@@ -134,8 +161,8 @@ def render_board(state: GameState) -> str:
     for p in range(NUM_PLAYERS):
         for slot, (r, c) in enumerate(home_coords[p]):
             m = state.marble_at_home(p, slot)
-            token = ".." if m is None else f"{p}{m}"
-            put(grid, r, c, token, tint_player=p)
+            token = draw_token(p, m)
+            put(grid, r, c, token, tint_player=p, marble_player=(None if m is None else p))
 
     # 2x2 base clusters outside the track, opposite each player's home row side.
     base_coords = {
@@ -151,14 +178,21 @@ def render_board(state: GameState) -> str:
         ]
         for i, (r, c) in enumerate(base_coords[p]):
             token = draw_token(p, base_marbles[i]) if i < len(base_marbles) else ".."
-            put(grid, r, c, token, tint_player=p)
+            marble_player = p if i < len(base_marbles) else None
+            put(grid, r, c, token, tint_player=p, marble_player=marble_player)
 
     co = state.center_occupant
-    put(grid, 9, 8, f"C{draw_token(co[0], co[1])}" if co else "C..")
+    put(
+        grid,
+        9,
+        8,
+        f"C{draw_token(co[0], co[1])}" if co else "C..",
+        marble_player=(None if co is None else co[0]),
+    )
 
     for r, row in enumerate(grid):
         lines.append(" ".join(
-            colorize_marble_cell(cell, owner_tints[r][c])
+            colorize_marble_cell(cell, owner_tints[r][c], marble_owners[r][c])
             for c, cell in enumerate(row)
         ))
         lines.append("")
@@ -167,23 +201,24 @@ def render_board(state: GameState) -> str:
     return "\n".join(lines)
 
 
-def format_move(move: dict) -> str:
+def format_move(move: dict, player: int) -> str:
     """Short human-readable move."""
+    token = colored_marble_token(player, move["marble"])
     if move["kind"] == "exit_base":
-        desc = f"M{move['marble']} exit base"
+        desc = f"{token} exit base"
     else:
-        desc = f"M{move['marble']} {move['kind']} -> {format_location(move['dest'])}"
+        desc = f"{token} {move['kind']} -> {format_location(move['dest'])}"
     if move["captures"]:
         cp, cm = move["captures"]
-        desc += f" [captures {player_label(cp)} M{cm}]"
+        desc += f" [captures {player_label(cp)} {colored_marble_token(cp, cm)}]"
     return desc
 
 
-def choose_move(moves: list) -> dict:
+def choose_move(moves: list, player: int) -> dict:
     """Prompt human to pick a move from the list."""
     print("\nLegal moves:")
     for i, mv in enumerate(moves):
-        print(f"  [{i}] {format_move(mv)}")
+        print(f"  [{i}] {format_move(mv, player)}")
     while True:
         choice = input("Pick a move number: ").strip()
         if choice.isdigit() and 0 <= int(choice) < len(moves):
@@ -325,12 +360,12 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
             auto_move = maybe_auto_choose_move(state, player, roll, moves)
             if auto_move is not None:
                 chosen = auto_move
-                outcome = f"auto-selected {format_move(chosen)}"
+                outcome = f"auto-selected {format_move(chosen, player)}"
             else:
                 print(f"{player_label(player)} rolled a {roll}.")
                 prompt_moves = build_prompt_moves(state, player, roll, moves)
-                chosen = choose_move(prompt_moves)
-                outcome = format_move(chosen)
+                chosen = choose_move(prompt_moves, player)
+                outcome = format_move(chosen, player)
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
