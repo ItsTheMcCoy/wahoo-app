@@ -12,6 +12,9 @@ from play import (
     maybe_auto_choose_move,
     update_exit_base_cursor,
     build_prompt_moves,
+    read_user_input,
+    show_intro_and_choose_action,
+    prompt_replay_path,
     decide_starting_player,
     serialize_game_state,
     deserialize_game_state,
@@ -336,8 +339,9 @@ def test_decide_starting_player_highest_roll():
     print("test: highest opening roll starts")
     # Players 0..3 rolls are 2, 5, 3, 1 => player 1 starts.
     rng = SeqRng([2, 5, 3, 1])
+    settings = {"auto_roll": False}
     with patch("play.input", return_value=""):
-        starter, top_roll = decide_starting_player(rng)
+        starter, top_roll = decide_starting_player(rng, settings)
     assert_eq(starter, 1, "highest roll starts game")
     assert_eq(top_roll, 5, "highest roll value returned")
 
@@ -346,10 +350,45 @@ def test_decide_starting_player_tie_keeps_first_highest():
     print("test: opening tie keeps earliest highest in clockwise order")
     # Single round: P0=6, P1=6, P2=2, P3=1 -> P0 wins tie by order.
     rng = SeqRng([6, 6, 2, 1])
+    settings = {"auto_roll": False}
     with patch("play.input", return_value=""):
-        starter, top_roll = decide_starting_player(rng)
+        starter, top_roll = decide_starting_player(rng, settings)
     assert_eq(starter, 0, "earliest highest roll starts game")
     assert_eq(top_roll, 6, "tied highest roll value returned")
+
+
+def test_intro_menu_accepts_replay_option():
+    print("test: intro menu accepts replay option")
+    settings = {"auto_roll": False}
+    with patch("play.input", return_value="r"):
+        action = show_intro_and_choose_action(settings)
+    assert_eq(action, "replay", "replay action selected from intro menu")
+
+
+def test_prompt_replay_path_requires_filename():
+    print("test: replay prompt requires a filename")
+    settings = {"auto_roll": False}
+    with patch("play.input", side_effect=["", "game4.json"]):
+        replay_path = prompt_replay_path(settings)
+    assert_eq(replay_path, "game4.json", "replay filename returned after blank retry")
+
+
+def test_global_toggle_command_flips_auto_roll_during_prompt():
+    print("test: /auto toggles auto-roll during prompts")
+    settings = {"auto_roll": False}
+    with patch("play.input", side_effect=["/auto", "s"]):
+        response = read_user_input("Enter choice: ", settings)
+    assert_eq(settings["auto_roll"], True, "auto-roll toggled on")
+    assert_eq(response, "s", "input accepted after toggle")
+
+
+def test_roll_prompt_toggle_can_continue_immediately_when_enabled():
+    print("test: roll prompt toggle can continue immediately")
+    settings = {"auto_roll": False}
+    with patch("play.input", side_effect=["/auto"]):
+        response = read_user_input("Press Enter to roll: ", settings, allow_auto_continue=True)
+    assert_eq(settings["auto_roll"], True, "auto-roll toggled on")
+    assert_eq(response, "", "roll prompt continues immediately after toggle")
 
 
 def test_serialize_game_state_roundtrip():
@@ -416,7 +455,7 @@ def test_run_replay_can_return_state_for_continue():
 
     try:
         with patch("play.input", side_effect=["c"]):
-            loaded_recording, loaded_state = run_replay(path)
+            loaded_recording, loaded_state = run_replay(path, {"auto_roll": False})
         assert_eq(loaded_recording["entries"][0]["event"]["type"], "start", "recording returned from replay")
         assert_eq(loaded_state.marbles[0][0], loc_track(7), "state returned for continue")
     finally:
@@ -448,6 +487,10 @@ def main():
         test_prompt_does_not_collapse_without_track_marble,
         test_decide_starting_player_highest_roll,
         test_decide_starting_player_tie_keeps_first_highest,
+        test_intro_menu_accepts_replay_option,
+        test_prompt_replay_path_requires_filename,
+        test_global_toggle_command_flips_auto_roll_during_prompt,
+        test_roll_prompt_toggle_can_continue_immediately_when_enabled,
         test_serialize_game_state_roundtrip,
         test_recording_entry_captures_snapshot_immediately,
         test_make_recording_path_uses_sequential_history_filename,

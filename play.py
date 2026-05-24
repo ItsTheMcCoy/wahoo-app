@@ -36,6 +36,7 @@ __        __    _
 
 DEFAULT_RECORDING_PATH = "wahoo_history.json"
 RECORDING_BASENAME = "game"
+AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
 
 
 def colorize(text: str, player: int) -> str:
@@ -46,6 +47,25 @@ def colorize(text: str, player: int) -> str:
     if code is None:
         return text
     return f"\033[{code}m{text}\033[0m"
+
+
+def read_user_input(prompt: str, settings: dict, allow_auto_continue: bool = False) -> str:
+    """Read input and process global prompt commands.
+
+    Supported commands:
+    - /auto (or /a): toggle auto-roll on/off from any prompt.
+    """
+    while True:
+        response = input(prompt)
+        normalized = response.strip().lower()
+        if normalized in AUTO_TOGGLE_COMMANDS:
+            settings["auto_roll"] = not settings["auto_roll"]
+            mode = "ON" if settings["auto_roll"] else "OFF"
+            print(f"Auto-roll is now {mode}.")
+            if allow_auto_continue and settings["auto_roll"]:
+                return ""
+            continue
+        return response
 
 
 def serialize_game_state(state: GameState) -> dict:
@@ -97,7 +117,7 @@ def append_recording_entry(recording: dict, state: GameState, event: dict) -> No
     recording["entries"].append(entry)
 
 
-def run_replay(path: str) -> tuple[dict | None, GameState | None]:
+def run_replay(path: str, settings: dict) -> tuple[dict | None, GameState | None]:
     """Load a saved recording, replay board states, optionally continue play."""
     with open(path, "r", encoding="utf-8") as handle:
         recording = json.load(handle)
@@ -120,10 +140,13 @@ def run_replay(path: str) -> tuple[dict | None, GameState | None]:
                 "won": event.get("won", False),
             }))
         if entry["index"] != len(recording["entries"]) - 1:
-            input("Press Enter for next recorded state. ")
+            read_user_input("Press Enter for next recorded state. ", settings)
 
     while True:
-        choice = input("Enter [C]ontinue this game or [E]xit replay: ").strip().lower()
+        choice = read_user_input(
+            "Enter [C]ontinue this game or [E]xit replay: ",
+            settings,
+        ).strip().lower()
         if choice in ("c", "continue"):
             return recording, last_state
         if choice in ("e", "exit"):
@@ -306,13 +329,14 @@ def format_move(move: dict, player: int, roll: int) -> str:
     return desc
 
 
-def choose_move(moves: list, player: int, roll: int) -> dict:
+def choose_move(moves: list, player: int, roll: int, settings: dict) -> dict:
     """Prompt human to pick a move from the list."""
     print("\nLegal moves:")
     for i, mv in enumerate(moves):
         print(f"  [{i}] {format_move(mv, player, roll)}")
+    print("Type /auto to toggle auto-roll mode.")
     while True:
-        choice = input("Pick a move number: ").strip()
+        choice = read_user_input("Pick a move number: ", settings).strip()
         if choice.isdigit() and 0 <= int(choice) < len(moves):
             return moves[int(choice)]
         print(f"Invalid. Enter 0..{len(moves) - 1}.")
@@ -389,19 +413,34 @@ def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None
         state.next_base_exit_marble[player] = (chosen["marble"] + 1) % MARBLES_PER_PLAYER
 
 
-def show_intro_and_choose_action() -> str:
-    """Display intro art and let the user start or exit."""
+def show_intro_and_choose_action(settings: dict) -> str:
+    """Display intro art and let the user start, replay, or exit."""
     print(INTRO_ART)
+    print("[S] Start a new game")
+    print("[R] Replay a saved game")
+    print("[E] Exit")
+    print("Type /auto to toggle auto-roll mode.")
     while True:
-        choice = input("Enter [S]tart game or [E]xit: ").strip().lower()
+        choice = read_user_input("Enter choice: ", settings).strip().lower()
         if choice in ("s", "start"):
             return "start"
+        if choice in ("r", "replay"):
+            return "replay"
         if choice in ("e", "exit"):
             return "exit"
-        print("Please enter S to start or E to exit.")
+        print("Please enter S to start, R to replay, or E to exit.")
 
 
-def decide_starting_player(rng: random.Random) -> tuple[int, int]:
+def prompt_replay_path(settings: dict) -> str:
+    """Prompt for the replay filename to load."""
+    while True:
+        replay_path = read_user_input("Enter replay filename: ", settings).strip()
+        if replay_path:
+            return replay_path
+        print("Please enter a saved game filename.")
+
+
+def decide_starting_player(rng: random.Random, settings: dict) -> tuple[int, int]:
     """Choose opening player by highest roll in a single round.
 
     If multiple players tie for highest, earliest clockwise player wins.
@@ -412,7 +451,14 @@ def decide_starting_player(rng: random.Random) -> tuple[int, int]:
     leaders = []
 
     for player in range(NUM_PLAYERS):
-        input(f"{player_label(player)}: press Enter to roll for first turn. ")
+        if settings["auto_roll"]:
+            print(f"{player_label(player)} auto-rolling for first turn.")
+        else:
+            read_user_input(
+                f"{player_label(player)}: press Enter to roll for first turn. ",
+                settings,
+                allow_auto_continue=True,
+            )
         roll = rng.randint(1, 6)
         print(f"  {player_label(player)} rolled a {roll}.")
         print("")
@@ -444,7 +490,7 @@ def format_turn_summary(turn_result: dict) -> str:
     return "\n".join(lines)
 
 
-def take_turn(state: GameState, rng: random.Random) -> dict:
+def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
     turn_result = {
@@ -454,7 +500,14 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
     }
 
     while True:
-        input(f"\n--- {player_label(player)}'s turn. Press Enter to roll. ")
+        if settings["auto_roll"]:
+            print(f"\n--- {player_label(player)}'s turn. Auto-rolling.")
+        else:
+            read_user_input(
+                f"\n--- {player_label(player)}'s turn. Press Enter to roll. ",
+                settings,
+                allow_auto_continue=True,
+            )
         roll = rng.randint(1, 6)
         moves = legal_moves(state, player, roll)
         if not moves:
@@ -467,7 +520,7 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
             else:
                 print(f"{player_label(player)} rolled a {roll}.")
                 prompt_moves = build_prompt_moves(state, player, roll, moves)
-                chosen = choose_move(prompt_moves, player, roll)
+                chosen = choose_move(prompt_moves, player, roll, settings)
                 outcome = format_move(chosen, player, roll)
 
             update_exit_base_cursor(state, player, chosen)
@@ -502,9 +555,10 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
 def main():
     args = sys.argv[1:]
     recording_path = None
+    settings = {"auto_roll": False}
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
-        recording, state = run_replay(replay_path)
+        recording, state = run_replay(replay_path, settings)
         if recording is None:
             return
         recording_path = replay_path
@@ -513,30 +567,37 @@ def main():
     else:
         seed_arg = args[0] if args else None
         rng = random.Random(int(seed_arg) if seed_arg else None)
-        action = show_intro_and_choose_action()
+        action = show_intro_and_choose_action(settings)
         if action == "exit":
             return
-
-        state = GameState()
-        state.current_player, top_roll = decide_starting_player(rng)
-        recording = {
-            "version": 1,
-            "seed": int(seed_arg) if seed_arg else None,
-            "entries": [],
-        }
-        recording_path = make_recording_path()
-        append_recording_entry(recording, state, {
-            "type": "start",
-            "starting_player": state.current_player,
-            "top_roll": top_roll,
-        })
-        write_recording(recording, recording_path)
-        print(render_board(state))
-        print(f"{player_label(state.current_player)} had the highest roll, with {top_roll}, they go first!")
-        print(f"Recording game history to {recording_path}")
+        if action == "replay":
+            replay_path = prompt_replay_path(settings)
+            recording, state = run_replay(replay_path, settings)
+            if recording is None:
+                return
+            recording_path = replay_path
+            print(f"Continuing recorded game from {replay_path}")
+        else:
+            state = GameState()
+            state.current_player, top_roll = decide_starting_player(rng, settings)
+            recording = {
+                "version": 1,
+                "seed": int(seed_arg) if seed_arg else None,
+                "entries": [],
+            }
+            recording_path = make_recording_path()
+            append_recording_entry(recording, state, {
+                "type": "start",
+                "starting_player": state.current_player,
+                "top_roll": top_roll,
+            })
+            write_recording(recording, recording_path)
+            print(render_board(state))
+            print(f"{player_label(state.current_player)} had the highest roll, with {top_roll}, they go first!")
+            print(f"Recording game history to {recording_path}")
 
     while True:
-        turn_result = take_turn(state, rng)
+        turn_result = take_turn(state, rng, settings)
         for event in turn_result["events"]:
             append_recording_entry(recording, deserialize_game_state(event["state"]), {
                 "type": "turn",

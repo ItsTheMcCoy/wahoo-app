@@ -17,9 +17,18 @@ python play.py
 Startup flow:
 
 - ASCII-art intro is shown first.
-- Enter `S` to start a new game or `E` to exit.
+- Choose one of the intro menu options shown on separate lines:
+	- `S` to start a new game
+	- `R` to replay a saved game
+	- `E` to exit
+- Type `/auto` at any prompt to toggle auto-roll on or off.
 - Each player rolls once to determine who goes first.
 - Highest roll starts. Play order then continues clockwise.
+
+Auto-roll behavior:
+
+- When auto-roll is ON, the game rolls automatically for turns.
+- If a roll produces more than one legal move, you still choose the move manually.
 
 ## Replay a Saved Game
 
