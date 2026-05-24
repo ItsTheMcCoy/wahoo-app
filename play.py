@@ -15,7 +15,7 @@ from game_state import (
 from rules import legal_moves, apply_move
 
 
-PLAYER_NAMES = ["P1", "P2", "P3", "P4"]
+PLAYER_NAMES = ["Red", "Green", "Yellow", "Blue"]
 
 PLAYER_COLOR = {
     0: "31",  # red
@@ -138,14 +138,14 @@ def render_board(state: GameState) -> str:
         lines.append("")
 
     lines.append("")
-    lines.append("Legend: hxy=home slot, Bxy=base slot, C=center")
+    lines.append("Legend: h=home, B=base, C=center")
     for p in range(NUM_PLAYERS):
         marbles_str = ", ".join(
             f"M{m}={format_location(state.marbles[p][m])}"
             for m in range(MARBLES_PER_PLAYER)
         )
         lines.append(
-            f"P{p} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
+            f"{PLAYER_NAMES[p]} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
         )
 
     lines.append("=" * 112)
