@@ -73,7 +73,7 @@ def render_board(state: GameState) -> str:
 
     def cell(text: str) -> str:
         """Render a fixed-width cell to keep board columns aligned."""
-        return text[:CELL_W].ljust(CELL_W)
+        return text[:CELL_W].center(CELL_W)
 
     owner_tints = [[None for _ in range(21)] for _ in range(21)]
 
@@ -119,9 +119,9 @@ def render_board(state: GameState) -> str:
 
     # Home rows: 4 slots each, parallel to the player's inward spoke, toward center.
     home_coords = {
-        0: [(3, 9), (4, 9), (5, 9), (6, 9)],
+        0: [(3, 8), (4, 8), (5, 8), (6, 8)],
         1: [(9, 14), (9, 13), (9, 12), (9, 11)],
-        2: [(15, 7), (14, 7), (13, 7), (12, 7)],
+        2: [(15, 8), (14, 8), (13, 8), (12, 8)],
         3: [(9, 2), (9, 3), (9, 4), (9, 5)],
     }
     for p in range(NUM_PLAYERS):
@@ -277,35 +277,60 @@ def decide_starting_player(rng: random.Random) -> int:
     return top_player
 
 
-def take_turn(state: GameState, rng: random.Random) -> None:
+def format_turn_summary(turn_result: dict) -> str:
+    """Human-readable summary shown after the updated board."""
+    lines = [f"{player_label(turn_result['player'])} turn results:"]
+    for event in turn_result["events"]:
+        line = f"  Rolled {event['roll']}: {event['outcome']}"
+        if event["reroll"]:
+            line += " -> rolled a 6, goes again"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def take_turn(state: GameState, rng: random.Random) -> dict:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
+    turn_result = {
+        "player": player,
+        "events": [],
+        "won": False,
+    }
+
     while True:
         input(f"\n--- {player_label(player)}'s turn. Press Enter to roll. ")
         roll = rng.randint(1, 6)
-        print(f"{player_label(player)} rolled a {roll}.")
         moves = legal_moves(state, player, roll)
         if not moves:
-            print("No legal moves.")
+            outcome = "no legal move"
         else:
             auto_move = maybe_auto_choose_move(state, player, roll, moves)
             if auto_move is not None:
                 chosen = auto_move
-                print(f"Auto-selected move: {format_move(chosen)}")
+                outcome = f"auto-selected {format_move(chosen)}"
             else:
                 prompt_moves = build_prompt_moves(state, player, roll, moves)
                 chosen = choose_move(prompt_moves)
+                outcome = format_move(chosen)
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
-            print(render_board(state))
             if state.player_won(player):
-                print(f"\n*** {player_label(player)} WINS! ***")
-                sys.exit(0)
+                turn_result["won"] = True
+
+        turn_result["events"].append({
+            "roll": roll,
+            "outcome": outcome,
+            "reroll": (roll == 6 and not turn_result["won"]),
+        })
+
+        if turn_result["won"]:
+            break
         if roll != 6:
             break
-        print("Rolled a 6 — go again.")
+
     state.current_player = (player + 1) % NUM_PLAYERS
+    return turn_result
 
 
 def main():
@@ -316,7 +341,12 @@ def main():
     print("Wahoo — text mode, 4 players, pass-and-play.")
     print(render_board(state))
     while True:
-        take_turn(state, rng)
+        turn_result = take_turn(state, rng)
+        print(render_board(state))
+        print(format_turn_summary(turn_result))
+        if turn_result["won"]:
+            print(f"\n*** {player_label(turn_result['player'])} WINS! ***")
+            sys.exit(0)
 
 
 if __name__ == "__main__":
