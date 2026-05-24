@@ -76,6 +76,44 @@ def choose_move(moves: list) -> dict:
         print(f"Invalid. Enter 0..{len(moves) - 1}.")
 
 
+def choose_next_exit_base_move(state: GameState, player: int, moves: list) -> dict:
+    """Pick the next marble (rotating by id) among exit_base moves."""
+    exit_moves = [m for m in moves if m["kind"] == "exit_base"]
+    start = state.next_base_exit_marble[player]
+    for step in range(MARBLES_PER_PLAYER):
+        target = (start + step) % MARBLES_PER_PLAYER
+        for mv in exit_moves:
+            if mv["marble"] == target:
+                return mv
+    # Fallback should be unreachable, but keeps behavior safe.
+    return exit_moves[0]
+
+
+def maybe_auto_choose_move(state: GameState, player: int, roll: int, moves: list) -> dict | None:
+    """Auto-pick a move based on convenience rules for local play.
+
+    Rules:
+    - If there is exactly one legal move, auto-pick it.
+    - If roll is 1 or 6 and all legal moves are exit_base moves,
+      auto-pick the next rotating exit marble.
+    """
+    if len(moves) == 1:
+        return moves[0]
+
+    if roll in (1, 6):
+        non_exit_moves = [m for m in moves if m["kind"] != "exit_base"]
+        if not non_exit_moves:
+            return choose_next_exit_base_move(state, player, moves)
+
+    return None
+
+
+def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None:
+    """Advance per-player base-exit cursor after an exit_base move."""
+    if chosen["kind"] == "exit_base":
+        state.next_base_exit_marble[player] = (chosen["marble"] + 1) % MARBLES_PER_PLAYER
+
+
 def take_turn(state: GameState, rng: random.Random) -> None:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
@@ -87,7 +125,14 @@ def take_turn(state: GameState, rng: random.Random) -> None:
         if not moves:
             print("No legal moves.")
         else:
-            chosen = choose_move(moves)
+            auto_move = maybe_auto_choose_move(state, player, roll, moves)
+            if auto_move is not None:
+                chosen = auto_move
+                print(f"Auto-selected move: {format_move(chosen)}")
+            else:
+                chosen = choose_move(moves)
+
+            update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
             print(render_board(state))
             if state.player_won(player):

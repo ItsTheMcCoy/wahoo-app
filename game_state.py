@@ -79,6 +79,9 @@ class GameState:
     # center_occupant: (player, marble_id) or None. Redundant with marbles
     # but makes capture checks O(1).
     center_occupant: Optional[tuple] = None
+    # For auto-exit behavior: which marble id to prefer next when multiple
+    # base-exit moves are auto-selected.
+    next_base_exit_marble: list = field(default_factory=lambda: [0] * NUM_PLAYERS)
 
     def marble_at_track(self, loop_idx: int) -> Optional[tuple]:
         """Return (player, marble_id) of marble at this loop square, or None."""
@@ -112,6 +115,7 @@ class GameState:
         new.current_player = self.current_player
         new.pending_roll = self.pending_roll
         new.center_occupant = self.center_occupant
+        new.next_base_exit_marble = list(self.next_base_exit_marble)
         return new
 
 

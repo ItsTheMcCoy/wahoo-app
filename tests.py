@@ -8,6 +8,7 @@ from game_state import (
     loc_base, loc_track, loc_home, loc_center,
 )
 from rules import legal_moves, apply_move
+from play import maybe_auto_choose_move, update_exit_base_cursor
 
 
 def assert_eq(actual, expected, label):
@@ -221,6 +222,54 @@ def test_wrap_around_track():
     assert m is not None, f"expected advance to track:1, got {moves}"
 
 
+def test_auto_choose_when_only_one_legal_move():
+    print("test: auto-choose when exactly one legal move")
+    state = GameState()
+    state.marbles[0][0] = loc_home(1)
+    state.marbles[0][1] = loc_home(0)
+    state.marbles[0][2] = loc_base()
+    state.marbles[0][3] = loc_base()
+    # Only legal move should be M0 -> home:3
+    moves = legal_moves(state, 0, 2)
+    assert_eq(len(moves), 1, "single legal move setup")
+    chosen = maybe_auto_choose_move(state, 0, 2, moves)
+    assert chosen is not None, "should auto-select single legal move"
+    assert_eq(chosen["dest"], loc_home(3), "auto-selected expected destination")
+
+
+def test_auto_choose_rotating_base_exit_when_only_exit_moves():
+    print("test: auto-choose rotating base exit on roll 1/6 when only exits")
+    state = GameState()
+
+    # Initial state: all legal moves are exit_base, cursor starts at marble 0.
+    moves = legal_moves(state, 0, 6)
+    chosen = maybe_auto_choose_move(state, 0, 6, moves)
+    assert chosen is not None and chosen["kind"] == "exit_base"
+    assert_eq(chosen["marble"], 0, "first auto-exit uses marble 0")
+    update_exit_base_cursor(state, 0, chosen)
+    apply_move(state, chosen)
+
+    # Put M0 back in base so multiple exit moves are available again.
+    state.marbles[0][0] = loc_base()
+
+    moves = legal_moves(state, 0, 6)
+    chosen = maybe_auto_choose_move(state, 0, 6, moves)
+    assert chosen is not None and chosen["kind"] == "exit_base"
+    assert_eq(chosen["marble"], 1, "second auto-exit rotates to marble 1")
+
+
+def test_no_auto_base_exit_if_other_move_exists():
+    print("test: no auto base-exit when non-exit legal move exists")
+    state = GameState()
+    state.marbles[0][0] = loc_track(10)  # can advance on roll 6
+    moves = legal_moves(state, 0, 6)
+    has_exit = any(m["kind"] == "exit_base" for m in moves)
+    has_non_exit = any(m["kind"] != "exit_base" for m in moves)
+    assert has_exit and has_non_exit, "setup should include exit and non-exit moves"
+    chosen = maybe_auto_choose_move(state, 0, 6, moves)
+    assert chosen is None, "should not auto-select exit_base when non-exit exists"
+
+
 def main():
     tests = [
         test_base_exit,
@@ -238,6 +287,9 @@ def main():
         test_capture_opponent_on_track,
         test_win_condition,
         test_wrap_around_track,
+        test_auto_choose_when_only_one_legal_move,
+        test_auto_choose_rotating_base_exit_when_only_exit_moves,
+        test_no_auto_base_exit_if_other_move_exists,
     ]
     for t in tests:
         t()
