@@ -60,16 +60,20 @@ def _moves_from_track(state, player, marble_id, roll, current_idx):
     # (offsets 0..5), with exact roll (6 - offset).
     own_offset = segment_offset(player, current_idx)
     if own_offset <= 5 and roll == (6 - own_offset):
+        # Entering center cannot jump over your own marbles on the inward spoke.
+        if _path_to_center_blocked_by_own_marble(state, player, current_idx):
+            pass
+        else:
         # Center can hold only one marble; entering captures occupant.
-        capture = state.center_occupant
-        # Cannot enter center if own marble already there (can't capture self).
-        if capture is None or capture[0] != player:
-            moves.append({
-                "marble": marble_id,
-                "dest": loc_center(),
-                "kind": "enter_center",
-                "captures": capture,
-            })
+            capture = state.center_occupant
+            # Cannot enter center if own marble already there (can't capture self).
+            if capture is None or capture[0] != player:
+                moves.append({
+                    "marble": marble_id,
+                    "dest": loc_center(),
+                    "kind": "enter_center",
+                    "captures": capture,
+                })
 
     # --- Option 2: advance along the loop / into home ---
     move = _walk_forward(state, player, marble_id, current_idx, roll)
@@ -77,6 +81,17 @@ def _moves_from_track(state, player, marble_id, roll, current_idx):
         moves.append(move)
 
     return moves
+
+
+def _path_to_center_blocked_by_own_marble(state, player, current_idx):
+    """Return True if entering center would pass over one of player's marbles."""
+    own_offset = segment_offset(player, current_idx)
+    for offset in range(own_offset + 1, 6):
+        idx = (base_exit(player) + offset) % LOOP_SIZE
+        occupant = state.marble_at_track(idx)
+        if occupant is not None and occupant[0] == player:
+            return True
+    return False
 
 
 def _walk_forward(state, player, marble_id, start_idx, steps):

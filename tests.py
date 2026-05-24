@@ -13,8 +13,16 @@ from play import (
     update_exit_base_cursor,
     build_prompt_moves,
     decide_starting_player,
+    serialize_game_state,
+    deserialize_game_state,
+    append_recording_entry,
+    make_recording_path,
+    run_replay,
 )
 from unittest.mock import patch
+import json
+import os
+import tempfile
 
 
 class SeqRng:
@@ -109,6 +117,18 @@ def test_center_entry_optional():
     moves = legal_moves(state, 0, 4)  # 6 - 2 = 4
     assert find_move(moves, "enter_center") is not None
     assert find_move(moves, "advance") is not None
+    print("  OK")
+
+
+def test_cannot_enter_center_by_jumping_own_marble():
+    print("test: cannot enter center by jumping own marble")
+    state = GameState()
+    state.marbles[0][0] = loc_track(base_exit(0) + 2)  # exact center roll would be 4
+    state.marbles[0][1] = loc_track(base_exit(0) + 3)  # blocks path to center
+    moves = legal_moves(state, 0, 4)
+    assert find_move(moves, "enter_center") is None, "should not enter center through own marble"
+    blocked_moves = [m for m in moves if m["marble"] == 0]
+    assert blocked_moves == [], f"blocked marble should have no legal moves, got {blocked_moves}"
     print("  OK")
 
 
@@ -332,6 +352,77 @@ def test_decide_starting_player_tie_keeps_first_highest():
     assert_eq(top_roll, 6, "tied highest roll value returned")
 
 
+def test_serialize_game_state_roundtrip():
+    print("test: game state serializes and deserializes cleanly")
+    state = GameState()
+    state.marbles[0][0] = loc_track(5)
+    state.marbles[1][1] = loc_home(2)
+    state.marbles[2][2] = loc_center()
+    state.center_occupant = (2, 2)
+    state.current_player = 3
+    state.next_base_exit_marble = [1, 2, 3, 0]
+
+    payload = serialize_game_state(state)
+    restored = deserialize_game_state(payload)
+
+    assert_eq(restored.marbles, state.marbles, "marbles roundtrip")
+    assert_eq(restored.center_occupant, state.center_occupant, "center occupant roundtrip")
+    assert_eq(restored.current_player, state.current_player, "current player roundtrip")
+    assert_eq(restored.next_base_exit_marble, state.next_base_exit_marble, "exit cursor roundtrip")
+
+
+def test_recording_entry_captures_snapshot_immediately():
+    print("test: recording entry captures snapshot immediately")
+    state = GameState()
+    state.marbles[0][0] = loc_track(4)
+    recording = {"entries": []}
+
+    append_recording_entry(recording, state, {"type": "turn", "player": 0, "roll": 4, "outcome": "x"})
+    state.marbles[0][0] = loc_track(9)
+
+    saved = deserialize_game_state(recording["entries"][0]["state"])
+    assert_eq(saved.marbles[0][0], loc_track(4), "recorded snapshot unchanged by later mutations")
+
+
+def test_make_recording_path_uses_unique_history_filename():
+    print("test: new games use unique history filenames")
+    path1 = make_recording_path()
+    path2 = make_recording_path()
+    assert path1.startswith("wahoo_history_") and path1.endswith(".json")
+    assert path2.startswith("wahoo_history_") and path2.endswith(".json")
+    assert path1 != path2, "recording filenames should be unique"
+    print("  OK")
+
+
+def test_run_replay_can_return_state_for_continue():
+    print("test: replay can return resumable state")
+    state = GameState()
+    state.marbles[0][0] = loc_track(7)
+    recording = {
+        "version": 1,
+        "seed": None,
+        "entries": [
+            {
+                "index": 0,
+                "event": {"type": "start", "starting_player": 0, "top_roll": 6},
+                "state": serialize_game_state(state),
+            }
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as handle:
+        json.dump(recording, handle)
+        path = handle.name
+
+    try:
+        with patch("play.input", side_effect=["c"]):
+            loaded_recording, loaded_state = run_replay(path)
+        assert_eq(loaded_recording["entries"][0]["event"]["type"], "start", "recording returned from replay")
+        assert_eq(loaded_state.marbles[0][0], loc_track(7), "state returned for continue")
+    finally:
+        os.remove(path)
+
+
 def main():
     tests = [
         test_base_exit,
@@ -339,6 +430,7 @@ def main():
         test_cannot_exit_onto_own_marble,
         test_center_entry_from_each_offset,
         test_center_entry_optional,
+        test_cannot_enter_center_by_jumping_own_marble,
         test_no_center_after_first_6,
         test_center_capture_on_entry,
         test_center_exit,
@@ -356,6 +448,10 @@ def main():
         test_prompt_does_not_collapse_without_track_marble,
         test_decide_starting_player_highest_roll,
         test_decide_starting_player_tie_keeps_first_highest,
+        test_serialize_game_state_roundtrip,
+        test_recording_entry_captures_snapshot_immediately,
+        test_make_recording_path_uses_unique_history_filename,
+        test_run_replay_can_return_state_for_continue,
     ]
     for t in tests:
         t()
