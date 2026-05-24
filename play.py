@@ -8,7 +8,7 @@ import random
 import sys
 import os
 import json
-from datetime import datetime
+import re
 
 from game_state import (
     GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
@@ -35,7 +35,7 @@ __        __    _
 """
 
 DEFAULT_RECORDING_PATH = "wahoo_history.json"
-RECORDING_BASENAME = "wahoo_history"
+RECORDING_BASENAME = "game"
 
 
 def colorize(text: str, player: int) -> str:
@@ -70,10 +70,15 @@ def deserialize_game_state(payload: dict) -> GameState:
     return state
 
 
-def make_recording_path() -> str:
-    """Create a unique recording filename for a new game."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    return f"{RECORDING_BASENAME}_{timestamp}.json"
+def make_recording_path(directory: str = ".") -> str:
+    """Create a simple sequential recording filename for a new game."""
+    pattern = re.compile(rf"^{RECORDING_BASENAME}(\d+)\.json$")
+    max_index = 0
+    for name in os.listdir(directory):
+        match = pattern.match(name)
+        if match:
+            max_index = max(max_index, int(match.group(1)))
+    return os.path.join(directory, f"{RECORDING_BASENAME}{max_index + 1}.json")
 
 
 def write_recording(recording: dict, path: str = DEFAULT_RECORDING_PATH) -> None:

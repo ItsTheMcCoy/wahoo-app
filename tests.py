@@ -384,14 +384,14 @@ def test_recording_entry_captures_snapshot_immediately():
     assert_eq(saved.marbles[0][0], loc_track(4), "recorded snapshot unchanged by later mutations")
 
 
-def test_make_recording_path_uses_unique_history_filename():
-    print("test: new games use unique history filenames")
-    path1 = make_recording_path()
-    path2 = make_recording_path()
-    assert path1.startswith("wahoo_history_") and path1.endswith(".json")
-    assert path2.startswith("wahoo_history_") and path2.endswith(".json")
-    assert path1 != path2, "recording filenames should be unique"
-    print("  OK")
+def test_make_recording_path_uses_sequential_history_filename():
+    print("test: new games use sequential history filenames")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        open(os.path.join(tmpdir, "game1.json"), "w", encoding="utf-8").close()
+        open(os.path.join(tmpdir, "game2.json"), "w", encoding="utf-8").close()
+        open(os.path.join(tmpdir, "notes.json"), "w", encoding="utf-8").close()
+        path = make_recording_path(tmpdir)
+        assert_eq(os.path.basename(path), "game3.json", "next sequential game history filename")
 
 
 def test_run_replay_can_return_state_for_continue():
@@ -450,7 +450,7 @@ def main():
         test_decide_starting_player_tie_keeps_first_highest,
         test_serialize_game_state_roundtrip,
         test_recording_entry_captures_snapshot_immediately,
-        test_make_recording_path_uses_unique_history_filename,
+        test_make_recording_path_uses_sequential_history_filename,
         test_run_replay_can_return_state_for_continue,
     ]
     for t in tests:

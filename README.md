@@ -23,16 +23,18 @@ Startup flow:
 
 ## Replay a Saved Game
 
-Each new game writes its own history file automatically using a unique name like:
+Each new game writes its own history file automatically using a simple sequential name like:
 
 ```text
-wahoo_history_20260524_153012_123456.json
+game1.json
+game2.json
+game3.json
 ```
 
 To replay a saved game:
 
 ```powershell
-python play.py replay wahoo_history_20260524_153012_123456.json
+python play.py replay game3.json
 ```
 
 Replay behavior:
