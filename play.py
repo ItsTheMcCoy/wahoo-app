@@ -6,6 +6,7 @@ Run: python play.py
 
 import random
 import sys
+import os
 
 from game_state import (
     GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
@@ -15,6 +16,39 @@ from rules import legal_moves, apply_move
 
 
 PLAYER_NAMES = ["P1", "P2", "P3", "P4"]
+
+PLAYER_COLOR = {
+    0: "31",  # red
+    1: "32",  # green
+    2: "33",  # yellow
+    3: "34",  # blue
+}
+
+
+def colorize(text: str, player: int) -> str:
+    """Colorize text for a player when ANSI output is available."""
+    if os.getenv("NO_COLOR") is not None or not sys.stdout.isatty():
+        return text
+    code = PLAYER_COLOR.get(player)
+    if code is None:
+        return text
+    return f"\033[{code}m{text}\033[0m"
+
+
+def colorize_marble_cell(cell_text: str) -> str:
+    """Color the trailing two-char marble token when occupied (e.g., '01')."""
+    raw = cell_text.rstrip()
+    if len(raw) < 2:
+        return cell_text
+    token = raw[-2:]
+    if not (token[0].isdigit() and token[1].isdigit()):
+        return cell_text
+    player = int(token[0])
+    if player < 0 or player >= NUM_PLAYERS:
+        return cell_text
+    prefix = raw[:-2]
+    trailing_spaces = " " * (len(cell_text) - len(raw))
+    return f"{prefix}{colorize(token, player)}{trailing_spaces}"
 
 
 def render_board(state: GameState) -> str:
@@ -100,7 +134,7 @@ def render_board(state: GameState) -> str:
     put(grid, 9, 9, f"C{draw_token(co[0], co[1])}" if co else "C..")
 
     for row in grid:
-        lines.append(" ".join(row))
+        lines.append(" ".join(colorize_marble_cell(cell) for cell in row))
         lines.append("")
 
     lines.append("")
