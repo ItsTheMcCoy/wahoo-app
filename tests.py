@@ -8,7 +8,28 @@ from game_state import (
     loc_base, loc_track, loc_home, loc_center,
 )
 from rules import legal_moves, apply_move
-from play import maybe_auto_choose_move, update_exit_base_cursor, build_prompt_moves
+from play import (
+    maybe_auto_choose_move,
+    update_exit_base_cursor,
+    build_prompt_moves,
+    decide_starting_player,
+)
+from unittest.mock import patch
+
+
+class SeqRng:
+    """Deterministic randint provider for test scenarios."""
+
+    def __init__(self, rolls):
+        self.rolls = list(rolls)
+        self.idx = 0
+
+    def randint(self, _a, _b):
+        if self.idx >= len(self.rolls):
+            raise AssertionError("ran out of scripted rolls")
+        value = self.rolls[self.idx]
+        self.idx += 1
+        return value
 
 
 def assert_eq(actual, expected, label):
@@ -291,6 +312,24 @@ def test_prompt_does_not_collapse_without_track_marble():
     assert_eq(len(prompt_exit), len(raw_exit), "no collapse when no track marble")
 
 
+def test_decide_starting_player_highest_roll():
+    print("test: highest opening roll starts")
+    # Players 0..3 rolls are 2, 5, 3, 1 => player 1 starts.
+    rng = SeqRng([2, 5, 3, 1])
+    with patch("play.input", return_value=""):
+        starter = decide_starting_player(rng)
+    assert_eq(starter, 1, "highest roll starts game")
+
+
+def test_decide_starting_player_tie_keeps_first_highest():
+    print("test: opening tie keeps earliest highest in clockwise order")
+    # Single round: P0=6, P1=6, P2=2, P3=1 -> P0 wins tie by order.
+    rng = SeqRng([6, 6, 2, 1])
+    with patch("play.input", return_value=""):
+        starter = decide_starting_player(rng)
+    assert_eq(starter, 0, "earliest highest roll starts game")
+
+
 def main():
     tests = [
         test_base_exit,
@@ -313,6 +352,8 @@ def main():
         test_no_auto_base_exit_if_other_move_exists,
         test_prompt_shows_single_rotating_exit_base_option,
         test_prompt_does_not_collapse_without_track_marble,
+        test_decide_starting_player_highest_roll,
+        test_decide_starting_player_tie_keeps_first_highest,
     ]
     for t in tests:
         t()

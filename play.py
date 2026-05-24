@@ -156,16 +156,6 @@ def render_board(state: GameState) -> str:
         ))
         lines.append("")
 
-    lines.append("")
-    for p in range(NUM_PLAYERS):
-        marbles_str = ", ".join(
-            f"M{m}={format_location(state.marbles[p][m])}"
-            for m in range(MARBLES_PER_PLAYER)
-        )
-        lines.append(
-            f"{player_label(p)} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
-        )
-
     lines.append("=" * 112)
     return "\n".join(lines)
 
@@ -265,6 +255,28 @@ def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None
         state.next_base_exit_marble[player] = (chosen["marble"] + 1) % MARBLES_PER_PLAYER
 
 
+def decide_starting_player(rng: random.Random) -> int:
+    """Choose opening player by highest roll in a single round.
+
+    If multiple players tie for highest, earliest clockwise player wins.
+    """
+    print("\n=== Starting Phase: Who Goes First? ===")
+    top_player = None
+    top_roll = -1
+
+    for player in range(NUM_PLAYERS):
+        input(f"{player_label(player)}: press Enter to roll for first turn. ")
+        roll = rng.randint(1, 6)
+        print(f"  {player_label(player)} rolled a {roll}.")
+        if roll > top_roll:
+            top_roll = roll
+            top_player = player
+            print(f"  Highest so far: {player_label(top_player)} with {top_roll}.")
+
+    print(f"{player_label(top_player)} had the highest roll, with {top_roll}, they go first!")
+    return top_player
+
+
 def take_turn(state: GameState, rng: random.Random) -> None:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
@@ -300,6 +312,7 @@ def main():
     seed_arg = sys.argv[1] if len(sys.argv) > 1 else None
     rng = random.Random(int(seed_arg) if seed_arg else None)
     state = GameState()
+    state.current_player = decide_starting_player(rng)
     print("Wahoo — text mode, 4 players, pass-and-play.")
     print(render_board(state))
     while True:
