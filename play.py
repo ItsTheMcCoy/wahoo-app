@@ -119,9 +119,9 @@ def render_board(state: GameState) -> str:
 
     # Home rows: 4 slots each, parallel to the player's inward spoke, toward center.
     home_coords = {
-        0: [(3, 8), (4, 8), (5, 8), (6, 8)],
+        0: [(3, 9), (4, 9), (5, 9), (6, 9)],
         1: [(9, 14), (9, 13), (9, 12), (9, 11)],
-        2: [(15, 8), (14, 8), (13, 8), (12, 8)],
+        2: [(15, 7), (14, 7), (13, 7), (12, 7)],
         3: [(9, 2), (9, 3), (9, 4), (9, 5)],
     }
     for p in range(NUM_PLAYERS):
