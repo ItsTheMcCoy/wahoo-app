@@ -24,6 +24,14 @@ PLAYER_COLOR = {
     3: "34",  # blue
 }
 
+INTRO_ART = r"""
+__        __    _                    
+\ \      / /_ _| |__   ___   ___     
+ \ \ /\ / / _` | '_ \ / _ \ / _ \ 
+  \ V  V / (_| | | | | (_) | (_) |   
+   \_/\_/ \__,_|_| |_|\___/ \___/ 
+"""
+
 
 def colorize(text: str, player: int) -> str:
     """Colorize text for a player when ANSI output is available."""
@@ -105,7 +113,6 @@ def render_board(state: GameState) -> str:
 
     lines = []
     lines.append("=" * 112)
-    lines.append("Wahoo plus-board: each marble circles all 4 segments before entering its own home row")
 
     grid = [[cell("") for _ in range(21)] for _ in range(21)]
     exit_owner_by_idx = {base_exit(p): p for p in range(NUM_PLAYERS)}
@@ -255,7 +262,19 @@ def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None
         state.next_base_exit_marble[player] = (chosen["marble"] + 1) % MARBLES_PER_PLAYER
 
 
-def decide_starting_player(rng: random.Random) -> int:
+def show_intro_and_choose_action() -> str:
+    """Display intro art and let the user start or exit."""
+    print(INTRO_ART)
+    while True:
+        choice = input("Enter [S]tart game or [E]xit: ").strip().lower()
+        if choice in ("s", "start"):
+            return "start"
+        if choice in ("e", "exit"):
+            return "exit"
+        print("Please enter S to start or E to exit.")
+
+
+def decide_starting_player(rng: random.Random) -> tuple[int, int]:
     """Choose opening player by highest roll in a single round.
 
     If multiple players tie for highest, earliest clockwise player wins.
@@ -273,8 +292,7 @@ def decide_starting_player(rng: random.Random) -> int:
             top_player = player
             print(f"  Highest so far: {player_label(top_player)} with {top_roll}.")
 
-    print(f"{player_label(top_player)} had the highest roll, with {top_roll}, they go first!")
-    return top_player
+    return top_player, top_roll
 
 
 def format_turn_summary(turn_result: dict) -> str:
@@ -345,10 +363,14 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
 def main():
     seed_arg = sys.argv[1] if len(sys.argv) > 1 else None
     rng = random.Random(int(seed_arg) if seed_arg else None)
+    action = show_intro_and_choose_action()
+    if action == "exit":
+        return
+
     state = GameState()
-    state.current_player = decide_starting_player(rng)
-    print("Wahoo — text mode, 4 players, pass-and-play.")
+    state.current_player, top_roll = decide_starting_player(rng)
     print(render_board(state))
+    print(f"{player_label(state.current_player)} had the highest roll, with {top_roll}, they go first!")
     while True:
         turn_result = take_turn(state, rng)
         if turn_result["won"]:

@@ -317,8 +317,9 @@ def test_decide_starting_player_highest_roll():
     # Players 0..3 rolls are 2, 5, 3, 1 => player 1 starts.
     rng = SeqRng([2, 5, 3, 1])
     with patch("play.input", return_value=""):
-        starter = decide_starting_player(rng)
+        starter, top_roll = decide_starting_player(rng)
     assert_eq(starter, 1, "highest roll starts game")
+    assert_eq(top_roll, 5, "highest roll value returned")
 
 
 def test_decide_starting_player_tie_keeps_first_highest():
@@ -326,8 +327,9 @@ def test_decide_starting_player_tie_keeps_first_highest():
     # Single round: P0=6, P1=6, P2=2, P3=1 -> P0 wins tie by order.
     rng = SeqRng([6, 6, 2, 1])
     with patch("play.input", return_value=""):
-        starter = decide_starting_player(rng)
+        starter, top_roll = decide_starting_player(rng)
     assert_eq(starter, 0, "earliest highest roll starts game")
+    assert_eq(top_roll, 6, "tied highest roll value returned")
 
 
 def main():
