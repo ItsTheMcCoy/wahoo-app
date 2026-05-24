@@ -309,6 +309,7 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
                 chosen = auto_move
                 outcome = f"auto-selected {format_move(chosen)}"
             else:
+                print(f"{player_label(player)} rolled a {roll}.")
                 prompt_moves = build_prompt_moves(state, player, roll, moves)
                 chosen = choose_move(prompt_moves)
                 outcome = format_move(chosen)
