@@ -35,6 +35,12 @@ def colorize(text: str, player: int) -> str:
     return f"\033[{code}m{text}\033[0m"
 
 
+def player_label(player: int, colored: bool = True) -> str:
+    """Player display name as color text (with optional ANSI color)."""
+    name = PLAYER_NAMES[player]
+    return colorize(name, player) if colored else name
+
+
 def colorize_marble_cell(cell_text: str, tint_player: int | None = None) -> str:
     """Color marble tokens; optionally tint empty '..' cells for ownership."""
     raw = cell_text.rstrip()
@@ -137,8 +143,8 @@ def render_board(state: GameState) -> str:
             if state.marbles[p][m][0] == "BASE"
         ]
         for i, (r, c) in enumerate(base_coords[p]):
-            token = draw_token(p, base_marbles[i]) if i < len(base_marbles) else f"{p}."
-            put(grid, r, c, f"B{token}")
+            token = draw_token(p, base_marbles[i]) if i < len(base_marbles) else ".."
+            put(grid, r, c, token, tint_player=p)
 
     co = state.center_occupant
     put(grid, 9, 8, f"C{draw_token(co[0], co[1])}" if co else "C..")
@@ -151,14 +157,13 @@ def render_board(state: GameState) -> str:
         lines.append("")
 
     lines.append("")
-    lines.append("Legend: B=base, C=center, colored ..=home rows and base exits")
     for p in range(NUM_PLAYERS):
         marbles_str = ", ".join(
             f"M{m}={format_location(state.marbles[p][m])}"
             for m in range(MARBLES_PER_PLAYER)
         )
         lines.append(
-            f"{PLAYER_NAMES[p]} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
+            f"{player_label(p)} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
         )
 
     lines.append("=" * 112)
@@ -173,7 +178,7 @@ def format_move(move: dict) -> str:
         desc = f"M{move['marble']} {move['kind']} -> {format_location(move['dest'])}"
     if move["captures"]:
         cp, cm = move["captures"]
-        desc += f" [captures P{cp}M{cm}]"
+        desc += f" [captures {player_label(cp)} M{cm}]"
     return desc
 
 
@@ -264,9 +269,9 @@ def take_turn(state: GameState, rng: random.Random) -> None:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
     while True:
-        input(f"\n--- P{player}'s turn. Press Enter to roll. ")
+        input(f"\n--- {player_label(player)}'s turn. Press Enter to roll. ")
         roll = rng.randint(1, 6)
-        print(f"P{player} rolled a {roll}.")
+        print(f"{player_label(player)} rolled a {roll}.")
         moves = legal_moves(state, player, roll)
         if not moves:
             print("No legal moves.")
@@ -283,7 +288,7 @@ def take_turn(state: GameState, rng: random.Random) -> None:
             apply_move(state, chosen)
             print(render_board(state))
             if state.player_won(player):
-                print(f"\n*** P{player} WINS! ***")
+                print(f"\n*** {player_label(player)} WINS! ***")
                 sys.exit(0)
         if roll != 6:
             break
