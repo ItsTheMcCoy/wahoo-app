@@ -10,7 +10,7 @@ import os
 
 from game_state import (
     GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
-    NUM_PLAYERS, format_location,
+    NUM_PLAYERS, base_exit, format_location,
 )
 from rules import legal_moves, apply_move
 
@@ -35,20 +35,24 @@ def colorize(text: str, player: int) -> str:
     return f"\033[{code}m{text}\033[0m"
 
 
-def colorize_marble_cell(cell_text: str) -> str:
-    """Color the trailing two-char marble token when occupied (e.g., '01')."""
+def colorize_marble_cell(cell_text: str, tint_player: int | None = None) -> str:
+    """Color marble tokens; optionally tint empty '..' cells for ownership."""
     raw = cell_text.rstrip()
     if len(raw) < 2:
         return cell_text
     token = raw[-2:]
-    if not (token[0].isdigit() and token[1].isdigit()):
-        return cell_text
-    player = int(token[0])
-    if player < 0 or player >= NUM_PLAYERS:
-        return cell_text
     prefix = raw[:-2]
     trailing_spaces = " " * (len(cell_text) - len(raw))
-    return f"{prefix}{colorize(token, player)}{trailing_spaces}"
+
+    if token[0].isdigit() and token[1].isdigit():
+        player = int(token[0])
+        if 0 <= player < NUM_PLAYERS:
+            return f"{prefix}{colorize(token, player)}{trailing_spaces}"
+
+    if token == ".." and tint_player is not None and 0 <= tint_player < NUM_PLAYERS:
+        return f"{prefix}{colorize(token, tint_player)}{trailing_spaces}"
+
+    return cell_text
 
 
 def render_board(state: GameState) -> str:
@@ -65,9 +69,12 @@ def render_board(state: GameState) -> str:
         """Render a fixed-width cell to keep board columns aligned."""
         return text[:CELL_W].ljust(CELL_W)
 
-    def put(grid: list, r: int, c: int, value: str) -> None:
+    owner_tints = [[None for _ in range(21)] for _ in range(21)]
+
+    def put(grid: list, r: int, c: int, value: str, tint_player: int | None = None) -> None:
         if 0 <= r < len(grid) and 0 <= c < len(grid[0]):
             grid[r][c] = cell(value)
+            owner_tints[r][c] = tint_player
 
     # Absolute loop index -> board coordinate for a physical-style plus outline.
     # Each player segment has: inward spoke (0-5), armpit (6-10), outward spoke (11-13),
@@ -95,12 +102,14 @@ def render_board(state: GameState) -> str:
     lines.append("Wahoo plus-board: each marble circles all 4 segments before entering its own home row")
 
     grid = [[cell("") for _ in range(21)] for _ in range(21)]
+    exit_owner_by_idx = {base_exit(p): p for p in range(NUM_PLAYERS)}
 
     for idx, (r, c) in enumerate(track_coords):
         occ = state.marble_at_track(idx)
         occ_token = ".." if occ is None else f"{occ[0]}{occ[1]}"
         marker = "  "
-        put(grid, r, c, f"{marker}{occ_token}")
+        tint_player = exit_owner_by_idx.get(idx)
+        put(grid, r, c, f"{marker}{occ_token}", tint_player=tint_player)
 
     # Home rows: 4 slots each, parallel to the player's inward spoke, toward center.
     home_coords = {
@@ -112,7 +121,8 @@ def render_board(state: GameState) -> str:
     for p in range(NUM_PLAYERS):
         for slot, (r, c) in enumerate(home_coords[p]):
             m = state.marble_at_home(p, slot)
-            put(grid, r, c, f"h{draw_token(p, m)}")
+            token = ".." if m is None else f"{p}{m}"
+            put(grid, r, c, token, tint_player=p)
 
     # 2x2 base clusters outside the track, opposite each player's home row side.
     base_coords = {
@@ -133,12 +143,15 @@ def render_board(state: GameState) -> str:
     co = state.center_occupant
     put(grid, 9, 9, f"C{draw_token(co[0], co[1])}" if co else "C..")
 
-    for row in grid:
-        lines.append(" ".join(colorize_marble_cell(cell) for cell in row))
+    for r, row in enumerate(grid):
+        lines.append(" ".join(
+            colorize_marble_cell(cell, owner_tints[r][c])
+            for c, cell in enumerate(row)
+        ))
         lines.append("")
 
     lines.append("")
-    lines.append("Legend: h=home, B=base, C=center")
+    lines.append("Legend: B=base, C=center, colored ..=home rows and base exits")
     for p in range(NUM_PLAYERS):
         marbles_str = ", ".join(
             f"M{m}={format_location(state.marbles[p][m])}"
