@@ -324,6 +324,14 @@ def take_turn(state: GameState, rng: random.Random) -> dict:
             "reroll": (roll == 6 and not turn_result["won"]),
         })
 
+        event_result = {
+            "player": player,
+            "events": [turn_result["events"][-1]],
+            "won": turn_result["won"],
+        }
+        print(render_board(state))
+        print(format_turn_summary(event_result))
+
         if turn_result["won"]:
             break
         if roll != 6:
@@ -342,8 +350,6 @@ def main():
     print(render_board(state))
     while True:
         turn_result = take_turn(state, rng)
-        print(render_board(state))
-        print(format_turn_summary(turn_result))
         if turn_result["won"]:
             print(f"\n*** {player_label(turn_result['player'])} WINS! ***")
             sys.exit(0)
