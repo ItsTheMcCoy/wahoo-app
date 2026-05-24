@@ -9,7 +9,7 @@ import sys
 
 from game_state import (
     GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
-    NUM_PLAYERS, base_exit, home_entry, format_location,
+    NUM_PLAYERS, format_location,
 )
 from rules import legal_moves, apply_move
 
@@ -18,40 +18,103 @@ PLAYER_NAMES = ["P1", "P2", "P3", "P4"]
 
 
 def render_board(state: GameState) -> str:
-    """Crude text board: per-player segment readout + center + summary."""
+    """Physical plus-board renderer: 56-square loop + center + bases + home rows."""
+
+    CELL_W = 4
+
+    def draw_token(p: int, m: int | None) -> str:
+        if m is None:
+            return f"{p}."
+        return f"{p}{m}"
+
+    def cell(text: str) -> str:
+        """Render a fixed-width cell to keep board columns aligned."""
+        return text[:CELL_W].ljust(CELL_W)
+
+    def put(grid: list, r: int, c: int, value: str) -> None:
+        if 0 <= r < len(grid) and 0 <= c < len(grid[0]):
+            grid[r][c] = cell(value)
+
+    # Absolute loop index -> board coordinate for a physical-style plus outline.
+    # Each player segment has: inward spoke (0-5), armpit (6-10), outward spoke (11-13),
+    # and then one step to the next player's base-exit (next segment offset 0).
+    track_coords = []
+    # Segment 0 (top arm -> right arm)
+    track_coords.extend([(2, 10), (3, 10), (4, 10), (5, 10), (6, 10), (7, 10)])
+    track_coords.extend([(7, 11), (7, 12), (7, 13), (7, 14), (7, 15)])
+    track_coords.extend([(8, 15), (9, 15), (10, 15)])
+    # Segment 1 (right arm -> bottom arm)
+    track_coords.extend([(11, 15), (11, 14), (11, 13), (11, 12), (11, 11), (11, 10)])
+    track_coords.extend([(12, 10), (13, 10), (14, 10), (15, 10), (16, 10)])
+    track_coords.extend([(16, 9), (16, 8), (16, 7)])
+    # Segment 2 (bottom arm -> left arm)
+    track_coords.extend([(16, 6), (15, 6), (14, 6), (13, 6), (12, 6), (11, 6)])
+    track_coords.extend([(11, 5), (11, 4), (11, 3), (11, 2), (11, 1)])
+    track_coords.extend([(10, 1), (9, 1), (8, 1)])
+    # Segment 3 (left arm -> top arm)
+    track_coords.extend([(7, 1), (7, 2), (7, 3), (7, 4), (7, 5), (7, 6)])
+    track_coords.extend([(6, 6), (5, 6), (4, 6), (3, 6), (2, 6)])
+    track_coords.extend([(2, 7), (2, 8), (2, 9)])
+
     lines = []
-    lines.append("=" * 60)
-    # Loop view: walk all 56 squares, show occupant.
-    loop_view = []
-    for i in range(LOOP_SIZE):
-        occ = state.marble_at_track(i)
-        if occ is None:
-            cell = "."
-        else:
-            cell = f"{occ[0]}{occ[1]}"
-        # Mark special squares
-        marker = ""
-        for p in range(NUM_PLAYERS):
-            if i == base_exit(p):
-                marker = f"<{p}exit>"
-            elif i == home_entry(p):
-                marker = f"<{p}home>"
-        loop_view.append(f"{i:2d}{marker}:{cell}")
-    # Display 8 squares per row
-    for row_start in range(0, LOOP_SIZE, 8):
-        lines.append("  ".join(loop_view[row_start:row_start + 8]))
-    lines.append("")
-    # Center
+    lines.append("=" * 112)
+    lines.append("Wahoo plus-board: each marble circles all 4 segments before entering its own home row")
+
+    grid = [[cell("") for _ in range(21)] for _ in range(21)]
+
+    for idx, (r, c) in enumerate(track_coords):
+        occ = state.marble_at_track(idx)
+        occ_token = ".." if occ is None else f"{occ[0]}{occ[1]}"
+        marker = "  "
+        put(grid, r, c, f"{marker}{occ_token}")
+
+    # Home rows: 4 slots each, parallel to the player's inward spoke, toward center.
+    home_coords = {
+        0: [(3, 8), (4, 8), (5, 8), (6, 8)],
+        1: [(9, 14), (9, 13), (9, 12), (9, 11)],
+        2: [(15, 8), (14, 8), (13, 8), (12, 8)],
+        3: [(9, 2), (9, 3), (9, 4), (9, 5)],
+    }
+    for p in range(NUM_PLAYERS):
+        for slot, (r, c) in enumerate(home_coords[p]):
+            m = state.marble_at_home(p, slot)
+            put(grid, r, c, f"h{draw_token(p, m)}")
+
+    # 2x2 base clusters outside the track, opposite each player's home row side.
+    base_coords = {
+        0: [(0, 11), (0, 12), (1, 11), (1, 12)],
+        1: [(12, 18), (12, 19), (13, 18), (13, 19)],
+        2: [(18, 4), (18, 5), (19, 4), (19, 5)],
+        3: [(4, 0), (4, 1), (5, 0), (5, 1)],
+    }
+    for p in range(NUM_PLAYERS):
+        base_marbles = [
+            m for m in range(MARBLES_PER_PLAYER)
+            if state.marbles[p][m][0] == "BASE"
+        ]
+        for i, (r, c) in enumerate(base_coords[p]):
+            token = draw_token(p, base_marbles[i]) if i < len(base_marbles) else f"{p}."
+            put(grid, r, c, f"B{token}")
+
     co = state.center_occupant
-    lines.append(f"CENTER: {f'P{co[0]}M{co[1]}' if co else 'empty'}")
-    # Per-player summary
+    put(grid, 9, 9, f"C{draw_token(co[0], co[1])}" if co else "C..")
+
+    for row in grid:
+        lines.append(" ".join(row))
+        lines.append("")
+
+    lines.append("")
+    lines.append("Legend: hxy=home slot, Bxy=base slot, C=center")
     for p in range(NUM_PLAYERS):
         marbles_str = ", ".join(
             f"M{m}={format_location(state.marbles[p][m])}"
             for m in range(MARBLES_PER_PLAYER)
         )
-        lines.append(f"P{p}: {marbles_str}")
-    lines.append("=" * 60)
+        lines.append(
+            f"P{p} next auto-exit: M{state.next_base_exit_marble[p]} | {marbles_str}"
+        )
+
+    lines.append("=" * 112)
     return "\n".join(lines)
 
 
