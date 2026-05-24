@@ -57,7 +57,10 @@ def render_board(state: GameState) -> str:
 
 def format_move(move: dict) -> str:
     """Short human-readable move."""
-    desc = f"M{move['marble']} {move['kind']} -> {format_location(move['dest'])}"
+    if move["kind"] == "exit_base":
+        desc = f"M{move['marble']} exit base"
+    else:
+        desc = f"M{move['marble']} {move['kind']} -> {format_location(move['dest'])}"
     if move["captures"]:
         cp, cm = move["captures"]
         desc += f" [captures P{cp}M{cm}]"
@@ -87,6 +90,39 @@ def choose_next_exit_base_move(state: GameState, player: int, moves: list) -> di
                 return mv
     # Fallback should be unreachable, but keeps behavior safe.
     return exit_moves[0]
+
+
+def build_prompt_moves(state: GameState, player: int, roll: int, moves: list) -> list:
+    """Reduce repeated base-exit choices in the prompt to one rotating option.
+
+    When rolling 1 or 6 with multiple base exits available and at least one
+    marble already on track, show only one "MN exit base" prompt entry.
+    """
+    if roll not in (1, 6):
+        return moves
+
+    exit_moves = [m for m in moves if m["kind"] == "exit_base"]
+    if len(exit_moves) <= 1:
+        return moves
+
+    has_track_marble = any(
+        state.marbles[player][m][0] == "TRACK"
+        for m in range(MARBLES_PER_PLAYER)
+    )
+    if not has_track_marble:
+        return moves
+
+    preferred_exit = choose_next_exit_base_move(state, player, moves)
+    prompt_moves = []
+    inserted_exit = False
+    for mv in moves:
+        if mv["kind"] != "exit_base":
+            prompt_moves.append(mv)
+            continue
+        if not inserted_exit:
+            prompt_moves.append(preferred_exit)
+            inserted_exit = True
+    return prompt_moves
 
 
 def maybe_auto_choose_move(state: GameState, player: int, roll: int, moves: list) -> dict | None:
@@ -130,7 +166,8 @@ def take_turn(state: GameState, rng: random.Random) -> None:
                 chosen = auto_move
                 print(f"Auto-selected move: {format_move(chosen)}")
             else:
-                chosen = choose_move(moves)
+                prompt_moves = build_prompt_moves(state, player, roll, moves)
+                chosen = choose_move(prompt_moves)
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)

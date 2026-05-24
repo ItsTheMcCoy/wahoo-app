@@ -8,7 +8,7 @@ from game_state import (
     loc_base, loc_track, loc_home, loc_center,
 )
 from rules import legal_moves, apply_move
-from play import maybe_auto_choose_move, update_exit_base_cursor
+from play import maybe_auto_choose_move, update_exit_base_cursor, build_prompt_moves
 
 
 def assert_eq(actual, expected, label):
@@ -270,6 +270,27 @@ def test_no_auto_base_exit_if_other_move_exists():
     assert chosen is None, "should not auto-select exit_base when non-exit exists"
 
 
+def test_prompt_shows_single_rotating_exit_base_option():
+    print("test: prompt collapses multiple exit_base options to one rotating choice")
+    state = GameState()
+    state.marbles[0][0] = loc_track(10)  # ensure at least one track marble
+    moves = legal_moves(state, 0, 6)
+    prompt_moves = build_prompt_moves(state, 0, 6, moves)
+    prompt_exit_moves = [m for m in prompt_moves if m["kind"] == "exit_base"]
+    assert_eq(len(prompt_exit_moves), 1, "single exit_base option in prompt")
+    assert_eq(prompt_exit_moves[0]["marble"], 1, "uses next sequential base marble")
+
+
+def test_prompt_does_not_collapse_without_track_marble():
+    print("test: prompt keeps all exit_base options when no marble is on track")
+    state = GameState()
+    moves = legal_moves(state, 0, 6)
+    prompt_moves = build_prompt_moves(state, 0, 6, moves)
+    raw_exit = [m for m in moves if m["kind"] == "exit_base"]
+    prompt_exit = [m for m in prompt_moves if m["kind"] == "exit_base"]
+    assert_eq(len(prompt_exit), len(raw_exit), "no collapse when no track marble")
+
+
 def main():
     tests = [
         test_base_exit,
@@ -290,6 +311,8 @@ def main():
         test_auto_choose_when_only_one_legal_move,
         test_auto_choose_rotating_base_exit_when_only_exit_moves,
         test_no_auto_base_exit_if_other_move_exists,
+        test_prompt_shows_single_rotating_exit_base_option,
+        test_prompt_does_not_collapse_without_track_marble,
     ]
     for t in tests:
         t()
