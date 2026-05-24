@@ -141,7 +141,7 @@ def render_board(state: GameState) -> str:
             put(grid, r, c, f"B{token}")
 
     co = state.center_occupant
-    put(grid, 9, 9, f"C{draw_token(co[0], co[1])}" if co else "C..")
+    put(grid, 9, 8, f"C{draw_token(co[0], co[1])}" if co else "C..")
 
     for r, row in enumerate(grid):
         lines.append(" ".join(
