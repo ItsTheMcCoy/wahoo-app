@@ -168,6 +168,8 @@ Current files in the project:
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
 | `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |
 | `documents/AI_Strategy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema | In repo |
+| `documents/AI_PLAYER_BUILD_PLAN.md` | Implementation spec for `wahoo/ai.py`: class interfaces, feature formulas, profile weights, test plan | In repo |
+| `documents/STAT_TRACKING_PLAN.md` | Per-game/player/turn stat tracking design: extended recording schema, `wahoo/stats.py` plan, CSV export, style vector analysis | In repo |
 | `documents/wahoo_strategy_metric_tracking_agent_spec.md` | Metric tracking plan spec: data tables, decision/capture/shortcut logging, analysis guidance | In repo |
 | `documents/DEVELOPMENT_PLAN.md` | This document | In repo |
 | `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
