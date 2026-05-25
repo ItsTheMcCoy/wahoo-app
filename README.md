@@ -19,6 +19,7 @@ Startup flow:
 - ASCII-art intro is shown first.
 - Choose one of the intro menu options shown on separate lines:
 	- `S` to start a new game
+	- `C` to run computer self-play (all players are computer-controlled)
 	- `R` to replay a saved game
 	- `E` to exit
 - Type `/auto` at any prompt to toggle auto-roll on or off.
@@ -29,6 +30,11 @@ Auto-roll behavior:
 
 - When auto-roll is ON, the game rolls automatically for turns.
 - If a roll produces more than one legal move, you still choose the move manually.
+
+Computer self-play behavior:
+
+- Computer move priority is: capture, then exit base, then get home.
+- Center entry is only chosen when the current player has at least one other marble already in play.
 
 ## Replay a Saved Game
 

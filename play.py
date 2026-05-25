@@ -333,13 +333,13 @@ def choose_move(moves: list, player: int, roll: int, settings: dict) -> dict:
     """Prompt human to pick a move from the list."""
     print("\nLegal moves:")
     for i, mv in enumerate(moves):
-        print(f"  [{i}] {format_move(mv, player, roll)}")
+        print(f"  [{i + 1}] {format_move(mv, player, roll)}")
     print("Type /auto to toggle auto-roll mode.")
     while True:
         choice = read_user_input("Pick a move number: ", settings).strip()
-        if choice.isdigit() and 0 <= int(choice) < len(moves):
-            return moves[int(choice)]
-        print(f"Invalid. Enter 0..{len(moves) - 1}.")
+        if choice.isdigit() and 1 <= int(choice) <= len(moves):
+            return moves[int(choice) - 1]
+        print(f"Invalid. Enter 1..{len(moves)}.")
 
 
 def choose_next_exit_base_move(state: GameState, player: int, moves: list) -> dict:
@@ -353,6 +353,58 @@ def choose_next_exit_base_move(state: GameState, player: int, moves: list) -> di
                 return mv
     # Fallback should be unreachable, but keeps behavior safe.
     return exit_moves[0]
+
+
+def has_other_marble_in_play(state: GameState, player: int, marble_id: int) -> bool:
+    """True when this player has another marble that is not in base."""
+    for other in range(MARBLES_PER_PLAYER):
+        if other == marble_id:
+            continue
+        if state.marbles[player][other][0] != "BASE":
+            return True
+    return False
+
+
+def choose_computer_move(state: GameState, player: int, roll: int, moves: list) -> dict:
+    """Pick computer move by priority rules.
+
+    Priority:
+    1) Capturing
+    2) Exiting base
+    3) Getting home
+    4) Center entry (only when another marble is in play)
+    5) Other moves
+    """
+    # Center rule: only prefer center if another marble is already in play.
+    preferred = []
+    for mv in moves:
+        if mv["kind"] == "enter_center" and not has_other_marble_in_play(state, player, mv["marble"]):
+            continue
+        preferred.append(mv)
+    if not preferred:
+        preferred = moves
+
+    captures = [m for m in preferred if m["captures"] is not None]
+    if captures:
+        return captures[0]
+
+    exits = [m for m in preferred if m["kind"] == "exit_base"]
+    if exits:
+        return choose_next_exit_base_move(state, player, exits)
+
+    home_moves = [m for m in preferred if m["kind"] in ("enter_home", "advance_home")]
+    if home_moves:
+        return home_moves[0]
+
+    center_moves = [m for m in preferred if m["kind"] == "enter_center"]
+    if center_moves:
+        return center_moves[0]
+
+    non_center = [m for m in preferred if m["kind"] != "enter_center"]
+    if non_center:
+        return non_center[0]
+
+    return preferred[0]
 
 
 def build_prompt_moves(state: GameState, player: int, roll: int, moves: list) -> list:
@@ -414,9 +466,10 @@ def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None
 
 
 def show_intro_and_choose_action(settings: dict) -> str:
-    """Display intro art and let the user start, replay, or exit."""
+    """Display intro art and let the user start, replay, self-play, or exit."""
     print(INTRO_ART)
     print("[S] Start a new game")
+    print("[C] Computer self-play")
     print("[R] Replay a saved game")
     print("[E] Exit")
     print("Type /auto to toggle auto-roll mode.")
@@ -424,11 +477,13 @@ def show_intro_and_choose_action(settings: dict) -> str:
         choice = read_user_input("Enter choice: ", settings).strip().lower()
         if choice in ("s", "start"):
             return "start"
+        if choice in ("c", "computer"):
+            return "computer"
         if choice in ("r", "replay"):
             return "replay"
         if choice in ("e", "exit"):
             return "exit"
-        print("Please enter S to start, R to replay, or E to exit.")
+        print("Please enter S to start, C for computer self-play, R to replay, or E to exit.")
 
 
 def prompt_replay_path(settings: dict) -> str:
@@ -513,15 +568,19 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         if not moves:
             outcome = "no legal move"
         else:
-            auto_move = maybe_auto_choose_move(state, player, roll, moves)
-            if auto_move is not None:
-                chosen = auto_move
-                outcome = f"auto-selected {format_move(chosen, player, roll)}"
+            if settings["computer_self_play"]:
+                chosen = choose_computer_move(state, player, roll, moves)
+                outcome = f"computer-selected {format_move(chosen, player, roll)}"
             else:
-                print(f"{player_label(player)} rolled a {roll}.")
-                prompt_moves = build_prompt_moves(state, player, roll, moves)
-                chosen = choose_move(prompt_moves, player, roll, settings)
-                outcome = format_move(chosen, player, roll)
+                auto_move = maybe_auto_choose_move(state, player, roll, moves)
+                if auto_move is not None:
+                    chosen = auto_move
+                    outcome = f"auto-selected {format_move(chosen, player, roll)}"
+                else:
+                    print(f"{player_label(player)} rolled a {roll}.")
+                    prompt_moves = build_prompt_moves(state, player, roll, moves)
+                    chosen = choose_move(prompt_moves, player, roll, settings)
+                    outcome = format_move(chosen, player, roll)
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
@@ -555,7 +614,7 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
 def main():
     args = sys.argv[1:]
     recording_path = None
-    settings = {"auto_roll": False}
+    settings = {"auto_roll": False, "computer_self_play": False}
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
         recording, state = run_replay(replay_path, settings)
@@ -578,6 +637,9 @@ def main():
             recording_path = replay_path
             print(f"Continuing recorded game from {replay_path}")
         else:
+            if action == "computer":
+                settings["computer_self_play"] = True
+                settings["auto_roll"] = True
             state = GameState()
             state.current_player, top_roll = decide_starting_player(rng, settings)
             recording = {
@@ -594,6 +656,8 @@ def main():
             write_recording(recording, recording_path)
             print(render_board(state))
             print(f"{player_label(state.current_player)} had the highest roll, with {top_roll}, they go first!")
+            if settings["computer_self_play"]:
+                print("Computer self-play is ON.")
             print(f"Recording game history to {recording_path}")
 
     while True:

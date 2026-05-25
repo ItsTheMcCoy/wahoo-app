@@ -10,6 +10,7 @@ from game_state import (
 from rules import legal_moves, apply_move
 from play import (
     maybe_auto_choose_move,
+    choose_computer_move,
     update_exit_base_cursor,
     build_prompt_moves,
     read_user_input,
@@ -314,6 +315,49 @@ def test_no_auto_base_exit_if_other_move_exists():
     assert chosen is None, "should not auto-select exit_base when non-exit exists"
 
 
+def test_computer_prefers_capture_then_exit_then_home():
+    print("test: computer priority is capture, then exit, then home")
+    # Capture should beat exit/home.
+    state = GameState()
+    state.marbles[0][0] = loc_track(5)
+    state.marbles[0][1] = loc_base()
+    state.marbles[1][0] = loc_track(8)
+    moves = legal_moves(state, 0, 3)
+    chosen = choose_computer_move(state, 0, 3, moves)
+    assert_eq(chosen["captures"], (1, 0), "capture chosen before other options")
+
+    # Exit should beat plain advance when no capture/home.
+    state = GameState()
+    state.marbles[0][0] = loc_track(10)
+    moves = legal_moves(state, 0, 6)
+    chosen = choose_computer_move(state, 0, 6, moves)
+    assert_eq(chosen["kind"], "exit_base", "exit chosen before non-home advance")
+
+    # Home should beat plain advance when no capture/exit.
+    state = GameState()
+    state.marbles[0][0] = loc_track(home_entry(0))
+    state.marbles[0][1] = loc_track(20)
+    moves = legal_moves(state, 0, 2)
+    chosen = choose_computer_move(state, 0, 2, moves)
+    assert_eq(chosen["kind"], "advance_home", "home move chosen before plain advance")
+
+
+def test_computer_center_rule_requires_other_marble_in_play():
+    print("test: computer only chooses center when another marble is in play")
+    # One marble in play with center + advance options: should avoid center.
+    state = GameState()
+    state.marbles[0][0] = loc_track(base_exit(0) + 2)
+    moves = legal_moves(state, 0, 4)
+    chosen = choose_computer_move(state, 0, 4, moves)
+    assert_eq(chosen["kind"], "advance", "center avoided without another marble in play")
+
+    # Add another marble in play; center is now allowed and selected over plain advance.
+    state.marbles[0][1] = loc_track(20)
+    moves = legal_moves(state, 0, 4)
+    chosen = choose_computer_move(state, 0, 4, moves)
+    assert_eq(chosen["kind"], "enter_center", "center selected with another marble in play")
+
+
 def test_prompt_shows_single_rotating_exit_base_option():
     print("test: prompt collapses multiple exit_base options to one rotating choice")
     state = GameState()
@@ -363,6 +407,14 @@ def test_intro_menu_accepts_replay_option():
     with patch("play.input", return_value="r"):
         action = show_intro_and_choose_action(settings)
     assert_eq(action, "replay", "replay action selected from intro menu")
+
+
+def test_intro_menu_accepts_computer_option():
+    print("test: intro menu accepts computer self-play option")
+    settings = {"auto_roll": False, "computer_self_play": False}
+    with patch("play.input", return_value="c"):
+        action = show_intro_and_choose_action(settings)
+    assert_eq(action, "computer", "computer self-play selected from intro menu")
 
 
 def test_prompt_replay_path_requires_filename():
@@ -483,11 +535,14 @@ def main():
         test_auto_choose_when_only_one_legal_move,
         test_auto_choose_rotating_base_exit_when_only_exit_moves,
         test_no_auto_base_exit_if_other_move_exists,
+        test_computer_prefers_capture_then_exit_then_home,
+        test_computer_center_rule_requires_other_marble_in_play,
         test_prompt_shows_single_rotating_exit_base_option,
         test_prompt_does_not_collapse_without_track_marble,
         test_decide_starting_player_highest_roll,
         test_decide_starting_player_tie_keeps_first_highest,
         test_intro_menu_accepts_replay_option,
+        test_intro_menu_accepts_computer_option,
         test_prompt_replay_path_requires_filename,
         test_global_toggle_command_flips_auto_roll_during_prompt,
         test_roll_prompt_toggle_can_continue_immediately_when_enabled,
