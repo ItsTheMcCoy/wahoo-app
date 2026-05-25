@@ -11,7 +11,7 @@ Console-based Wahoo implementation for 4 players.
 From the project folder:
 
 ```powershell
-python play.py
+python -m wahoo.play
 ```
 
 Startup flow:
@@ -52,7 +52,7 @@ game3.json
 To replay a saved game:
 
 ```powershell
-python play.py replay game3.json
+python -m wahoo.play replay game3.json
 ```
 
 You can also pick `R` from the startup menu and then enter a filename.
@@ -81,7 +81,7 @@ If you continue:
 Run the test suite with:
 
 ```powershell
-python tests.py
+python -m tests.test_wahoo
 ```
 
 ## Notes

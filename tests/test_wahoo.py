@@ -1,5 +1,5 @@
 """
-Rule-engine sanity tests. Run: python tests.py
+Rule-engine sanity tests. Run: python -m tests.test_wahoo
 Each test asserts a specific rule scenario.
 """
 

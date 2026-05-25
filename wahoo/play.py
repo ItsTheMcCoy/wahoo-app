@@ -1,7 +1,7 @@
 """
 Wahoo text-mode game loop. Pass-and-play, 4 players, console UI.
 
-Run: python play.py
+Run: python -m wahoo.play
 """
 
 import random
