@@ -201,7 +201,7 @@ The game ends as soon as one player wins. Other players' final positions are not
 
 ## 7. Data Model (Reference Implementation)
 
-The Python reference implementation lives in `game_state.py` and `rules.py`. The model is the same one any AI implementation should target.
+The Python reference implementation lives in `wahoo/game_state.py` and `wahoo/rules.py`. The model is the same one any AI implementation should target.
 
 ### 7.1 `GameState`
 
@@ -317,7 +317,7 @@ Suggested progression of AI strength:
 
 ### 8.6 Practical Notes for Implementation
 
-- The reference `rules.py` is the canonical source for what is and isn't legal. AI authors should call `legal_moves()` rather than re-implementing move generation.
+- The reference `wahoo/rules.py` is the canonical source for what is and isn't legal. AI authors should call `legal_moves()` rather than re-implementing move generation.
 - `GameState.clone()` exists specifically to support simulation. It's a shallow clone of the marbles list-of-lists; locations are immutable tuples so sharing is safe.
 - The current implementation does not separate "current player turn" from "roll outcome." For expectimax, an AI author may need to extend the API to support "given state, what's the distribution of (resulting_state, next_player) across the 6 dice outcomes?" — including correctly threading re-rolls.
 - There is no hidden information. Wahoo is a perfect-information game (modulo the upcoming die roll). All evaluation and search can operate on fully visible state.

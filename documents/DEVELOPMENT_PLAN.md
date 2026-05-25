@@ -20,28 +20,78 @@ Build an Android game implementing the Wahoo board game. Online multiplayer, lea
 Core game logic and a console-mode game loop, no graphics.
 
 **Done:**
-- Board geometry and per-player constants (`game_state.py`)
-- `legal_moves()` and `apply_move()` (`rules.py`)
-- Console pass-and-play game loop (`play.py`)
-- 20-test rule suite (`tests.py`)
+- Board geometry and per-player constants (`wahoo/game_state.py`)
+- `legal_moves()` and `apply_move()` (`wahoo/rules.py`)
+- Console pass-and-play game loop (`wahoo/play.py`)
+- Expanded rule/behavior test suite (`tests/test_wahoo.py`)
 - Spec doc for AI development (`RULES.md`)
 - Player-facing rules (`HOW_TO_PLAY.md`)
 - Home-entry capture bug fix
 - `pending_roll` cleanup
+- Replay recording and playback support
+- Startup replay and computer self-play options
+- Auto-roll toggle across prompts
+- Project reorganized into package layout (`wahoo/` + `tests/`)
 
-**Pending in repo:** The home-entry fix and cleanup are in local files but not yet pushed to GitHub. Repo still shows original 2-commit state.
+**Repo status:** Local and GitHub are now synchronized on `main`.
 
 **Remaining for phase completion:**
-- Push the corrected code and docs to the repo
-- Play 2–3 full games through `play.py` to surface any rule edge cases not covered by tests
-- Add a `README.md` to the repo root with "how to run" instructions
+- Play 2-3 full games through `python -m wahoo.play` to surface any rule edge cases not covered by tests
+- Keep docs current as rules/UI evolve
+
+### Phase 1b — Python AI Opponents — *In progress*
+
+Build and validate computer opponents in the Python prototype before the Godot port. This serves two goals: makes the console game immediately playable for solo testing, and produces a validated algorithm + scenario tests that port mechanically to GDScript in Phase 3.
+
+The full design framework, strategy dimensions, playstyle profiles, and scenario probes are in `documents/AI_Strategy_Spec.md`. The metric/logging schema for evaluating AI quality is in `documents/wahoo_strategy_metric_tracking_agent_spec.md`.
+
+**Tier 1 — Random (baseline)**
+- `RandomPlayer` in `wahoo/ai.py`: `choose_move(state, moves) -> Move` picks uniformly at random
+- Wire into `play.py` as a selectable player type per slot (human / random / greedy)
+- Confirms the game loop is AI-compatible without any heuristic noise
+
+**Tier 2 — Greedy heuristic**
+- `GreedyPlayer`: score each legal move with a hand-crafted utility function
+- Hard rule: always take an immediate winning move (overrides all heuristic weights)
+- Feature handles from `RULES.md` §8.3 and `AI_Strategy_Spec.md`:
+  - Captures (weight by victim's progress — high-progress captures score higher)
+  - Center entry (high value; tempered by whether the marble has used its window)
+  - Net square advancement toward home
+  - Capture exposure penalty (landing squares reachable by opponents on next turn)
+  - Home-lane progress (weighted higher late-game via phase modifier)
+- Validate against the scenario probe bank in `AI_Strategy_Spec.md` §Validation
+
+**Tier 2b — Named playstyle profiles (optional)**
+- Profiles (Sprinter, Assassin, Tortoise, Balanced Pragmatist, etc.) are weight vectors over the 10 strategy dimensions defined in `AI_Strategy_Spec.md`
+- Wire into `GreedyPlayer` as configurable weight sets; one profile = one constructor argument
+- Enables human vs. distinct AI personalities in the console game
+
+**Tier 3 — One-ply expectimax (optional/stretch)**
+- For each legal move, simulate all 6 die outcomes for the opponent's next turn, assume opponent plays greedy-best, and pick the move maximizing expected own score
+- Requires threading re-rolls correctly; `GameState.clone()` already exists for this
+- See `RULES.md` §8.6 for implementation notes
+
+**Self-play and validation infrastructure**
+- Self-play runner: run N games between configurable AI slots, collect win-rate stats
+- Scenario probe runner: feed hand-crafted states from `AI_Strategy_Spec.md` and assert profile-typical choices at the expected frequency
+- Log format from `wahoo_strategy_metric_tracking_agent_spec.md` (game/player/turn tables) for post-hoc strategy analysis
+
+**Done:**
+- *(nothing yet)*
+
+**Remaining:**
+- Implement `wahoo/ai.py` with `RandomPlayer` and `GreedyPlayer`
+- Add per-slot AI selection to `play.py`
+- Write self-play runner (can live in `wahoo/selfplay.py` or a script)
+- Write scenario probe tests in `tests/test_ai.py`
+- Optional: named profiles, expectimax tier
 
 ### Phase 2a — Godot Bootstrap — *Not started*
 
 Port the rules engine to Godot. No graphics yet — just confirm the engine runs on a phone.
 
 - Install Godot 4 and complete the official "Your First 2D Game" tutorial
-- Port `game_state.py` and `rules.py` to GDScript (mechanical translation, languages are similar)
+- Port `wahoo/game_state.py` and `wahoo/rules.py` to GDScript (mechanical translation, languages are similar)
 - Port `tests.py` and verify all tests pass in GDScript
 - Build a minimal Godot project with a "Roll" button and text output of game state
 - Configure Android export (SDK install, signing keys, deployment) — fiddly setup done once now rather than at the end
@@ -60,16 +110,17 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 - Roll button, current-player indicator, turn announcements
 - Win screen
 
-### Phase 3 — Single-Device AI — *Not started*
+### Phase 3 — Single-Device AI (Godot) — *Not started*
 
-Computer opponents so the game is playable solo.
+Port the validated Python AI from Phase 1b into GDScript and wire it into the Godot game.
 
-- Difficulty tier 1: random legal move (baseline)
-- Difficulty tier 2: greedy heuristic (prefer captures, shortcut, home progress, account for capture exposure)
-- AI selection per player slot (human or one of the AI tiers)
-- Optional: tier 3 one-ply expectimax if the heuristic AI feels too weak
+- Translate `wahoo/ai.py` (`RandomPlayer`, `GreedyPlayer`) to GDScript — mechanical translation, same algorithm
+- Per-slot AI selection in the Godot UI (human or one of the AI tiers)
+- Port the scenario probe tests to GDScript to confirm parity with Python behavior
+- Optional: named playstyle profiles (Sprinter, Assassin, Tortoise, etc.) as selectable AI personalities
+- Optional: one-ply expectimax if greedy feels too weak
 
-See `RULES.md` §8 for the AI design framework.
+The full design framework, strategy dimensions, playstyle profiles, scenario probes, and logging schema are in `documents/AI_Strategy_Spec.md` and `documents/wahoo_strategy_metric_tracking_agent_spec.md`. The Python prototype in Phase 1b is the reference implementation — if behavior differs in Godot, the Python behavior wins.
 
 ### Phase 4 — LAN Multiplayer — *Not started*
 
@@ -95,7 +146,7 @@ Decision deferred until Phase 4 is functional and the appetite for further work 
 
 ## Cross-Cutting Concerns
 
-**Cross-device development.** Code lives in `https://github.com/ItsTheMcCoy/wahoo-app`. Edit on any device, push to the repo, pull from any other device. Claude can read the repo but not write to it; pushes happen via desktop git client, GitHub Desktop, or GitHub web UI.
+**Cross-device development.** Code lives in `https://github.com/ItsTheMcCoy/wahoo-app`. Edit on any device, push to the repo, pull from any other device.
 
 **Rules vs. code consistency.** `RULES.md` is the authoritative spec. If the code and the spec disagree, the spec wins and the code should be fixed. This matters most when AI assistants (Cowork, Claude Code) work on the project — they should read the spec first.
 
@@ -109,11 +160,14 @@ Current files in the project:
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `game_state.py` | Data model: locations, GameState, constants | In repo (pre-fix version); local has cleanup |
-| `rules.py` | `legal_moves()` and `apply_move()` | In repo (pre-fix version); local has home-entry fix |
-| `play.py` | Console game loop | In repo, unchanged |
-| `tests.py` | Rule test suite | In repo (15 tests); local has 20 tests including home-entry coverage |
-| `RULES.md` | Detailed spec for AI development | Not yet in repo |
-| `HOW_TO_PLAY.md` | Player-facing rules summary | Not yet in repo |
-| `DEVELOPMENT_PLAN.md` | This document | Not yet in repo |
-| `.gitignore` | Standard Python + Godot ignores | In repo |
+| `wahoo/game_state.py` | Data model: locations, GameState, constants | In repo |
+| `wahoo/rules.py` | `legal_moves()` and `apply_move()` | In repo |
+| `wahoo/play.py` | Console game loop | In repo |
+| `tests/test_wahoo.py` | Rule and behavior test suite | In repo |
+| `README.md` | Run/test instructions and current features | In repo |
+| `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
+| `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |
+| `documents/AI_Strategy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema | In repo |
+| `documents/wahoo_strategy_metric_tracking_agent_spec.md` | Metric tracking plan spec: data tables, decision/capture/shortcut logging, analysis guidance | In repo |
+| `documents/DEVELOPMENT_PLAN.md` | This document | In repo |
+| `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
