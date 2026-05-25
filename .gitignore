@@ -18,3 +18,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Generated game recordings
+game*.json
+
+# Saved Games
+game*.json
