@@ -77,14 +77,17 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - Log format from `wahoo_strategy_metric_tracking_agent_spec.md` (game/player/turn tables) for post-hoc strategy analysis
 
 **Done:**
-- *(nothing yet)*
+- `wahoo/ai.py` — complete: `_marble_progress()`, `compute_exposure()`, `_loc_progress()`, `_self_block_count()`, `compute_features()` (all 10 features), `_game_phase()`, `DEFAULT_PHASE_WEIGHTS`, all 8 profile weight dicts, `RandomPlayer`, `GreedyPlayer` with win guardrail, `PROFILES` registry
+- `tests/test_ai.py` — probe 1 (win guardrail) written; all profiles pass
 
 **Remaining:**
-- Implement `wahoo/ai.py` with `RandomPlayer` and `GreedyPlayer`
-- Add per-slot AI selection to `play.py`
-- Write self-play runner (can live in `wahoo/selfplay.py` or a script)
-- Write scenario probe tests in `tests/test_ai.py`
-- Optional: named profiles, expectimax tier
+- `tests/test_ai.py` probes 2–6 (center temptation, capture vs deploy, finish or fight, center denial, threat escape)
+- Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot AI dispatch
+- `wahoo/selfplay.py` headless N-game runner
+- Run 50-game self-play to verify win-rate balance across profiles
+- `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
+- Hook `compute_turn_record()` into `play.py`'s `take_turn()`
+- Optional: `ExpectimaxPlayer` (stretch goal)
 
 ### Phase 2a — Godot Bootstrap — *Not started*
 

@@ -3,10 +3,12 @@ AI player classes and supporting infrastructure for Wahoo.
 
 Build order (per AI_PLAYER_BUILD_PLAN.md):
   1. _marble_progress(), compute_exposure()  ✓
-  2. compute_features()                      ← current
-  3. RandomPlayer, GreedyPlayer + profiles
-  4. play.py per-slot dispatch
-  5. selfplay.py
+  2. compute_features()                      ✓
+  3. RandomPlayer, GreedyPlayer + profiles   ✓
+  4. tests/test_ai.py probes 2–6            ← next
+  5. play.py per-slot dispatch
+  6. selfplay.py
+  7. stats.py
 """
 
 from .game_state import (

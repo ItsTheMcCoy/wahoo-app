@@ -120,19 +120,17 @@ Two detailed specs drive all new code. **Read them before writing anything in ai
 
 ## Build Order for AI System (Sequential — Dependencies Matter)
 
-1. `compute_exposure()` and `_marble_progress()` helpers in `ai.py`
-2. `compute_features()` — all 10 features using those helpers
-3. `RandomPlayer` and `GreedyPlayer` with Balanced Pragmatist weights only
-4. `tests/test_ai.py` probe 1: win guardrail — run and confirm passing
-5. Probe 2: center temptation — run and confirm
-6. Remaining probes 3–6
-7. Remaining 7 profile weight dicts; add to `PROFILES`
-8. Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
-9. `wahoo/selfplay.py` headless runner
-10. Run 50-game self-play, verify rough win-rate balance across profiles
-11. `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
-12. Hook `compute_turn_record()` into `play.py`'s `take_turn()`
-13. `ExpectimaxPlayer` (stretch goal, after everything else is stable)
+1. ✅ `compute_exposure()` and `_marble_progress()` helpers in `ai.py`
+2. ✅ `compute_features()` — all 10 features using those helpers
+3. ✅ `RandomPlayer` and `GreedyPlayer` with all 8 profile weight dicts; `PROFILES` registry complete
+4. ✅ `tests/test_ai.py` probe 1: win guardrail — passing for all profiles
+5. ⬜ Probes 2–6 in `tests/test_ai.py` (center temptation, capture vs deploy, finish or fight, center denial, threat escape)
+6. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
+7. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
+8. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
+9. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
+10. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
+11. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
 
 ## The 10 Strategy Features (Summary)
 
