@@ -27,6 +27,7 @@ from wahoo.play import (
     take_turn,
     normalize_player_settings,
     configure_players,
+    prompt_human_reasoning,
 )
 from unittest.mock import patch
 import json
@@ -491,6 +492,37 @@ def test_take_turn_routes_ai_slot_through_profile():
     assert_eq(state.marbles[0][0], loc_track(0), "AI move applied")
 
 
+def test_prompt_human_reasoning_optional_blank_or_text():
+    print("test: optional human reasoning accepts blank or text")
+    settings = {"auto_roll": False}
+
+    with patch("wahoo.play.input", side_effect=[""]):
+        blank = prompt_human_reasoning(settings)
+    assert_eq(blank, None, "blank reasoning skipped")
+
+    with patch("wahoo.play.input", side_effect=["felt safer"]):
+        note = prompt_human_reasoning(settings)
+    assert_eq(note, "felt safer", "reasoning text captured")
+
+
+def test_take_turn_captures_human_reasoning_for_manual_multi_choice():
+    print("test: turn captures optional human reasoning for manual multi-choice")
+    state = GameState()
+    state.current_player = 0
+    state.pending_roll = 1
+    state.marbles[0][0] = loc_track(5)
+    settings = {"auto_roll": False, "players": ["human", "human", "human", "human"]}
+    rng = SeqRng([6])
+
+    # Enter to roll, choose first listed move, then provide optional reasoning.
+    with patch("wahoo.play.input", side_effect=["", "1", "building pressure"]):
+        result = take_turn(state, rng, settings)
+
+    event = result["events"][0]
+    assert_eq(event["human_reasoning"], "building pressure", "reasoning stored on event")
+    assert_eq(event["human_reasoning_non_optimal"], True, "reasoning marked non-optimal")
+
+
 def test_prompt_replay_path_requires_filename():
     print("test: replay prompt requires a filename")
     settings = {"auto_roll": False}
@@ -776,6 +808,8 @@ def main():
         test_legacy_computer_setting_maps_to_balanced_slots,
         test_configure_players_accepts_human_and_profiles,
         test_take_turn_routes_ai_slot_through_profile,
+        test_prompt_human_reasoning_optional_blank_or_text,
+        test_take_turn_captures_human_reasoning_for_manual_multi_choice,
         test_prompt_replay_path_requires_filename,
         test_prompt_replay_index_accepts_blank_or_number,
         test_global_toggle_command_flips_auto_roll_during_prompt,

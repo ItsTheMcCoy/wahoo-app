@@ -22,7 +22,7 @@ Roll the die and move one marble according to the rules below. **If you can make
 
 **On the track.** Move forward exactly the number of squares you rolled. You can't land on or pass over your own marbles. Landing on an opponent's marble sends it back to their base (you can pass over opponents without effect).
 
-**Into home.** Once a marble reaches the last square before your starting square, it must turn into your home row on its next move. You don't need an exact roll to turn in, but you do need an exact roll to land in any home slot — you can't overshoot. If you can't make a legal home move, that marble can't move at all that turn.
+**Into home.** Once a marble reaches its home-entry trigger square, it must turn into your home row on its next move. You don't need an exact roll to turn in, but you do need an exact roll to land in any home slot — you can't overshoot. If you can't make a legal home move, that marble can't move at all that turn.
 
 **Inside home.** Marbles in your home row are safe and can't be captured. You can keep advancing them deeper with exact rolls.
 

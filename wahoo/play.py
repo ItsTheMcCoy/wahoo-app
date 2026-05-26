@@ -492,6 +492,18 @@ def choose_move(moves: list, player: int, roll: int, settings: dict) -> dict:
         print(f"Invalid. Enter 1..{len(moves)}.")
 
 
+def prompt_human_reasoning(settings: dict) -> str | None:
+    """Optional free-text rationale for a manually selected move.
+
+    This note is captured as training context and is not treated as optimal play.
+    """
+    note = read_user_input(
+        "Optional reasoning for this choice (press Enter to skip): ",
+        settings,
+    ).strip()
+    return note or None
+
+
 def choose_next_exit_base_move(state: GameState, player: int, moves: list) -> dict:
     """Pick the next marble (rotating by id) among exit_base moves."""
     exit_moves = [m for m in moves if m["kind"] == "exit_base"]
@@ -767,6 +779,8 @@ def format_turn_summary(turn_result: dict) -> str:
         if event["reroll"]:
             line += " -> rolled a 6, goes again"
         lines.append(line)
+        if event.get("human_reasoning"):
+            lines.append(f"    Human note: {event['human_reasoning']}")
     return "\n".join(lines)
 
 
@@ -799,32 +813,44 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         moves = legal_moves(state, player, roll)
         if not moves:
             outcome = "no legal move"
+            human_reasoning = None
+            reasoning_non_optimal = None
         else:
             if player_type == HUMAN_PLAYER_TYPE:
                 auto_move = maybe_auto_choose_move(state, player, roll, moves)
                 if auto_move is not None:
                     chosen = auto_move
                     outcome = f"auto-selected {format_move(chosen, player, roll)}"
+                    human_reasoning = None
+                    reasoning_non_optimal = None
                 else:
                     print(f"{player_label(player)} rolled a {roll}.")
                     prompt_moves = build_prompt_moves(state, player, roll, moves)
                     chosen = choose_move(prompt_moves, player, roll, settings)
                     outcome = format_move(chosen, player, roll)
+                    human_reasoning = prompt_human_reasoning(settings)
+                    reasoning_non_optimal = True if human_reasoning is not None else None
             else:
                 chosen = PROFILES[player_type].choose_move(state, player, roll, moves)
                 outcome = f"[{player_type}] {format_move(chosen, player, roll)}"
+                human_reasoning = None
+                reasoning_non_optimal = None
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
             if state.player_won(player):
                 turn_result["won"] = True
 
-        turn_result["events"].append({
+        event_payload = {
             "roll": roll,
             "outcome": outcome,
             "reroll": (roll == 6 and not turn_result["won"]),
             "state": serialize_game_state(state),
-        })
+        }
+        if human_reasoning is not None:
+            event_payload["human_reasoning"] = human_reasoning
+            event_payload["human_reasoning_non_optimal"] = reasoning_non_optimal
+        turn_result["events"].append(event_payload)
 
         event_result = {
             "player": player,
@@ -927,6 +953,8 @@ def main():
                 "outcome": event["outcome"],
                 "reroll": event["reroll"],
                 "won": turn_result["won"],
+                "human_reasoning": event.get("human_reasoning"),
+                "human_reasoning_non_optimal": event.get("human_reasoning_non_optimal"),
             })
             write_recording(recording, recording_path)
         if turn_result["won"]:

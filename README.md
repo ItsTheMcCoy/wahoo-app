@@ -66,6 +66,37 @@ Auto-roll behavior:
 - Manual move choices are numbered `1..N`.
 - `/auto` can be used during startup, replay prompts, and turn prompts.
 
+Human move reasoning capture:
+
+- When a human turn has multiple legal moves and you choose manually, the game offers an optional free-text reasoning prompt.
+- Press Enter to skip, or enter any note.
+- The note is saved in replay history as human context and explicitly marked as non-optimal (`human_reasoning_non_optimal: true`).
+- This supports future AI-behavior modeling without labeling human notes as best-play targets.
+
+## Export Human Reasoning Data
+
+Export recorded human reasoning notes into JSONL for downstream analysis or training prep:
+
+```powershell
+python -m wahoo.reasoning_export --input game2.json --output human_reasoning_examples.jsonl
+```
+
+You can also batch-export from multiple replays:
+
+```powershell
+python -m wahoo.reasoning_export --input-glob "game*.json" --output human_reasoning_examples.jsonl
+```
+
+Each JSONL row includes:
+
+- source file and entry index
+- player and roll
+- reasoning text
+- explicit non-optimal label (`human_reasoning_non_optimal: true`, `is_optimal_target: false`)
+- state before/after
+- legal move list
+- inferred chosen move (when inferable from state transition)
+
 AI player behavior:
 
 - New games can mix human seats with profiles from `wahoo.ai.PROFILES`.
@@ -151,7 +182,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 57 passing tests.
+At the time this documentation was synchronized, the suite contained 63 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 
@@ -168,6 +199,7 @@ python -m tests.test_wahoo
 - `documents/AI_Stragegy_Spec.md` — strategy dimensions and scenario probe bank. The filename currently contains the misspelling `Stragegy`.
 - `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
 - `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
+- `wahoo/reasoning_export.py` — JSONL exporter for human move reasoning notes.
 
 ## Notes
 

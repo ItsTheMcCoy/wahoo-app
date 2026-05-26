@@ -29,10 +29,13 @@ Core game logic and a console-mode game loop, no graphics.
 - Home-entry capture bug fix
 - `pending_roll` cleanup
 - Replay recording and playback support
+- Replay-by-index load with back/next navigation and decision-view resume
 - Startup replay and computer self-play options
 - Auto-roll toggle across prompts
 - Project reorganized into package layout (`wahoo/` + `tests/`)
 - Per-seat player configuration in `wahoo/play.py`; each slot can be `human` or a profile from `wahoo.ai.PROFILES`
+- Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context)
+- `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 
 **Repo status:** Local and GitHub are now synchronized on `main`.
 
@@ -174,7 +177,9 @@ Current files in the project:
 | `wahoo/rules.py` | `legal_moves()` and `apply_move()` | In repo |
 | `wahoo/play.py` | Console game loop | In repo |
 | `wahoo/selfplay.py` | Headless N-game AI self-play CLI runner | In repo |
+| `wahoo/reasoning_export.py` | Export human move-reasoning examples from replays to JSONL | In repo |
 | `tests/test_wahoo.py` | Rule and behavior test suite | In repo |
+| `tests/test_reasoning_export.py` | Reasoning export utility tests | In repo |
 | `README.md` | Run/test instructions and current features | In repo |
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
 | `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |

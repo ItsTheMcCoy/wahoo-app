@@ -449,8 +449,8 @@ All probes are deterministic (GreedyPlayer is deterministic given fixed state + 
 **Probe 1 — Win guardrail (all profiles)**
 
 State: Player 0 has marbles at `HOME(0)`, `HOME(1)`, `HOME(2)`, `BASE`. Roll: `3`.
-`HOME(2) + 3 = HOME(5)` would overshoot. Set `HOME(0)`, `HOME(1)`, `HOME(3)`, `TRACK(55)`. Roll: `1`.
-The `TRACK(55)` marble at home_entry for player 0 will enter HOME(0) on roll 1 — but HOME(0) is occupied.
+`HOME(2) + 3 = HOME(5)` would overshoot. Set `HOME(0)`, `HOME(1)`, `HOME(3)`, `TRACK(home_entry(0))`. Roll: `1`.
+The `TRACK(home_entry(0))` marble for player 0 will enter HOME(0) on roll 1 — but HOME(0) is occupied.
 Better setup: marbles at `HOME(0)`, `HOME(1)`, `HOME(2)`, `TRACK(home_entry(0))`. Roll: `2`. The TRACK marble enters HOME and advances to `HOME(1)` — but that's occupied. Use roll `3` to reach `HOME(3)` (deepest) — that's the win.
 
 ```python

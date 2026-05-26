@@ -12,9 +12,13 @@ wahoo/
   rules.py        — legal_moves() and apply_move() — the canonical rules engine
   play.py         — Console game loop, rendering, per-seat human/AI input
   ai.py           — AI player classes, feature scoring, profiles (implemented)
+  selfplay.py     — Headless N-game AI runner (implemented)
+  reasoning_export.py — JSONL exporter for human move-reasoning samples
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
   test_ai.py      — AI scenario probe suite (probes 1-6 implemented)
+  test_selfplay.py — Self-play runner and CLI tests
+  test_reasoning_export.py — Reasoning export utility tests
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
@@ -23,14 +27,13 @@ documents/
   DEVELOPMENT_PLAN.md         — Overall project roadmap
 
 Planned but not yet present in `wahoo/`:
-- `selfplay.py` — headless N-game runner for win-rate analysis
 - `stats.py` — per-game stat tracking and CSV export
 ```
 
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 43 tests passing under `python -m pytest`.
+Current verified test status: 63 tests passing under `python -m pytest`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -76,7 +79,7 @@ HOME_SLOTS = 4
 MARBLES_PER_PLAYER = 4
 NUM_PLAYERS = 4
 base_exit(p)   = p * 14   # where player p's marbles enter the loop
-home_entry(p)  = (p * 14 - 1) % 56   # square before own base-exit; forced home turn
+home_entry(p)  = (p * 14 - 2) % 56   # home-entry trigger square in current board mapping
 center_exit_dest(p) = ((p-1) % 4) * 14 + 5   # where center marble lands on roll 1
 ```
 

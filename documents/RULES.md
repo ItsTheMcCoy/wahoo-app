@@ -342,7 +342,7 @@ Documented here to remove ambiguity. These are consequences of the rules above, 
 - **Base** — A player's start pen, holding marbles that have not yet entered the track.
 - **Base-exit square** — The track square immediately adjacent to a player's base; offset 0 of their segment.
 - **Home / home row** — A player's 4-slot column where marbles end the race. Owned by one player.
-- **Home-entry square** — The track square immediately before a player's own base-exit; the square from which the forced home turn occurs.
+- **Home-entry square** — The player's home-entry trigger square on the loop; owner marbles can land on it but are forced into home if they try to move beyond it.
 - **Center / center hole** — The single off-loop position at the middle of the board. Holds one marble.
 - **Capture** — Sending an opponent's marble back to its base by landing on or passing it under the rules above.
 - **Segment** — The 14-square portion of the loop owned by one player.
