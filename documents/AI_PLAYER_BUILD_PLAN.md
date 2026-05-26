@@ -1,6 +1,6 @@
 # AI Player Build Plan
 
-Concrete implementation spec for computer opponents in the Wahoo Python prototype. This document drives the code in `wahoo/ai.py`, `wahoo/selfplay.py`, and `tests/test_ai.py`. It is grounded in the design framework in `AI_Strategy_Spec.md` and the rules in `RULES.md`.
+Concrete implementation spec for computer opponents in the Wahoo Python prototype. This document drives the code in `wahoo/ai.py`, `wahoo/selfplay.py`, and `tests/test_ai.py`. It is grounded in the design framework in `AI_Stragegy_Spec.md` (filename currently misspelled) and the rules in `RULES.md`.
 
 ---
 
@@ -14,7 +14,7 @@ wahoo/selfplay.py    — headless N-game runner for win-rate analysis
 tests/test_ai.py     — scenario probe suite
 ```
 
-The existing `choose_computer_move()` in `play.py` is replaced by per-slot dispatch once `ai.py` is in place.
+The existing `choose_computer_move()` in `play.py` is still active today; per-slot AI dispatch remains planned work.
 
 ---
 
@@ -71,7 +71,7 @@ def choose_move(self, state, player, roll, moves):
             return move
 
     phase = _game_phase(state, player)
-    scores = [self._score(state, player, roll, m, phase) for m in moves]
+    scores = [self._score(state, player, roll, m, moves, phase) for m in moves]
     return moves[scores.index(max(scores))]
 ```
 
@@ -80,8 +80,8 @@ Ties in `max()` resolve to the first tied move in the list (list order is determ
 ### 4.3 `_score`
 
 ```python
-def _score(self, state, player, roll, move, phase):
-    features = compute_features(state, player, roll, move)
+def _score(self, state, player, roll, move, all_moves, phase):
+    features = compute_features(state, player, roll, move, all_moves)
     base = sum(self.weights[k] * features[k] for k in self.weights)
     modifier = sum(self.phase_weights[phase].get(k, 0.0) * features[k] for k in features)
     return base + modifier
@@ -124,7 +124,7 @@ Implementation note: `GameState.clone()` already exists for this purpose. The ma
 ### 6.1 Entry point
 
 ```python
-def compute_features(state: GameState, player: int, roll: int, move: dict) -> dict:
+def compute_features(state: GameState, player: int, roll: int, move: dict, all_moves: list) -> dict:
     """Return a 10-key float dict for one candidate move."""
 ```
 
@@ -161,7 +161,7 @@ divided by
     (NUM_PLAYERS - 1) * 6   # maximum possible threat pairs
 ```
 
-This is an approximation — it counts raw landing threats without simulating home-entry diversions for opponents. Accurate enough for a heuristic.
+This remains an approximation (for example, it does not model opponent self-blocking), but it does account for home-entry diversion checks so opponents are not counted as threats when their path would be forced into home instead of landing on `loop_idx`.
 
 ### 6.4 The 10 features
 
@@ -310,7 +310,7 @@ Phase is determined per-turn before scoring. Late-game boosting HOME and FIN ens
 
 ## 8. Profile Weight Table
 
-Taken directly from `AI_Strategy_Spec.md`. Stored as module-level constants in `ai.py`.
+Taken directly from `AI_Stragegy_Spec.md` (filename currently misspelled). Stored as module-level constants in `ai.py`.
 
 | Profile            | DEP | RUN | SPR | CAP | SAFE | CTR | DEN | FLOW | HOME | FIN |
 |--------------------|-----|-----|-----|-----|------|-----|-----|------|------|-----|

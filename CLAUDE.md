@@ -11,22 +11,26 @@ wahoo/
   game_state.py   — Board model: GameState, Location types, helper functions
   rules.py        — legal_moves() and apply_move() — the canonical rules engine
   play.py         — Console game loop, rendering, human/computer input
-  ai.py           — AI player classes (TO BE CREATED)
-  selfplay.py     — Headless N-game runner for win-rate analysis (TO BE CREATED)
-  stats.py        — Per-game stat tracking and CSV export (TO BE CREATED)
+  ai.py           — AI player classes, feature scoring, profiles (implemented)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
-  test_ai.py      — AI scenario probe suite (TO BE CREATED)
+  test_ai.py      — AI scenario probe suite (probe 1 implemented)
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
   STAT_TRACKING_PLAN.md       — Full implementation spec for stats.py and recording extensions
-  AI_Strategy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank
+  AI_Stragegy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank (filename currently misspelled)
   DEVELOPMENT_PLAN.md         — Overall project roadmap
+
+Planned but not yet present in `wahoo/`:
+- `selfplay.py` — headless N-game runner for win-rate analysis
+- `stats.py` — per-game stat tracking and CSV export
 ```
 
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
+
+Current verified test status: 35 tests passing under `python -m pytest -q`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -78,21 +82,21 @@ center_exit_dest(p) = ((p-1) % 4) * 14 + 5   # where center marble lands on roll
 
 ## Implementation Plans
 
-Two detailed specs drive all new code. **Read them before writing anything in ai.py or stats.py.**
+Two detailed specs drive remaining AI/stat work. **Read them before changing ai.py, play.py AI dispatch, selfplay.py, or stats.py.**
 
-### AI_PLAYER_BUILD_PLAN.md covers
+### AI_PLAYER_BUILD_PLAN.md covers / current status
 
-- `RandomPlayer` — `random.choice(moves)`
-- `GreedyPlayer(weights, phase_weights)` — scores moves via `compute_features()`, hard-rule win guardrail
-- `compute_features(state, player, roll, move, all_moves)` — returns 10-key float dict
-- `compute_exposure(state, player, loop_idx)` — capture threat helper
-- `_marble_progress(state, player, marble_id)` — progress helper (0.0–1.0)
-- 8 named profile weight vectors (Sprinter, Swarm, Assassin, Shortcut Gambler, Tortoise, Gatekeeper, Endgame Engineer, Balanced Pragmatist)
-- `PROFILES` dict mapping name strings to pre-configured `GreedyPlayer` instances
-- Phase modifiers: early/mid/late based on marbles-in-home count
-- `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
-- `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
-- 6 scenario probe tests in `tests/test_ai.py`
+- ✅ `RandomPlayer` — `random.choice(moves)`
+- ✅ `GreedyPlayer(weights, phase_weights)` — scores moves via `compute_features()`, hard-rule win guardrail
+- ✅ `compute_features(state, player, roll, move, all_moves)` — returns 10-key float dict
+- ✅ `compute_exposure(state, player, loop_idx)` — capture threat helper
+- ✅ `_marble_progress(state, player, marble_id)` — progress helper (0.0–1.0)
+- ✅ 8 named profile weight vectors (Sprinter, Swarm, Assassin, Shortcut Gambler, Tortoise, Gatekeeper, Endgame Engineer, Balanced Pragmatist)
+- ✅ `PROFILES` dict mapping name strings to pre-configured player instances, including `random`
+- ✅ Phase modifiers: early/mid/late based on marbles-in-home count
+- ⬜ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
+- ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
+- ⬜ Remaining scenario probes in `tests/test_ai.py`; only probe 1 exists now
 
 ### STAT_TRACKING_PLAN.md covers
 

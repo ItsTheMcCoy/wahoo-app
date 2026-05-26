@@ -271,7 +271,7 @@ This section is for AI authors building computer opponents. It establishes vocab
 
 ### 8.1 Action Space
 
-An AI plays by implementing a `choose_move(state, moves) -> Move` function. The action space is small and discrete: typically 0–4 moves to choose from per turn, occasionally more when multiple marbles have legal moves. There is no continuous control.
+An AI plays by implementing a `choose_move(state, player, roll, moves) -> Move` function. The action space is small and discrete: typically 0–4 moves to choose from per turn, occasionally more when multiple marbles have legal moves. There is no continuous control.
 
 ### 8.2 Randomness Model
 

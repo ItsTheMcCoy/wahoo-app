@@ -43,26 +43,26 @@ Core game logic and a console-mode game loop, no graphics.
 
 Build and validate computer opponents in the Python prototype before the Godot port. This serves two goals: makes the console game immediately playable for solo testing, and produces a validated algorithm + scenario tests that port mechanically to GDScript in Phase 3.
 
-The full design framework, strategy dimensions, playstyle profiles, and scenario probes are in `documents/AI_Strategy_Spec.md`. The metric/logging schema for evaluating AI quality is in `documents/wahoo_strategy_metric_tracking_agent_spec.md`.
+The full design framework, strategy dimensions, playstyle profiles, and scenario probes are in `documents/AI_Stragegy_Spec.md` (filename currently misspelled). The metric/logging schema for evaluating AI quality is in `documents/wahoo_strategy_metric_tracking_agent_spec.md`.
 
 **Tier 1 — Random (baseline)**
-- `RandomPlayer` in `wahoo/ai.py`: `choose_move(state, moves) -> Move` picks uniformly at random
+- `RandomPlayer` in `wahoo/ai.py`: `choose_move(state, player, roll, moves) -> Move` picks uniformly at random
 - Wire into `play.py` as a selectable player type per slot (human / random / greedy)
 - Confirms the game loop is AI-compatible without any heuristic noise
 
 **Tier 2 — Greedy heuristic**
 - `GreedyPlayer`: score each legal move with a hand-crafted utility function
 - Hard rule: always take an immediate winning move (overrides all heuristic weights)
-- Feature handles from `RULES.md` §8.3 and `AI_Strategy_Spec.md`:
+- Feature handles from `RULES.md` §8.3 and `AI_Stragegy_Spec.md`:
   - Captures (weight by victim's progress — high-progress captures score higher)
   - Center entry (high value; tempered by whether the marble has used its window)
   - Net square advancement toward home
   - Capture exposure penalty (landing squares reachable by opponents on next turn)
   - Home-lane progress (weighted higher late-game via phase modifier)
-- Validate against the scenario probe bank in `AI_Strategy_Spec.md` §Validation
+- Validate against the scenario probe bank in `AI_Stragegy_Spec.md` §Validation
 
 **Tier 2b — Named playstyle profiles (optional)**
-- Profiles (Sprinter, Assassin, Tortoise, Balanced Pragmatist, etc.) are weight vectors over the 10 strategy dimensions defined in `AI_Strategy_Spec.md`
+- Profiles (Sprinter, Assassin, Tortoise, Balanced Pragmatist, etc.) are weight vectors over the 10 strategy dimensions defined in `AI_Stragegy_Spec.md`
 - Wire into `GreedyPlayer` as configurable weight sets; one profile = one constructor argument
 - Enables human vs. distinct AI personalities in the console game
 
@@ -73,7 +73,7 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 
 **Self-play and validation infrastructure**
 - Self-play runner: run N games between configurable AI slots, collect win-rate stats
-- Scenario probe runner: feed hand-crafted states from `AI_Strategy_Spec.md` and assert profile-typical choices at the expected frequency
+- Scenario probe runner: feed hand-crafted states from `AI_Stragegy_Spec.md` and assert profile-typical choices at the expected frequency
 - Log format from `wahoo_strategy_metric_tracking_agent_spec.md` (game/player/turn tables) for post-hoc strategy analysis
 
 **Done:**
@@ -123,7 +123,7 @@ Port the validated Python AI from Phase 1b into GDScript and wire it into the Go
 - Optional: named playstyle profiles (Sprinter, Assassin, Tortoise, etc.) as selectable AI personalities
 - Optional: one-ply expectimax if greedy feels too weak
 
-The full design framework, strategy dimensions, playstyle profiles, scenario probes, and logging schema are in `documents/AI_Strategy_Spec.md` and `documents/wahoo_strategy_metric_tracking_agent_spec.md`. The Python prototype in Phase 1b is the reference implementation — if behavior differs in Godot, the Python behavior wins.
+The full design framework, strategy dimensions, playstyle profiles, scenario probes, and logging schema are in `documents/AI_Stragegy_Spec.md` and `documents/wahoo_strategy_metric_tracking_agent_spec.md`. The Python prototype in Phase 1b is the reference implementation — if behavior differs in Godot, the Python behavior wins.
 
 ### Phase 4 — LAN Multiplayer — *Not started*
 
@@ -170,7 +170,7 @@ Current files in the project:
 | `README.md` | Run/test instructions and current features | In repo |
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
 | `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |
-| `documents/AI_Strategy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema | In repo |
+| `documents/AI_Stragegy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema (filename currently misspelled) | In repo |
 | `documents/AI_PLAYER_BUILD_PLAN.md` | Implementation spec for `wahoo/ai.py`: class interfaces, feature formulas, profile weights, test plan | In repo |
 | `documents/STAT_TRACKING_PLAN.md` | Per-game/player/turn stat tracking design: extended recording schema, `wahoo/stats.py` plan, CSV export, style vector analysis | In repo |
 | `documents/wahoo_strategy_metric_tracking_agent_spec.md` | Metric tracking plan spec: data tables, decision/capture/shortcut logging, analysis guidance | In repo |
