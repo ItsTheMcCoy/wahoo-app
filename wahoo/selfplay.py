@@ -449,6 +449,11 @@ def format_benchmark_summary(summary: BenchmarkSummary) -> str:
                 f"{PLAYER_NAMES[seat]} {row.seat_wins[seat]}/{row.seat_games[seat]}"
             )
         lines.append("      by seat: " + " | ".join(seat_bits))
+        lines.append(
+            f"      avg turns {row.avg_turns:.1f} | "
+            f"avg rolls {row.avg_rolls:.1f} | "
+            f"avg captures {row.avg_captures:.1f}"
+        )
 
     return "\n".join(lines)
 
