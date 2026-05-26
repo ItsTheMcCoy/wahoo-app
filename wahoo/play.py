@@ -17,6 +17,13 @@ try:
     )
     from .rules import legal_moves, apply_move
     from .ai import PROFILES
+    from .stats import (
+        append_stats_csv,
+        compile_game_stats,
+        compute_turn_record,
+        print_game_report,
+        turn_record_to_event,
+    )
 except ImportError:
     from game_state import (
         GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
@@ -24,6 +31,13 @@ except ImportError:
     )
     from rules import legal_moves, apply_move
     from ai import PROFILES
+    from stats import (
+        append_stats_csv,
+        compile_game_stats,
+        compute_turn_record,
+        print_game_report,
+        turn_record_to_event,
+    )
 
 
 PLAYER_NAMES = ["Red", "Green", "Yellow", "Blue"]
@@ -45,6 +59,7 @@ __        __    _
 
 DEFAULT_RECORDING_PATH = "wahoo_history.json"
 RECORDING_BASENAME = "game"
+DEFAULT_STATS_CSV_PATH = "wahoo_stats.csv"
 AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
 HUMAN_PLAYER_TYPE = "human"
 DEFAULT_AI_PROFILE = "balanced"
@@ -241,6 +256,8 @@ def run_replay(
                     print(
                         f"Start: {player_label(event['starting_player'])} won the opening roll with {event['top_roll']}."
                     )
+                elif event["type"] == "turn_detail":
+                    print(format_turn_detail_summary(event))
                 else:
                     print(format_turn_summary({
                         "player": event["player"],
@@ -283,6 +300,8 @@ def run_replay(
             print(
                 f"Start: {player_label(event['starting_player'])} won the opening roll with {event['top_roll']}."
             )
+        elif event["type"] == "turn_detail":
+            print(format_turn_detail_summary(event))
         else:
             print(format_turn_summary({
                 "player": event["player"],
@@ -784,16 +803,31 @@ def format_turn_summary(turn_result: dict) -> str:
     return "\n".join(lines)
 
 
+def format_turn_detail_summary(event: dict) -> str:
+    """Human-readable line for replaying a turn_detail event."""
+    decision = event.get("decision_type", "mixed")
+    player_type = event.get("player_type", "unknown")
+    chosen = event.get("chosen_kind", "?")
+    count = event.get("num_legal_moves", 0)
+    return (
+        f"Turn detail: [{player_type}] decision={decision}, "
+        f"chosen={chosen}, legal_moves={count}"
+    )
+
+
 def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
     turn_result = {
         "player": player,
         "events": [],
+        "detail_events": [],
         "won": False,
     }
+    roll_index = 0
 
     while True:
+        roll_index += 1
         player_type = player_type_for(settings, player)
         if should_auto_roll_for(settings, player):
             print(f"\n--- {player_label(player)}'s turn. Auto-rolling.")
@@ -811,6 +845,7 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         else:
             roll = rng.randint(1, 6)
         moves = legal_moves(state, player, roll)
+        detail_event = None
         if not moves:
             outcome = "no legal move"
             human_reasoning = None
@@ -836,6 +871,22 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
                 human_reasoning = None
                 reasoning_non_optimal = None
 
+            if settings.get("track_stats"):
+                detail_index = settings.get("_turn_detail_index", 0) + 1
+                settings["_turn_detail_index"] = detail_index
+                detail = compute_turn_record(
+                    game_id=settings.get("_game_id", "game"),
+                    turn_index=detail_index,
+                    state_before=state.clone(),
+                    player=player,
+                    player_type=player_type,
+                    roll=roll,
+                    roll_index=roll_index,
+                    all_moves=moves,
+                    chosen_move=chosen,
+                )
+                detail_event = turn_record_to_event(detail)
+
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
             if state.player_won(player):
@@ -850,6 +901,9 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         if human_reasoning is not None:
             event_payload["human_reasoning"] = human_reasoning
             event_payload["human_reasoning_non_optimal"] = reasoning_non_optimal
+        if detail_event is not None:
+            event_payload["turn_detail"] = detail_event
+            turn_result["detail_events"].append(detail_event)
         turn_result["events"].append(event_payload)
 
         event_result = {
@@ -872,7 +926,12 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
 def main():
     args = sys.argv[1:]
     recording_path = None
-    settings = {"auto_roll": False, "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS}
+    settings = {
+        "auto_roll": False,
+        "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS,
+        "track_stats": True,
+        "stats_csv_path": DEFAULT_STATS_CSV_PATH,
+    }
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
         replay_index = None
@@ -888,6 +947,13 @@ def main():
         recording, state = run_replay(replay_path, settings, replay_index=replay_index)
         if recording is None:
             return
+        settings["_game_id"] = os.path.splitext(os.path.basename(replay_path))[0]
+        detail_turns = [
+            e.get("event", {}).get("turn_index")
+            for e in recording.get("entries", [])
+            if e.get("event", {}).get("type") == "turn_detail"
+        ]
+        settings["_turn_detail_index"] = max((i for i in detail_turns if isinstance(i, int)), default=0)
         recording_path = replay_path
         rng = random.Random()
         if replay_index is None:
@@ -906,6 +972,13 @@ def main():
             recording, state = run_replay(replay_path, settings, replay_index=replay_index)
             if recording is None:
                 return
+            settings["_game_id"] = os.path.splitext(os.path.basename(replay_path))[0]
+            detail_turns = [
+                e.get("event", {}).get("turn_index")
+                for e in recording.get("entries", [])
+                if e.get("event", {}).get("type") == "turn_detail"
+            ]
+            settings["_turn_detail_index"] = max((i for i in detail_turns if isinstance(i, int)), default=0)
             recording_path = replay_path
             if replay_index is None:
                 print(f"Continuing recorded game from {replay_path}")
@@ -920,11 +993,14 @@ def main():
             state = GameState()
             state.current_player, top_roll = decide_starting_player(rng, settings)
             recording = {
-                "version": 1,
+                "version": 2,
                 "seed": int(seed_arg) if seed_arg else None,
+                "players": list(settings["players"]),
                 "entries": [],
             }
             recording_path = make_recording_path()
+            settings["_game_id"] = os.path.splitext(os.path.basename(recording_path))[0]
+            settings["_turn_detail_index"] = 0
             append_recording_entry(recording, state, {
                 "type": "start",
                 "starting_player": state.current_player,
@@ -956,9 +1032,19 @@ def main():
                 "human_reasoning": event.get("human_reasoning"),
                 "human_reasoning_non_optimal": event.get("human_reasoning_non_optimal"),
             })
+            if settings.get("track_stats") and event.get("turn_detail") is not None:
+                append_recording_entry(recording, snapshot, event["turn_detail"])
             write_recording(recording, recording_path)
         if turn_result["won"]:
             print(f"\n*** {player_label(turn_result['player'])} WINS! ***")
+            if settings.get("track_stats"):
+                try:
+                    summary = compile_game_stats(recording)
+                    print_game_report(summary)
+                    append_stats_csv(summary, settings.get("stats_csv_path", DEFAULT_STATS_CSV_PATH))
+                    print(f"Stats appended to {settings.get('stats_csv_path', DEFAULT_STATS_CSV_PATH)}")
+                except ValueError as exc:
+                    print(f"Stats unavailable: {exc}")
             sys.exit(0)
 
 

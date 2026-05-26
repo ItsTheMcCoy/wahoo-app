@@ -44,6 +44,7 @@ Core game logic and a console-mode game loop, no graphics.
 
 **Remaining for phase completion:**
 - Play 2-3 full games through `python -m wahoo.play` (run from repo root; if inside `wahoo/`, use `python play.py`) to surface any rule edge cases not covered by tests
+- Play 2-3 full games to produce reasoning data
 - Keep docs current as rules/UI evolve
 
 ### Phase 1b — Python AI Opponents — *In progress*
@@ -95,11 +96,12 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `[C] Computer self-play` now maps all four seats to the `balanced` AI profile for backward-compatible startup behavior
 - `wahoo/selfplay.py` — headless N-game AI runner with configurable profile slots, deterministic seed support, max-turn safety cap, and compact win-rate summary
 - `tests/test_selfplay.py` — self-play CLI/function coverage added
-- 50-game balanced-vs-balanced-vs-balanced-vs-balanced smoke check completed with seed `20260525`: 50/50 games completed; wins Red 11, Green 16, Yellow 11, Blue 12
+- 50-game balanced-vs-balanced-vs-balanced-vs-balanced smoke check re-run after gameplay bug fix with seed `20260525`: 50/50 games completed; wins Red 11, Green 14, Yellow 12, Blue 13 (avg turns 1219.4, avg rolls 1462.9, avg captures 249.0)
+- `wahoo/stats.py` — implemented `TurnRecord`, `PlayerGameStats`, `GameSummary`, `compute_turn_record()`, `compile_game_stats()`, `print_game_report()`, and `append_stats_csv()`
+- `wahoo/play.py` — turn-detail events (`event.type = "turn_detail"`) now recorded alongside existing turn events; recording header upgraded to version 2 with `players`; post-game stats report + CSV append integrated
+- `tests/test_stats.py` — stats module and CSV/output behavior coverage added
 
 **Remaining:**
-- `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
-- Hook `compute_turn_record()` into `play.py`'s `take_turn()`
 - Optional: `ExpectimaxPlayer` (stretch goal)
 
 ### Phase 2a — Godot Bootstrap — *Not started*
