@@ -128,6 +128,53 @@ def append_recording_entry(recording: dict, state: GameState, event: dict) -> No
     recording["entries"].append(entry)
 
 
+def _state_for_continuation(entry: dict, state: GameState) -> GameState:
+    """Return the state that should be used when resuming from one entry.
+
+    Older recordings captured board snapshots before current_player advanced to
+    the next seat at turn end. For non-reroll, non-winning turn events, resuming
+    should start with the next player.
+    """
+    event = entry.get("event", {})
+    if event.get("type") != "turn":
+        return state
+    if event.get("won") or event.get("reroll"):
+        return state
+
+    player = event.get("player")
+    if isinstance(player, int) and 0 <= player < NUM_PLAYERS:
+        state.current_player = (player + 1) % NUM_PLAYERS
+    return state
+
+
+def _decision_state_for_entry(recording: dict, entry_index: int) -> GameState:
+    """Rebuild the pre-move decision state for a turn entry.
+
+    The returned state is the board before the recorded turn event, with
+    pending_roll set so the first action after continue uses the recorded roll.
+    """
+    entries = recording.get("entries", [])
+    if entry_index <= 0 or entry_index >= len(entries):
+        raise ValueError("Decision view requires a turn entry with a previous state.")
+
+    entry = entries[entry_index]
+    event = entry.get("event", {})
+    if event.get("type") != "turn":
+        raise ValueError("Decision view is only available for turn entries.")
+
+    previous_state = deserialize_game_state(entries[entry_index - 1]["state"])
+    player = event.get("player")
+    roll = event.get("roll")
+    if not isinstance(player, int) or not (0 <= player < NUM_PLAYERS):
+        raise ValueError("Turn entry has an invalid player.")
+    if not isinstance(roll, int) or not (1 <= roll <= 6):
+        raise ValueError("Turn entry has an invalid roll.")
+
+    previous_state.current_player = player
+    previous_state.pending_roll = roll
+    return previous_state
+
+
 def load_recording_entry(path: str, replay_index: int | None = None) -> tuple[dict, dict, GameState]:
     """Load recording JSON and return one entry/state (last by default)."""
     with open(path, "r", encoding="utf-8") as handle:
@@ -150,7 +197,7 @@ def load_recording_entry(path: str, replay_index: int | None = None) -> tuple[di
                 f"Replay index {replay_index} not found in '{path}'. Available range: {min_idx}..{max_idx}."
             )
 
-    return recording, entry, deserialize_game_state(entry["state"])
+    return recording, entry, _state_for_continuation(entry, deserialize_game_state(entry["state"]))
 
 
 def run_replay(
@@ -166,36 +213,70 @@ def run_replay(
         return None, None
 
     if replay_index is not None:
-        event = selected_entry["event"]
-        print(f"Loaded state index {selected_entry['index']} from {path}")
-        print(render_board(selected_state))
-        if event["type"] == "start":
-            print(
-                f"Start: {player_label(event['starting_player'])} won the opening roll with {event['top_roll']}."
-            )
-        else:
-            print(format_turn_summary({
-                "player": event["player"],
-                "events": [event],
-                "won": event.get("won", False),
-            }))
+        entries = recording["entries"]
+        pos = next((i for i, e in enumerate(entries) if e.get("index") == selected_entry.get("index")), 0)
+        decision_view = False
 
         while True:
-            choice = read_user_input(
-                "Enter [C]ontinue this game or [E]xit replay: ",
-                settings,
-            ).strip().lower()
+            entry = entries[pos]
+            event = entry["event"]
+            continue_state = _state_for_continuation(entry, deserialize_game_state(entry["state"]))
+
+            print(f"Loaded state index {entry['index']} from {path}")
+            if decision_view:
+                try:
+                    decision_state = _decision_state_for_entry(recording, pos)
+                    print(render_board(decision_state))
+                    print(
+                        f"Decision view: {player_label(event['player'])} rolled {event['roll']} and must choose a move."
+                    )
+                    continue_from = decision_state
+                except ValueError as exc:
+                    print(f"Decision view unavailable: {exc}")
+                    decision_view = False
+                    continue
+            else:
+                print(render_board(continue_state))
+                if event["type"] == "start":
+                    print(
+                        f"Start: {player_label(event['starting_player'])} won the opening roll with {event['top_roll']}."
+                    )
+                else:
+                    print(format_turn_summary({
+                        "player": event["player"],
+                        "events": [event],
+                        "won": event.get("won", False),
+                    }))
+                continue_from = continue_state
+
+            prompt = "Enter [B]ack, [N]ext, [D]ecision view, [C]ontinue, or [E]xit replay: "
+            choice = read_user_input(prompt, settings).strip().lower()
+            if choice in ("b", "back"):
+                if pos > 0:
+                    pos -= 1
+                else:
+                    print("Already at the first entry.")
+                continue
+            if choice in ("n", "next"):
+                if pos < len(entries) - 1:
+                    pos += 1
+                else:
+                    print("Already at the last entry.")
+                continue
+            if choice in ("d", "decision"):
+                decision_view = not decision_view
+                continue
             if choice in ("c", "continue"):
-                return recording, selected_state
+                return recording, continue_from
             if choice in ("e", "exit"):
                 return None, None
-            print("Please enter C to continue or E to exit replay.")
+            print("Please enter B, N, D, C, or E.")
 
     print(f"Replaying {len(recording['entries'])} recorded states from {path}")
     last_state = None
     for entry in recording["entries"]:
         state = deserialize_game_state(entry["state"])
-        last_state = state
+        last_state = _state_for_continuation(entry, deserialize_game_state(entry["state"]))
         event = entry["event"]
         print(render_board(state))
         if event["type"] == "start":
@@ -708,7 +789,13 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
                 settings,
                 allow_auto_continue=True,
             )
-        roll = rng.randint(1, 6)
+
+        if state.pending_roll is not None:
+            roll = state.pending_roll
+            state.pending_roll = None
+            print(f"  Using loaded roll {roll}.")
+        else:
+            roll = rng.randint(1, 6)
         moves = legal_moves(state, player, roll)
         if not moves:
             outcome = "no legal move"
@@ -828,7 +915,12 @@ def main():
     while True:
         turn_result = take_turn(state, rng, settings)
         for event in turn_result["events"]:
-            append_recording_entry(recording, deserialize_game_state(event["state"]), {
+            snapshot = deserialize_game_state(event["state"])
+            # Persist the true next player for non-reroll turn events.
+            if not event["reroll"] and not turn_result["won"]:
+                snapshot.current_player = (turn_result["player"] + 1) % NUM_PLAYERS
+
+            append_recording_entry(recording, snapshot, {
                 "type": "turn",
                 "player": turn_result["player"],
                 "roll": event["roll"],

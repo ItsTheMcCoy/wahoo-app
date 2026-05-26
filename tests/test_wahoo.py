@@ -596,6 +596,7 @@ def test_run_replay_can_return_state_for_continue():
             loaded_recording, loaded_state = run_replay(path, {"auto_roll": False})
         assert_eq(loaded_recording["entries"][0]["event"]["type"], "start", "recording returned from replay")
         assert_eq(loaded_state.marbles[0][0], loc_track(7), "state returned for continue")
+        assert_eq(loaded_state.current_player, 0, "start entry keeps starting player")
     finally:
         os.remove(path)
 
@@ -632,6 +633,7 @@ def test_load_recording_entry_at_specific_index():
         _recording, entry, loaded_state = load_recording_entry(path, replay_index=1)
         assert_eq(entry["index"], 1, "selected index returned")
         assert_eq(loaded_state.marbles[0][0], loc_track(9), "state at selected index returned")
+        assert_eq(loaded_state.current_player, 1, "continuation advances to player after recorded turn")
     finally:
         os.remove(path)
 
@@ -668,8 +670,76 @@ def test_run_replay_can_resume_from_specific_index():
             loaded_recording, loaded_state = run_replay(path, {"auto_roll": False}, replay_index=1)
         assert_eq(loaded_recording["entries"][1]["index"], 1, "recording loaded for indexed replay")
         assert_eq(loaded_state.marbles[0][0], loc_track(8), "indexed replay returns selected state")
+        assert_eq(loaded_state.current_player, 1, "indexed replay resumes on next player")
     finally:
         os.remove(path)
+
+
+def test_run_replay_index_navigation_allows_back_next_and_decision_continue():
+    print("test: indexed replay supports back/next and decision continue")
+    s0 = GameState()
+    s0.current_player = 2
+    s0.marbles[3][0] = loc_track(38)
+
+    s1 = GameState()
+    s1.current_player = 3
+    s1.marbles[3][0] = loc_track(40)
+
+    s2 = GameState()
+    s2.current_player = 0
+    s2.marbles[3][0] = loc_home(0)
+
+    recording = {
+        "version": 1,
+        "seed": None,
+        "entries": [
+            {
+                "index": 0,
+                "event": {"type": "turn", "player": 2, "roll": 5, "outcome": "y", "reroll": False, "won": False},
+                "state": serialize_game_state(s0),
+            },
+            {
+                "index": 1,
+                "event": {"type": "turn", "player": 3, "roll": 2, "outcome": "b", "reroll": False, "won": False},
+                "state": serialize_game_state(s1),
+            },
+            {
+                "index": 2,
+                "event": {"type": "turn", "player": 3, "roll": 3, "outcome": "b", "reroll": False, "won": False},
+                "state": serialize_game_state(s2),
+            },
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as handle:
+        json.dump(recording, handle)
+        path = handle.name
+
+    try:
+        # Start at index 2, step back and forward, switch to decision view, continue.
+        with patch("wahoo.play.input", side_effect=["b", "n", "d", "c"]):
+            _rec, state = run_replay(path, {"auto_roll": False}, replay_index=2)
+
+        # Decision state for index 2 should be the board from index 1, player 3, roll 3.
+        assert_eq(state.marbles[3][0], loc_track(40), "decision view uses previous board state")
+        assert_eq(state.current_player, 3, "decision view sets current player to turn owner")
+        assert_eq(state.pending_roll, 3, "decision view preserves recorded roll for prompt")
+    finally:
+        os.remove(path)
+
+
+def test_take_turn_uses_pending_roll_before_rng():
+    print("test: take_turn consumes pending_roll before RNG")
+    state = GameState()
+    state.current_player = 0
+    state.pending_roll = 1
+    settings = {"auto_roll": False, "players": ["human", "human", "human", "human"]}
+    rng = SeqRng([6])
+
+    with patch("wahoo.play.input", side_effect=["", "1"]):
+        result = take_turn(state, rng, settings)
+
+    assert_eq(result["events"][0]["roll"], 1, "pending roll used for turn")
 
 
 def main():
@@ -716,6 +786,8 @@ def main():
         test_run_replay_can_return_state_for_continue,
         test_load_recording_entry_at_specific_index,
         test_run_replay_can_resume_from_specific_index,
+        test_run_replay_index_navigation_allows_back_next_and_decision_continue,
+        test_take_turn_uses_pending_roll_before_rng,
     ]
     for t in tests:
         t()

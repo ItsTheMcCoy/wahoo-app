@@ -113,6 +113,16 @@ python -m wahoo.play replay game3.json 61
 You can also pick `R` from the startup menu and then enter a filename.
 In interactive replay mode, after entering a filename, you can optionally enter an index to load directly (press Enter to use the latest state).
 
+When loading by index, you can navigate before continuing:
+
+- `B` goes to the previous recorded entry.
+- `N` goes to the next recorded entry.
+- `D` toggles decision view for turn entries (board state before that turn's move, with the recorded roll loaded).
+- `C` continues from the currently shown view.
+- `E` exits replay.
+
+Decision view is useful for debugging move selection bugs because continue will prompt the same player with the saved roll.
+
 Replay behavior:
 
 - Each recorded board state is displayed in order.
