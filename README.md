@@ -1,10 +1,37 @@
 # Wahoo Text Game
 
-Console-based Wahoo implementation for 4 players.
+Console-based Python prototype of Wahoo for 4 players. The current project phase is validating the rules engine, replay support, simple computer self-play, and the first AI strategy module before porting the game to Godot 4 for Android.
+
+## Current State
+
+Implemented:
+
+- Package layout under `wahoo/` with `game_state.py`, `rules.py`, `play.py`, and `ai.py`.
+- 4-player Wahoo rules engine with legal move generation and move application.
+- Console game loop with ASCII board rendering.
+- Human pass-and-play mode.
+- Legacy computer self-play mode using `choose_computer_move()` in `wahoo/play.py`.
+- Replay recording to sequential `game*.json` files and replay/continue support.
+- Auto-roll toggle using `/auto`.
+- AI strategy module in `wahoo/ai.py` containing:
+  - `RandomPlayer`
+  - `GreedyPlayer`
+  - 10-feature move scoring
+  - 8 named greedy profiles plus `random` in `PROFILES`
+- Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
+
+Not implemented yet:
+
+- Per-slot AI selection in the console game. `play.py` still uses the legacy `computer_self_play` boolean.
+- `wahoo/selfplay.py` headless N-game runner.
+- `wahoo/stats.py` stat aggregation and CSV export.
+- Full AI scenario probe suite. Only the win-guardrail probe currently exists in `tests/test_ai.py`.
+- Godot project files and Android build/export setup.
 
 ## Requirements
 
 - Python 3.10+
+- `pytest` for the full test suite
 
 ## Run the Game
 
@@ -18,26 +45,27 @@ Startup flow:
 
 - ASCII-art intro is shown first.
 - Choose one intro menu option:
-  - `S` start a new game
-  - `C` run computer self-play (all players are computer-controlled)
+  - `S` start a new human/pass-and-play game
+  - `C` run legacy computer self-play, where all players are computer-controlled by `choose_computer_move()`
   - `R` replay a saved game
   - `E` exit
-- Type `/auto` at any prompt to toggle auto-roll on or off.
+- Type `/auto` at supported prompts to toggle auto-roll on or off.
 - Each player rolls once to determine who goes first.
 - Highest roll starts. Play order then continues clockwise.
 
 Auto-roll behavior:
 
 - When auto-roll is ON, the game rolls automatically for turns.
-- If a roll produces more than one legal move, you still choose the move manually.
+- If a roll produces more than one legal move, a human game still requires manual move selection.
 - Manual move choices are numbered `1..N`.
-- The `/auto` toggle can be used during startup, replay prompts, and turn prompts.
+- `/auto` can be used during startup, replay prompts, and turn prompts.
 
-Computer self-play behavior:
+Legacy computer self-play behavior:
 
 - Computer move priority is: capture, then exit base, then get home.
 - Center entry is only chosen when the current player has at least one other marble already in play.
 - Computer self-play starts with auto-roll ON.
+- This mode does **not** yet use the named AI profiles from `wahoo/ai.py`.
 
 ## Replay a Saved Game
 
@@ -49,7 +77,7 @@ game2.json
 game3.json
 ```
 
-To replay a saved game:
+To replay a saved game directly:
 
 ```powershell
 python -m wahoo.play replay game3.json
@@ -78,13 +106,32 @@ If you continue:
 
 ## Tests
 
-Run the test suite with:
+Run the full test suite with:
+
+```powershell
+python -m pytest tests/
+```
+
+At the time this documentation was synchronized, the suite contained 35 passing tests.
+
+You can still run the legacy rule/behavior test harness directly:
 
 ```powershell
 python -m tests.test_wahoo
 ```
 
+## Documentation Map
+
+- `documents/RULES.md` — authoritative rules and implementation notes.
+- `documents/HOW_TO_PLAY.md` — player-facing rules summary.
+- `documents/DEVELOPMENT_PLAN.md` — phase roadmap and current project status.
+- `documents/AI_PLAYER_BUILD_PLAN.md` — AI implementation plan and remaining AI work.
+- `documents/AI_Stragegy_Spec.md` — strategy dimensions and scenario probe bank. The filename currently contains the misspelling `Stragegy`.
+- `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
+- `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
+
 ## Notes
 
 - Game history is recorded after each resolved roll/move.
 - Replay is useful for reproducing specific board states and verifying rule behavior.
+- Generated `game*.json` files and `__pycache__/` files should not be committed even if they appear in a local working archive.
