@@ -79,9 +79,11 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 **Done:**
 - `wahoo/ai.py` — complete: `_marble_progress()`, `compute_exposure()`, `_loc_progress()`, `_self_block_count()`, `compute_features()` (all 10 features), `_game_phase()`, `DEFAULT_PHASE_WEIGHTS`, all 8 profile weight dicts, `RandomPlayer`, `GreedyPlayer` with win guardrail, `PROFILES` registry
 - `tests/test_ai.py` — probe 1 (win guardrail) written; all profiles pass
+- `tests/test_ai.py` — probe 2 (center temptation) written; shortcut-friendly profiles prefer center, Swarm deploys, Tortoise avoids center
+- `tests/test_ai.py` — probe 3 (capture vs deploy) written; Assassin and Gatekeeper capture, Swarm deploys
 
 **Remaining:**
-- `tests/test_ai.py` probes 2–6 (center temptation, capture vs deploy, finish or fight, center denial, threat escape)
+- `tests/test_ai.py` probes 4–6 (finish or fight, center denial, threat escape)
 - Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot AI dispatch
 - `wahoo/selfplay.py` headless N-game runner
 - Run 50-game self-play to verify win-rate balance across profiles
