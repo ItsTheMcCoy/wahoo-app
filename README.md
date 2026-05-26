@@ -214,6 +214,7 @@ python -m tests.test_wahoo
 - `documents/HOW_TO_PLAY.md` — player-facing rules summary.
 - `documents/DEVELOPMENT_PLAN.md` — phase roadmap and current project status.
 - `documents/AI_PLAYER_BUILD_PLAN.md` — AI implementation plan and remaining AI work.
+- `documents/AI_TESTING_PLAN.md` — step-by-step protocol for benchmarking, robustness checks, and pairwise AI profile evaluation.
 - `documents/AI_Strategy_Spec.md` — strategy dimensions and scenario probe bank.
 - `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
 - `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
