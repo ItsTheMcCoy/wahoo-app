@@ -43,7 +43,7 @@ Core game logic and a console-mode game loop, no graphics.
 **Repo status:** Local and GitHub are now synchronized on `main`.
 
 **Remaining for phase completion:**
-- Play 2-3 full games through `python -m wahoo.play` to surface any rule edge cases not covered by tests
+- Play 2-3 full games through `python -m wahoo.play` (run from repo root; if inside `wahoo/`, use `python play.py`) to surface any rule edge cases not covered by tests
 - Keep docs current as rules/UI evolve
 
 ### Phase 1b — Python AI Opponents — *In progress*

@@ -47,6 +47,13 @@ From the project folder:
 python -m wahoo.play
 ```
 
+Important: run this from the repository root (`Wahoo-app`), not from inside `wahoo/`.
+If you are currently inside `wahoo/`, use:
+
+```powershell
+python play.py
+```
+
 Startup flow:
 
 - ASCII-art intro is shown first.
