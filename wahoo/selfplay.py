@@ -11,10 +11,16 @@ import random
 from dataclasses import dataclass
 from typing import Sequence
 
-from .ai import PROFILES, _random as ai_random
-from .game_state import GameState, NUM_PLAYERS
-from .play import PLAYER_NAMES, update_exit_base_cursor
-from .rules import apply_move, legal_moves
+try:
+    from .ai import PROFILES, _random as ai_random
+    from .game_state import GameState, NUM_PLAYERS
+    from .play import PLAYER_NAMES, update_exit_base_cursor
+    from .rules import apply_move, legal_moves
+except ImportError:
+    from ai import PROFILES, _random as ai_random
+    from game_state import GameState, NUM_PLAYERS
+    from play import PLAYER_NAMES, update_exit_base_cursor
+    from rules import apply_move, legal_moves
 
 
 DEFAULT_GAMES = 50

@@ -7,8 +7,8 @@ Board model:
 - Each player segment runs base_exit (offset 0) through offset 13, then
   the next square is the next player's base_exit (offset 0 of segment p+1).
 - Each player has a home stretch of 4 slots (indices 0..3), entered from
-  the loop at the square immediately before their own base-exit
-  (i.e., (p*14 - 1) mod 56 = previous player's offset 13).
+    the loop at the home-entry trigger square
+    (i.e., (p*14 - 2) mod 56 = previous player's offset 12).
 - Center hole: a single off-loop position holding at most one marble.
 
 A marble's location is one of:
@@ -34,9 +34,10 @@ def base_exit(player: int) -> int:
 
 
 def home_entry(player: int) -> int:
-    """Loop square immediately before this player's base-exit; marble turns
-    into home from here rather than continuing onto base-exit."""
-    return (player * SEGMENT_LEN - 1) % LOOP_SIZE
+    """Loop square where owner's path is forced into home before base-exit.
+    This is one square earlier than the geometric square immediately before
+    base-exit in this board mapping."""
+    return (player * SEGMENT_LEN - 2) % LOOP_SIZE
 
 
 def center_exit_dest(player: int) -> int:
@@ -126,7 +127,7 @@ def format_location(loc: tuple) -> str:
     if loc[0] == "TRACK":
         return f"track:{loc[1]}"
     if loc[0] == "HOME":
-        return f"home:{loc[1]}"
+        return f"home:{loc[1] + 1}"
     if loc[0] == "CENTER":
         return "center"
     return f"?{loc}"

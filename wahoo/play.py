@@ -10,12 +10,20 @@ import os
 import json
 import re
 
-from .game_state import (
-    GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
-    NUM_PLAYERS, base_exit,
-)
-from .rules import legal_moves, apply_move
-from .ai import PROFILES
+try:
+    from .game_state import (
+        GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
+        NUM_PLAYERS, base_exit,
+    )
+    from .rules import legal_moves, apply_move
+    from .ai import PROFILES
+except ImportError:
+    from game_state import (
+        GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
+        NUM_PLAYERS, base_exit,
+    )
+    from rules import legal_moves, apply_move
+    from ai import PROFILES
 
 
 PLAYER_NAMES = ["Red", "Green", "Yellow", "Blue"]
@@ -120,10 +128,68 @@ def append_recording_entry(recording: dict, state: GameState, event: dict) -> No
     recording["entries"].append(entry)
 
 
-def run_replay(path: str, settings: dict) -> tuple[dict | None, GameState | None]:
-    """Load a saved recording, replay board states, optionally continue play."""
+def load_recording_entry(path: str, replay_index: int | None = None) -> tuple[dict, dict, GameState]:
+    """Load recording JSON and return one entry/state (last by default)."""
     with open(path, "r", encoding="utf-8") as handle:
         recording = json.load(handle)
+
+    entries = recording.get("entries", [])
+    if not entries:
+        raise ValueError(f"Recording '{path}' has no entries.")
+
+    if replay_index is None:
+        entry = entries[-1]
+    else:
+        if replay_index < 0:
+            raise ValueError("Replay index must be a non-negative integer.")
+        entry = next((e for e in entries if e.get("index") == replay_index), None)
+        if entry is None:
+            min_idx = min(e.get("index", 0) for e in entries)
+            max_idx = max(e.get("index", 0) for e in entries)
+            raise ValueError(
+                f"Replay index {replay_index} not found in '{path}'. Available range: {min_idx}..{max_idx}."
+            )
+
+    return recording, entry, deserialize_game_state(entry["state"])
+
+
+def run_replay(
+    path: str,
+    settings: dict,
+    replay_index: int | None = None,
+) -> tuple[dict | None, GameState | None]:
+    """Load a saved recording, replay board states, optionally continue play."""
+    try:
+        recording, selected_entry, selected_state = load_recording_entry(path, replay_index)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"Unable to load replay: {exc}")
+        return None, None
+
+    if replay_index is not None:
+        event = selected_entry["event"]
+        print(f"Loaded state index {selected_entry['index']} from {path}")
+        print(render_board(selected_state))
+        if event["type"] == "start":
+            print(
+                f"Start: {player_label(event['starting_player'])} won the opening roll with {event['top_roll']}."
+            )
+        else:
+            print(format_turn_summary({
+                "player": event["player"],
+                "events": [event],
+                "won": event.get("won", False),
+            }))
+
+        while True:
+            choice = read_user_input(
+                "Enter [C]ontinue this game or [E]xit replay: ",
+                settings,
+            ).strip().lower()
+            if choice in ("c", "continue"):
+                return recording, selected_state
+            if choice in ("e", "exit"):
+                return None, None
+            print("Please enter C to continue or E to exit replay.")
 
     print(f"Replaying {len(recording['entries'])} recorded states from {path}")
     last_state = None
@@ -559,6 +625,20 @@ def prompt_replay_path(settings: dict) -> str:
         print("Please enter a saved game filename.")
 
 
+def prompt_replay_index(settings: dict) -> int | None:
+    """Prompt for an optional replay index to resume from."""
+    while True:
+        raw = read_user_input(
+            "Enter replay index to resume from (blank = end of game): ",
+            settings,
+        ).strip()
+        if raw == "":
+            return None
+        if raw.isdigit():
+            return int(raw)
+        print("Please enter a non-negative integer index, or press Enter to use the latest state.")
+
+
 def decide_starting_player(rng: random.Random, settings: dict) -> tuple[int, int]:
     """Choose opening player by highest roll in a single round.
 
@@ -682,12 +762,25 @@ def main():
     settings = {"auto_roll": False, "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS}
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
-        recording, state = run_replay(replay_path, settings)
+        replay_index = None
+        if len(args) > 2:
+            try:
+                replay_index = int(args[2])
+                if replay_index < 0:
+                    raise ValueError
+            except ValueError:
+                print("Replay index must be a non-negative integer.")
+                return
+
+        recording, state = run_replay(replay_path, settings, replay_index=replay_index)
         if recording is None:
             return
         recording_path = replay_path
         rng = random.Random()
-        print(f"Continuing recorded game from {replay_path}")
+        if replay_index is None:
+            print(f"Continuing recorded game from {replay_path}")
+        else:
+            print(f"Continuing recorded game from {replay_path} at index {replay_index}")
     else:
         seed_arg = args[0] if args else None
         rng = random.Random(int(seed_arg) if seed_arg else None)
@@ -696,11 +789,15 @@ def main():
             return
         if action == "replay":
             replay_path = prompt_replay_path(settings)
-            recording, state = run_replay(replay_path, settings)
+            replay_index = prompt_replay_index(settings)
+            recording, state = run_replay(replay_path, settings, replay_index=replay_index)
             if recording is None:
                 return
             recording_path = replay_path
-            print(f"Continuing recorded game from {replay_path}")
+            if replay_index is None:
+                print(f"Continuing recorded game from {replay_path}")
+            else:
+                print(f"Continuing recorded game from {replay_path} at index {replay_index}")
         else:
             if action == "computer":
                 settings["players"] = [DEFAULT_AI_PROFILE] * NUM_PLAYERS

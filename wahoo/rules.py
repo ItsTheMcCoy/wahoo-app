@@ -11,11 +11,18 @@ A Move is a dict:
   }
 """
 
-from .game_state import (
-    GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
-    NUM_PLAYERS, base_exit, home_entry, center_exit_dest, segment_offset,
-    loc_base, loc_track, loc_home, loc_center,
-)
+try:
+    from .game_state import (
+        GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
+        NUM_PLAYERS, base_exit, home_entry, center_exit_dest, segment_offset,
+        loc_base, loc_track, loc_home, loc_center,
+    )
+except ImportError:
+    from game_state import (
+        GameState, LOOP_SIZE, SEGMENT_LEN, HOME_SLOTS, MARBLES_PER_PLAYER,
+        NUM_PLAYERS, base_exit, home_entry, center_exit_dest, segment_offset,
+        loc_base, loc_track, loc_home, loc_center,
+    )
 
 
 def legal_moves(state: GameState, player: int, roll: int) -> list:

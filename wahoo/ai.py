@@ -11,15 +11,26 @@ Build order (per AI_PLAYER_BUILD_PLAN.md):
   7. stats.py
 """
 
-from .game_state import (
-    GameState,
-    LOOP_SIZE,
-    HOME_SLOTS,
-    NUM_PLAYERS,
-    home_entry,
-    segment_offset,
-)
-from .rules import apply_move
+try:
+    from .game_state import (
+        GameState,
+        LOOP_SIZE,
+        HOME_SLOTS,
+        NUM_PLAYERS,
+        home_entry,
+        segment_offset,
+    )
+    from .rules import apply_move
+except ImportError:
+    from game_state import (
+        GameState,
+        LOOP_SIZE,
+        HOME_SLOTS,
+        NUM_PLAYERS,
+        home_entry,
+        segment_offset,
+    )
+    from rules import apply_move
 
 
 def _marble_progress(state: GameState, player: int, marble_id: int) -> float:
@@ -229,7 +240,10 @@ class GreedyPlayer:
         self.phase_weights = phase_weights or DEFAULT_PHASE_WEIGHTS
 
     def choose_move(self, state: GameState, player: int, roll: int, moves: list) -> dict:
-        from .rules import legal_moves as _legal_moves
+        try:
+            from .rules import legal_moves as _legal_moves
+        except ImportError:
+            from rules import legal_moves as _legal_moves
         # Hard guardrail: take any immediate win unconditionally.
         for move in moves:
             s2 = state.clone()

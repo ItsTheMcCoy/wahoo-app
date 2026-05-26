@@ -55,17 +55,17 @@ For player `p` (in `0..3`):
 | Constant | Formula | Meaning |
 |----------|---------|---------|
 | `base_exit(p)` | `p * 14` | Where marbles enter the loop from base |
-| `home_entry(p)` | `(p * 14 − 1) mod 56` | Square immediately before own base-exit; forced home turn happens *after* this square |
+| `home_entry(p)` | `(p * 14 − 2) mod 56` | Home-entry trigger square on the loop; owner marbles are forced into home when moving beyond this square |
 | `center_exit_dest(p)` | `((p − 1) mod 4) * 14 + 5` | Where a marble lands when exiting center on a roll of 1 |
 
 Concrete values:
 
 | Player | base_exit | home_entry | center_exit_dest |
 |--------|-----------|------------|------------------|
-| 0 | 0 | 55 | 47 |
-| 1 | 14 | 13 | 5 |
-| 2 | 28 | 27 | 19 |
-| 3 | 42 | 41 | 33 |
+| 0 | 0 | 54 | 47 |
+| 1 | 14 | 12 | 5 |
+| 2 | 28 | 26 | 19 |
+| 3 | 42 | 40 | 33 |
 
 ### 2.5 Marble States
 
@@ -183,7 +183,6 @@ Capture can occur in any of these situations:
 - Exiting base onto an opponent on the base-exit square.
 - Advancing on the loop and landing on an opponent.
 - Landing on home-entry as the owner with an opponent already there.
-- Passing home-entry as the owner with an opponent there (capture happens on the way through, then the forced home turn applies to the moving marble).
 - Entering center with an opponent already in center.
 - Exiting center onto an opponent on the destination square.
 
@@ -331,7 +330,7 @@ Documented here to remove ambiguity. These are consequences of the rules above, 
 - **No legal move + roll of 6**: the player still rolls again. The 6 grants re-roll regardless of whether the previous roll resulted in a move.
 - **Multiple legal moves to the same destination**: not possible. Each (marble, destination, kind) tuple is unique within a turn's move list.
 - **Choosing not to take the center shortcut**: legal. Both the center-entry move and the normal-advance move appear in the move list when the trigger condition is met; the player picks either.
-- **Opponent parked on your home-entry square**: the opponent is fully exposed. On your turn, any roll that lands you on home-entry captures them (normal track land), and any roll that passes over home-entry also captures them (the way-through capture), with the forced home turn applying to your moving marble after the capture.
+- **Opponent parked on your home-entry square**: the opponent is exposed on a normal track square. You capture them when you land there exactly; passing over does not capture.
 - **Center exit blocked by own marble**: the exit move is illegal. The marble must wait in center for another roll of 1 *and* a clear destination square. (This is rare but possible if a player's own marble lands on `center_exit_dest` and stays there.)
 - **Marble in home cannot be moved if any advance overshoots**: if a marble is in `HOME(2)` and the player rolls a 3, that marble has no legal move. The player must move a different marble or pass the turn.
 - **Win triggers immediately**: the moment a move puts a player's last out-of-home marble into a home slot, that player wins. The current turn does not continue (no further re-rolls processed).

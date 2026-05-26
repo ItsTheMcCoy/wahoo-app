@@ -104,7 +104,14 @@ To replay a saved game directly:
 python -m wahoo.play replay game3.json
 ```
 
+To jump straight to a specific recorded board-state index and continue from there:
+
+```powershell
+python -m wahoo.play replay game3.json 61
+```
+
 You can also pick `R` from the startup menu and then enter a filename.
+In interactive replay mode, after entering a filename, you can optionally enter an index to load directly (press Enter to use the latest state).
 
 Replay behavior:
 
@@ -124,6 +131,7 @@ If you continue:
 
 - The loaded game state becomes the active live game.
 - New moves are appended to the same history JSON file.
+- If you loaded a specific index, continuation starts from that exact snapshot instead of the final entry.
 
 ## Tests
 
@@ -133,7 +141,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 51 passing tests.
+At the time this documentation was synchronized, the suite contained 57 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 

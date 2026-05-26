@@ -5,7 +5,7 @@ Each test asserts a specific rule scenario.
 
 from wahoo.game_state import (
     GameState, base_exit, home_entry, center_exit_dest,
-    loc_base, loc_track, loc_home, loc_center,
+    loc_base, loc_track, loc_home, loc_center, format_location,
 )
 from wahoo.rules import legal_moves, apply_move
 from wahoo.play import (
@@ -16,11 +16,13 @@ from wahoo.play import (
     read_user_input,
     show_intro_and_choose_action,
     prompt_replay_path,
+    prompt_replay_index,
     decide_starting_player,
     serialize_game_state,
     deserialize_game_state,
     append_recording_entry,
     make_recording_path,
+    load_recording_entry,
     run_replay,
     take_turn,
     normalize_player_settings,
@@ -198,6 +200,32 @@ def test_home_entry_no_exact():
             f"roll {roll}: expected home:{expected_slot}, got {m['dest']}"
 
 
+def test_exact_landing_on_home_entry_stays_on_track():
+    print("test: exact landing on home-entry stays on track")
+    state = GameState()
+    # For P3, home_entry is 40; from 38 with roll 2, marble lands on 40.
+    state.marbles[3][0] = loc_track(38)
+    state.current_player = 3
+
+    moves = legal_moves(state, 3, 2)
+    m = find_move(moves, "advance", dest=loc_track(home_entry(3)))
+    assert m is not None, f"expected exact landing on home-entry, got {moves}"
+
+    # On the next roll from home_entry, owner must enter/advance in home and
+    # cannot continue on the outer loop.
+    state.marbles[3][0] = loc_track(home_entry(3))
+    moves = legal_moves(state, 3, 2)
+    assert find_move(moves, "advance", dest=loc_track(base_exit(3))) is None
+    assert find_move(moves, "advance_home", dest=loc_home(1)) is not None
+
+    # From home_entry, rolls above 4 would overshoot home slot 3 and are illegal
+    # for this marble.
+    for roll in (5, 6):
+        moves = legal_moves(state, 3, roll)
+        marble_moves = [mv for mv in moves if mv["marble"] == 0]
+        assert marble_moves == [], f"roll {roll}: expected no legal move for marble on home-entry"
+
+
 def test_home_overshoot_illegal():
     print("test: cannot overshoot final home slot")
     state = GameState()
@@ -220,6 +248,12 @@ def test_home_blocked_by_own_marble():
     # M0 advancing to slot 3 is blocked.
     blocked = [m for m in moves if m["marble"] == 0]
     assert blocked == [], f"M0 advance should be blocked, got {blocked}"
+
+
+def test_format_location_uses_human_friendly_home_numbers():
+    print("test: format_location shows home slots as 1-based")
+    assert_eq(format_location(loc_home(0)), "home:1", "home slot 0 should format as home:1")
+    assert_eq(format_location(loc_home(3)), "home:4", "home slot 3 should format as home:4")
 
 
 def test_cannot_pass_own_marble():
@@ -262,12 +296,20 @@ def test_wrap_around_track():
     print("test: track wraps around 55 -> 0")
     state = GameState()
     state.marbles[1][0] = loc_track(54)  # P1 near end of loop
-    # P1's home_entry is at (1*14 - 1) mod 56 = 13.
-    # Walking forward from 54: 55, 0, 1, ... but P1 would cross 13 (home_entry)
+    # P1's home_entry is at (1*14 - 2) mod 56 = 12.
+    # Walking forward from 54: 55, 0, 1, ... but P1 would cross 12 (home_entry)
     # only after a long walk. Let's test simple wrap: roll 3 from 54 -> land at 1.
     moves = legal_moves(state, 1, 3)
     m = find_move(moves, "advance", dest=loc_track(1))
     assert m is not None, f"expected advance to track:1, got {moves}"
+
+
+def test_home_entry_indices_all_players():
+    print("test: home-entry indices are correct for all players")
+    assert_eq(home_entry(0), 54, "P0 home-entry")
+    assert_eq(home_entry(1), 12, "P1 home-entry")
+    assert_eq(home_entry(2), 26, "P2 home-entry")
+    assert_eq(home_entry(3), 40, "P3 home-entry")
 
 
 def test_auto_choose_when_only_one_legal_move():
@@ -457,6 +499,18 @@ def test_prompt_replay_path_requires_filename():
     assert_eq(replay_path, "game4.json", "replay filename returned after blank retry")
 
 
+def test_prompt_replay_index_accepts_blank_or_number():
+    print("test: replay index prompt accepts blank or number")
+    settings = {"auto_roll": False}
+    with patch("wahoo.play.input", side_effect=[""]):
+        idx_blank = prompt_replay_index(settings)
+    assert_eq(idx_blank, None, "blank index means latest state")
+
+    with patch("wahoo.play.input", side_effect=["61"]):
+        idx_num = prompt_replay_index(settings)
+    assert_eq(idx_num, 61, "numeric index parsed")
+
+
 def test_global_toggle_command_flips_auto_roll_during_prompt():
     print("test: /auto toggles auto-roll during prompts")
     settings = {"auto_roll": False}
@@ -546,6 +600,78 @@ def test_run_replay_can_return_state_for_continue():
         os.remove(path)
 
 
+def test_load_recording_entry_at_specific_index():
+    print("test: load recording entry by index")
+    state0 = GameState()
+    state0.marbles[0][0] = loc_track(4)
+    state1 = GameState()
+    state1.marbles[0][0] = loc_track(9)
+
+    recording = {
+        "version": 1,
+        "seed": None,
+        "entries": [
+            {
+                "index": 0,
+                "event": {"type": "start", "starting_player": 0, "top_roll": 6},
+                "state": serialize_game_state(state0),
+            },
+            {
+                "index": 1,
+                "event": {"type": "turn", "player": 0, "roll": 5, "outcome": "x", "reroll": False, "won": False},
+                "state": serialize_game_state(state1),
+            },
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as handle:
+        json.dump(recording, handle)
+        path = handle.name
+
+    try:
+        _recording, entry, loaded_state = load_recording_entry(path, replay_index=1)
+        assert_eq(entry["index"], 1, "selected index returned")
+        assert_eq(loaded_state.marbles[0][0], loc_track(9), "state at selected index returned")
+    finally:
+        os.remove(path)
+
+
+def test_run_replay_can_resume_from_specific_index():
+    print("test: replay can resume from requested index")
+    state0 = GameState()
+    state0.marbles[0][0] = loc_track(3)
+    state1 = GameState()
+    state1.marbles[0][0] = loc_track(8)
+    recording = {
+        "version": 1,
+        "seed": None,
+        "entries": [
+            {
+                "index": 0,
+                "event": {"type": "start", "starting_player": 0, "top_roll": 6},
+                "state": serialize_game_state(state0),
+            },
+            {
+                "index": 1,
+                "event": {"type": "turn", "player": 0, "roll": 5, "outcome": "x", "reroll": False, "won": False},
+                "state": serialize_game_state(state1),
+            },
+        ],
+    }
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as handle:
+        json.dump(recording, handle)
+        path = handle.name
+
+    try:
+        with patch("wahoo.play.input", side_effect=["c"]):
+            loaded_recording, loaded_state = run_replay(path, {"auto_roll": False}, replay_index=1)
+        assert_eq(loaded_recording["entries"][1]["index"], 1, "recording loaded for indexed replay")
+        assert_eq(loaded_state.marbles[0][0], loc_track(8), "indexed replay returns selected state")
+    finally:
+        os.remove(path)
+
+
 def main():
     tests = [
         test_base_exit,
@@ -558,12 +684,14 @@ def main():
         test_center_capture_on_entry,
         test_center_exit,
         test_home_entry_no_exact,
+        test_exact_landing_on_home_entry_stays_on_track,
         test_home_overshoot_illegal,
         test_home_blocked_by_own_marble,
         test_cannot_pass_own_marble,
         test_capture_opponent_on_track,
         test_win_condition,
         test_wrap_around_track,
+        test_home_entry_indices_all_players,
         test_auto_choose_when_only_one_legal_move,
         test_auto_choose_rotating_base_exit_when_only_exit_moves,
         test_no_auto_base_exit_if_other_move_exists,
@@ -579,12 +707,15 @@ def main():
         test_configure_players_accepts_human_and_profiles,
         test_take_turn_routes_ai_slot_through_profile,
         test_prompt_replay_path_requires_filename,
+        test_prompt_replay_index_accepts_blank_or_number,
         test_global_toggle_command_flips_auto_roll_during_prompt,
         test_roll_prompt_toggle_can_continue_immediately_when_enabled,
         test_serialize_game_state_roundtrip,
         test_recording_entry_captures_snapshot_immediately,
         test_make_recording_path_uses_sequential_history_filename,
         test_run_replay_can_return_state_for_continue,
+        test_load_recording_entry_at_specific_index,
+        test_run_replay_can_resume_from_specific_index,
     ]
     for t in tests:
         t()

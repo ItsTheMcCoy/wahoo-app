@@ -163,13 +163,13 @@ def test_finish_or_fight():
         loc_track(home_entry(0)),
         loc_track(10),
     ]
-    marbles[1][0] = loc_track(home_entry(1))
+    marbles[1][0] = loc_track(13)
     state = make_state(marbles)
 
     moves = legal_moves(state, 0, roll)
     home_move = next(m for m in moves if m["dest"] == loc_home(2))
     capture_move = next(m for m in moves if m["captures"] is not None)
-    assert capture_move["dest"] == loc_track(home_entry(1))
+    assert capture_move["dest"] == loc_track(13)
 
     for profile_name in ["engineer", "tortoise", "balanced"]:
         chosen = PROFILES[profile_name].choose_move(state, 0, roll, moves)
