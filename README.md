@@ -12,14 +12,15 @@ Implemented:
 - Human pass-and-play mode.
 - Per-seat player configuration in `wahoo/play.py`, with each slot set to `human` or a named AI profile.
 - Computer self-play mode using the `balanced` AI profile for all four seats.
-- Headless self-play CLI runner in `wahoo/selfplay.py` for N-game AI balance checks.
+- Headless self-play CLI runner in `wahoo/selfplay.py` for N-game AI balance checks and seat-rotated profile benchmarking.
 - Replay recording to sequential `game*.json` files and replay/continue support.
 - Auto-roll toggle using `/auto`.
 - AI strategy module in `wahoo/ai.py` containing:
   - `RandomPlayer`
   - `GreedyPlayer`
+  - `ExpectimaxPlayer` (one-ply with reroll-aware lookahead)
   - 10-feature move scoring
-  - 8 named greedy profiles plus `random` in `PROFILES`
+  - 8 named greedy profiles plus `random` and `expectimax` in `PROFILES`
 - Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
 - AI scenario probes 1-6 in `tests/test_ai.py`:
   - win guardrail
@@ -31,7 +32,6 @@ Implemented:
 
 Not implemented yet:
 
-- `wahoo/stats.py` stat aggregation and CSV export.
 - Godot project files and Android build/export setup.
 
 ## Requirements
@@ -124,7 +124,18 @@ Useful options:
 - `--max-turns 20000` changes the per-game safety cap.
 - `--list-profiles` prints available AI profile names.
 
+Benchmark mode (rank profiles with seat-rotation):
+
+```powershell
+python -m wahoo.selfplay --benchmark-profiles balanced,assassin,tortoise,sprinter,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --seed 20260526
+```
+
+- `--benchmark-profiles` sets candidate profiles to rank.
+- `--benchmark-opponents` sets exactly three fixed opponents.
+- `--benchmark-games-per-seat` controls games per seat per candidate.
+
 The runner reports completed/unfinished games, wins by seat/profile, average turns, average rolls, and average captures.
+Benchmark mode prints a leaderboard with per-seat win breakdown for each candidate profile.
 
 ## Replay a Saved Game
 
@@ -189,7 +200,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 63 passing tests.
+At the time this documentation was synchronized, the suite contained 73 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 

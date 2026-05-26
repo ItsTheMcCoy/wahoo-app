@@ -20,7 +20,7 @@ try:
         home_entry,
         segment_offset,
     )
-    from .rules import apply_move
+    from .rules import apply_move, legal_moves
 except ImportError:
     from game_state import (
         GameState,
@@ -30,7 +30,7 @@ except ImportError:
         home_entry,
         segment_offset,
     )
-    from rules import apply_move
+    from rules import apply_move, legal_moves
 
 
 def _marble_progress(state: GameState, player: int, marble_id: int) -> float:
@@ -262,6 +262,112 @@ class GreedyPlayer:
         return base + modifier
 
 
+class ExpectimaxPlayer:
+    """One-ply expectimax with reroll-aware turn simulation.
+
+    At the root, this chooses the move that maximizes expected utility after the
+    next simulated turn completes. The active simulated player is the current
+    player again on a 6 (reroll), otherwise the next seat.
+    """
+
+    def __init__(
+        self,
+        weights: dict,
+        phase_weights: dict | None = None,
+        opponent_policy: GreedyPlayer | None = None,
+        max_rerolls: int = 1,
+    ):
+        self.weights = weights
+        self.phase_weights = phase_weights or DEFAULT_PHASE_WEIGHTS
+        self.greedy_policy = GreedyPlayer(weights, self.phase_weights)
+        self.opponent_policy = opponent_policy or GreedyPlayer(
+            BALANCED_WEIGHTS,
+            self.phase_weights,
+        )
+        self.max_rerolls = max(0, max_rerolls)
+
+    def choose_move(self, state: GameState, player: int, roll: int, moves: list) -> dict:
+        # Hard guardrail: immediate win always overrides search.
+        for move in moves:
+            s2 = state.clone()
+            s2.current_player = player
+            apply_move(s2, move)
+            if s2.player_won(player):
+                return move
+
+        move_values = []
+        for move in moves:
+            s2 = state.clone()
+            s2.current_player = player
+            apply_move(s2, move)
+
+            next_player = player if roll == 6 else (player + 1) % NUM_PLAYERS
+            value = self._expected_after_turn(
+                s2,
+                active_player=next_player,
+                pov_player=player,
+                rerolls_left=self.max_rerolls,
+            )
+            move_values.append(value)
+
+        return moves[move_values.index(max(move_values))]
+
+    def _policy_for(self, active_player: int, pov_player: int) -> GreedyPlayer:
+        return self.greedy_policy if active_player == pov_player else self.opponent_policy
+
+    def _evaluate(self, state: GameState, pov_player: int) -> float:
+        if state.player_won(pov_player):
+            return 100.0
+        if any(
+            opponent != pov_player and state.player_won(opponent)
+            for opponent in range(NUM_PLAYERS)
+        ):
+            return -100.0
+
+        own = sum(_marble_progress(state, pov_player, marble) for marble in range(4))
+        opp = 0.0
+        for opponent in range(NUM_PLAYERS):
+            if opponent == pov_player:
+                continue
+            opp += sum(_marble_progress(state, opponent, marble) for marble in range(4))
+        return own - opp
+
+    def _expected_after_turn(
+        self,
+        state: GameState,
+        active_player: int,
+        pov_player: int,
+        rerolls_left: int,
+    ) -> float:
+        total = 0.0
+        policy = self._policy_for(active_player, pov_player)
+
+        for roll in range(1, 7):
+            s_roll = state.clone()
+            s_roll.current_player = active_player
+            moves = legal_moves(s_roll, active_player, roll)
+
+            if moves:
+                chosen = policy.choose_move(s_roll, active_player, roll, moves)
+                apply_move(s_roll, chosen)
+
+            if s_roll.player_won(active_player):
+                value = self._evaluate(s_roll, pov_player)
+            elif roll == 6 and rerolls_left > 0:
+                value = self._expected_after_turn(
+                    s_roll,
+                    active_player=active_player,
+                    pov_player=pov_player,
+                    rerolls_left=rerolls_left - 1,
+                )
+            else:
+                value = self._evaluate(s_roll, pov_player)
+
+            total += value
+
+        return total / 6.0
+
+
 # ---------------------------------------------------------------------------
 # Profile registry
 # ---------------------------------------------------------------------------
@@ -276,4 +382,5 @@ PROFILES: dict = {
     "gatekeeper":GreedyPlayer(GATEKEEPER_WEIGHTS),
     "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
     "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
+    "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
 }

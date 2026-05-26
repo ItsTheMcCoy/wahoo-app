@@ -33,7 +33,7 @@ Planned but not yet present in `wahoo/`:
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 63 tests passing under `python -m pytest`.
+Current verified test status: 73 tests passing under `python -m pytest`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -98,7 +98,8 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ `PROFILES` dict mapping name strings to pre-configured player instances, including `random`
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
 - ✅ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool for active turn dispatch
-- ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
+- ✅ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0,p1,p2,p3`
+- ✅ `selfplay.py` benchmark mode: `--benchmark-profiles`, `--benchmark-opponents`, `--benchmark-games-per-seat`
 - ✅ Full six-probe scenario suite in `tests/test_ai.py`
 
 ### STAT_TRACKING_PLAN.md covers
@@ -137,11 +138,11 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 8. ✅ `tests/test_ai.py` probe 5: center denial — passing for Gatekeeper and Assassin
 9. ✅ `tests/test_ai.py` probe 6: threat escape — passing for Tortoise and Gatekeeper
 10. ✅ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
-11. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
+11. ✅ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0,p1,p2,p3`)
 12. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
 13. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
 14. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
-15. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
+15. ✅ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
 
 ## The 10 Strategy Features (Summary)
 

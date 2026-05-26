@@ -101,9 +101,9 @@ def _game_phase(state, player) -> str:
 
 ---
 
-## 5. Tier 3 — `ExpectimaxPlayer` (stretch)
+## 5. Tier 3 — `ExpectimaxPlayer` (implemented)
 
-After `GreedyPlayer` is validated, one-ply expectimax can be layered on top.
+One-ply expectimax is now implemented in `wahoo/ai.py`.
 
 For each legal move `a`:
 1. Clone state and apply `a`.
@@ -114,6 +114,11 @@ For each legal move `a`:
    d. Evaluate the resulting state with a `_evaluate(state, player)` heuristic (sum of own marble progress scores minus sum of all opponent progress scores).
 3. The value of move `a` is the average of the 6 resulting evaluations.
 4. Re-rolls on 6 extend the same player's turn — the lookahead must thread these correctly (see `RULES.md` §8.6).
+
+Current implementation details:
+- Preserves the immediate-win guardrail before any search/evaluation
+- Uses reroll-aware turn simulation with a bounded reroll depth (`max_rerolls`, default 1)
+- Uses profile-specific greedy policy for the point-of-view player and balanced greedy policy for opponents in lookahead
 
 Implementation note: `GameState.clone()` already exists for this purpose. The main risk is performance when all 4 slots are `ExpectimaxPlayer`; profile with `cProfile` before enabling it in self-play.
 
@@ -336,6 +341,7 @@ PROFILES = {
     "gatekeeper":GreedyPlayer(GATEKEEPER_WEIGHTS),
     "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
     "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
+    "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
 }
 ```
 
@@ -393,31 +399,44 @@ Headless runner for win-rate analysis. No console UI; prints results only.
 ### Usage
 
 ```
-python -m wahoo.selfplay --games 500 --players balanced assassin tortoise random
-python -m wahoo.selfplay --games 200 --players assassin assassin assassin assassin
+python -m wahoo.selfplay --games 500 --players balanced,assassin,tortoise,random
+python -m wahoo.selfplay --games 200 --players assassin,assassin,assassin,assassin
+python -m wahoo.selfplay --benchmark-profiles balanced,assassin,tortoise,sprinter,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --seed 20260526
 ```
 
 `--players` accepts exactly 4 profile names (use `random` for random baseline).
 
+Benchmark mode options:
+- `--benchmark-profiles` candidate profile names to rank
+- `--benchmark-opponents` exactly 3 fixed opponent profile names
+- `--benchmark-games-per-seat` number of games in each seat per candidate
+
 ### Output
 
 ```
-Self-play: 500 games, players: [balanced, assassin, tortoise, random]
+Self-play games: 500
+Players: Red=balanced, Green=assassin, Yellow=tortoise, Blue=random
 
-Slot  Profile      Wins   Win%   Avg turns to win
-  0   balanced      141   28.2%  87.3
-  1   assassin      163   32.6%  81.1
-  2   tortoise      112   22.4%  94.6
-  3   random         84   16.8%  102.7
+Completed: 500  Unfinished: 0
+
+Wins:
+    Red    balanced   141 wins   28.2%
+    Green  assassin   163 wins   32.6%
+    Yellow tortoise   112 wins   22.4%
+    Blue   random      84 wins   16.8%
+
+Avg turns:   87.3
+Avg rolls:   104.9
+Avg captures:19.7
 ```
 
-Optionally `--output results.csv` to append each game's result to a CSV file for further analysis (see `STAT_TRACKING_PLAN.md`).
+Benchmark mode prints a ranked leaderboard and per-seat win breakdown per candidate profile.
 
 ### Implementation notes
 
 - Reuse the game loop logic from `play.py`'s `take_turn()` but stripped of all print/input calls
 - Use `random.Random()` with an optional `--seed` for reproducibility
-- Do not record game history to JSON by default (performance); add `--record` flag to enable
+- Benchmark mode rotates each candidate through all four seats to reduce seat-order bias
 
 ---
 
@@ -582,7 +601,13 @@ def test_threat_escape():
 6. Add remaining 7 profiles; run probes per profile
 7. Refactor `play.py` for per-slot dispatch — complete
 8. `selfplay.py` + win-rate table to confirm rough Elo parity across profiles
-9. `ExpectimaxPlayer` (optional, after profiles are stable)
+9. `ExpectimaxPlayer` (implemented)
+
+### 12.1 Remaining Next Steps
+
+- Build a human-like profile after additional games are played with recorded human reasoning.
+- Encode observed human tendencies as measurable targets for profile adjustments.
+- Add a tuning script after the human-like profile exists to search/refine weight variants against benchmark opponents.
 
 ---
 

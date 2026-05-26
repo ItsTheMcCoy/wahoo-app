@@ -26,6 +26,8 @@ except ImportError:
 DEFAULT_GAMES = 50
 DEFAULT_MAX_TURNS = 10_000
 DEFAULT_PLAYERS = ("balanced", "balanced", "balanced", "balanced")
+DEFAULT_BENCHMARK_OPPONENTS = ("balanced", "balanced", "balanced")
+DEFAULT_BENCHMARK_GAMES_PER_SEAT = 25
 
 
 @dataclass
@@ -77,6 +79,34 @@ class SeriesSummary:
         return _average(result.captures for result in self.results)
 
 
+@dataclass
+class BenchmarkProfileSummary:
+    """Aggregated benchmark metrics for one candidate profile."""
+
+    profile: str
+    opponents: tuple[str, ...]
+    total_games: int
+    completed_games: int
+    unfinished_games: int
+    wins: int
+    win_rate: float
+    completed_win_rate: float
+    avg_turns: float
+    avg_rolls: float
+    avg_captures: float
+    seat_wins: tuple[int, ...]
+    seat_games: tuple[int, ...]
+
+
+@dataclass
+class BenchmarkSummary:
+    """Comparison report for multiple candidate profiles."""
+
+    profile_results: list[BenchmarkProfileSummary]
+    games_per_seat: int
+    opponents: tuple[str, ...]
+
+
 def _average(values) -> float:
     values = list(values)
     if not values:
@@ -100,6 +130,145 @@ def parse_players(value: str | Sequence[str]) -> tuple[str, ...]:
         raise ValueError(f"Unknown profile(s): {', '.join(invalid)}. Valid profiles: {valid}")
 
     return players
+
+
+def parse_benchmark_profiles(value: str | Sequence[str]) -> tuple[str, ...]:
+    """Parse candidate profile names for benchmark mode."""
+    if isinstance(value, str):
+        profiles = tuple(part.strip().lower() for part in value.split(",") if part.strip())
+    else:
+        profiles = tuple(part.strip().lower() for part in value if part.strip())
+
+    if not profiles:
+        raise ValueError("benchmark-profiles must include at least one AI profile")
+
+    invalid = [profile for profile in profiles if profile not in PROFILES]
+    if invalid:
+        valid = ", ".join(sorted(PROFILES))
+        raise ValueError(f"Unknown profile(s): {', '.join(invalid)}. Valid profiles: {valid}")
+
+    return profiles
+
+
+def parse_benchmark_opponents(value: str | Sequence[str]) -> tuple[str, ...]:
+    """Parse and validate the three fixed opponent profiles for benchmark mode."""
+    if isinstance(value, str):
+        opponents = tuple(part.strip().lower() for part in value.split(",") if part.strip())
+    else:
+        opponents = tuple(part.strip().lower() for part in value if part.strip())
+
+    if len(opponents) != NUM_PLAYERS - 1:
+        raise ValueError(
+            f"Expected exactly {NUM_PLAYERS - 1} benchmark opponents, got {len(opponents)}"
+        )
+
+    invalid = [profile for profile in opponents if profile not in PROFILES]
+    if invalid:
+        valid = ", ".join(sorted(PROFILES))
+        raise ValueError(f"Unknown profile(s): {', '.join(invalid)}. Valid profiles: {valid}")
+
+    return opponents
+
+
+def _lineup_for_candidate(
+    candidate: str,
+    seat: int,
+    opponents: Sequence[str],
+) -> tuple[str, ...]:
+    """Build a 4-seat lineup with candidate in one seat and fixed opponents elsewhere."""
+    lineup: list[str] = [""] * NUM_PLAYERS
+    lineup[seat] = candidate
+
+    opp_idx = 0
+    for player in range(NUM_PLAYERS):
+        if player == seat:
+            continue
+        lineup[player] = opponents[opp_idx]
+        opp_idx += 1
+
+    return tuple(lineup)
+
+
+def benchmark_profiles(
+    profiles: Sequence[str],
+    *,
+    opponents: Sequence[str] = DEFAULT_BENCHMARK_OPPONENTS,
+    games_per_seat: int = DEFAULT_BENCHMARK_GAMES_PER_SEAT,
+    seed: int | None = None,
+    max_turns: int = DEFAULT_MAX_TURNS,
+) -> BenchmarkSummary:
+    """Benchmark candidate profiles by rotating each through all four seats.
+
+    Each candidate plays `games_per_seat` games in each seat against the same
+    three fixed opponent profiles. This reduces seat-order bias and gives one
+    comparable win-rate per candidate profile.
+    """
+    if games_per_seat < 1:
+        raise ValueError("games_per_seat must be at least 1")
+    if max_turns < 1:
+        raise ValueError("max_turns must be at least 1")
+
+    profiles = parse_benchmark_profiles(profiles)
+    opponents = parse_benchmark_opponents(opponents)
+
+    seed_rng = random.Random(seed)
+    profile_results: list[BenchmarkProfileSummary] = []
+
+    for profile in profiles:
+        results: list[GameResult] = []
+        seat_wins = [0] * NUM_PLAYERS
+        seat_games = [0] * NUM_PLAYERS
+
+        for seat in range(NUM_PLAYERS):
+            lineup = _lineup_for_candidate(profile, seat, opponents)
+            for game_index in range(1, games_per_seat + 1):
+                game_seed = seed_rng.randrange(1_000_000_000) if seed is not None else None
+                result = play_game(
+                    lineup,
+                    seed=game_seed,
+                    game_index=game_index,
+                    max_turns=max_turns,
+                )
+                results.append(result)
+                seat_games[seat] += 1
+                if result.winner == seat:
+                    seat_wins[seat] += 1
+
+        total_games = len(results)
+        completed = sum(1 for result in results if result.winner is not None)
+        unfinished = total_games - completed
+        wins = sum(seat_wins)
+        win_rate = wins / total_games if total_games else 0.0
+        completed_win_rate = wins / completed if completed else 0.0
+
+        profile_results.append(
+            BenchmarkProfileSummary(
+                profile=profile,
+                opponents=tuple(opponents),
+                total_games=total_games,
+                completed_games=completed,
+                unfinished_games=unfinished,
+                wins=wins,
+                win_rate=win_rate,
+                completed_win_rate=completed_win_rate,
+                avg_turns=_average(result.turns for result in results),
+                avg_rolls=_average(result.rolls for result in results),
+                avg_captures=_average(result.captures for result in results),
+                seat_wins=tuple(seat_wins),
+                seat_games=tuple(seat_games),
+            )
+        )
+
+    profile_results.sort(
+        key=lambda row: (row.win_rate, row.completed_win_rate, -row.avg_turns),
+        reverse=True,
+    )
+
+    return BenchmarkSummary(
+        profile_results=profile_results,
+        games_per_seat=games_per_seat,
+        opponents=tuple(opponents),
+    )
 
 
 def choose_starting_player(rng: random.Random) -> tuple[int, int]:
@@ -249,6 +418,41 @@ def format_summary(summary: SeriesSummary) -> str:
     return "\n".join(lines)
 
 
+def format_benchmark_summary(summary: BenchmarkSummary) -> str:
+    """Render a leaderboard-style report for benchmark mode."""
+    lines = []
+    lines.append("Benchmark Mode")
+    lines.append(
+        "Opponents: "
+        + ", ".join(
+            f"{PLAYER_NAMES[idx+1]}={name}"
+            for idx, name in enumerate(summary.opponents)
+        )
+    )
+    lines.append(
+        f"Games per seat: {summary.games_per_seat} "
+        f"(total per profile: {summary.games_per_seat * NUM_PLAYERS})"
+    )
+    lines.append("")
+    lines.append("Leaderboard:")
+
+    for rank, row in enumerate(summary.profile_results, start=1):
+        lines.append(
+            f"  {rank:>2}. {row.profile:<12} "
+            f"wins {row.wins:>4}/{row.total_games:<4} "
+            f"({row.win_rate * 100:>5.1f}%) "
+            f"completed {row.completed_games}/{row.total_games}"
+        )
+        seat_bits = []
+        for seat in range(NUM_PLAYERS):
+            seat_bits.append(
+                f"{PLAYER_NAMES[seat]} {row.seat_wins[seat]}/{row.seat_games[seat]}"
+            )
+        lines.append("      by seat: " + " | ".join(seat_bits))
+
+    return "\n".join(lines)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run headless Wahoo AI self-play.")
     parser.add_argument(
@@ -279,6 +483,28 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="list available AI profile names and exit",
     )
+    parser.add_argument(
+        "--benchmark-profiles",
+        default=None,
+        help=(
+            "comma-separated candidate profiles to rank in seat-rotated "
+            "benchmark mode"
+        ),
+    )
+    parser.add_argument(
+        "--benchmark-opponents",
+        default=",".join(DEFAULT_BENCHMARK_OPPONENTS),
+        help="comma-separated fixed opponent profiles (exactly 3)",
+    )
+    parser.add_argument(
+        "--benchmark-games-per-seat",
+        type=int,
+        default=DEFAULT_BENCHMARK_GAMES_PER_SEAT,
+        help=(
+            "games per seat for each candidate in benchmark mode "
+            f"(default: {DEFAULT_BENCHMARK_GAMES_PER_SEAT})"
+        ),
+    )
     return parser
 
 
@@ -291,6 +517,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     try:
+        if args.benchmark_profiles:
+            summary = benchmark_profiles(
+                profiles=parse_benchmark_profiles(args.benchmark_profiles),
+                opponents=parse_benchmark_opponents(args.benchmark_opponents),
+                games_per_seat=args.benchmark_games_per_seat,
+                seed=args.seed,
+                max_turns=args.max_turns,
+            )
+            print(format_benchmark_summary(summary))
+            return 0
+
         players = parse_players(args.players)
         summary = run_series(
             games=args.games,

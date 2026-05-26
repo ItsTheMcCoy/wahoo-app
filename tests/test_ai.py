@@ -9,7 +9,7 @@ from wahoo.game_state import (
     home_entry, base_exit, NUM_PLAYERS, MARBLES_PER_PLAYER,
 )
 from wahoo.rules import legal_moves
-from wahoo.ai import PROFILES, RandomPlayer
+from wahoo.ai import ExpectimaxPlayer, PROFILES, RandomPlayer
 
 
 def make_state(marbles_by_player, center_occupant=None):
@@ -252,3 +252,22 @@ def test_threat_escape():
         assert chosen == escape_move, (
             f"Profile '{profile_name}' should move away from capture danger"
         )
+
+
+def test_expectimax_profile_registered():
+    assert "expectimax" in PROFILES
+    assert isinstance(PROFILES["expectimax"], ExpectimaxPlayer)
+
+
+def test_expectimax_is_deterministic_for_same_state():
+    roll = 1
+
+    marbles = _all_base()
+    marbles[0] = [loc_base(), loc_base(), loc_track(5), loc_track(18)]
+    state = make_state(marbles)
+    moves = legal_moves(state, 0, roll)
+
+    player = PROFILES["expectimax"]
+    first_choice = player.choose_move(state, 0, roll, moves)
+    for _ in range(5):
+        assert player.choose_move(state, 0, roll, moves) == first_choice
