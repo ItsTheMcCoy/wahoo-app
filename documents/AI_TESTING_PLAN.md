@@ -323,6 +323,8 @@ Layout 4:
 python -m wahoo.selfplay --games 500 --players B,B,A,A --max-turns 20000 --seed 20260534
 ```
 
+For a local automation script that runs the full Stage 4 confirmation block and writes markdown plus JSON summaries, use [scripts/run_stage4_pairwise_confirmation.py](../scripts/run_stage4_pairwise_confirmation.py).
+
 Interpretation:
 - These runs are not a replacement for benchmark mode.
 - They are a pairwise confirmation step.
