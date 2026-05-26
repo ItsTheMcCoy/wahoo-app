@@ -267,24 +267,66 @@ Notes: AI_TESTING_PLAN.md Stage 2.1, second baseline seed run
 - human_like remains clearly above balanced (+37.9 pp) but below the top 3.
 - gatekeeper rose materially vs seed 20260526 (38.0% -> 46.0%), while assassin stayed flat at 35.0%.
 
-**Two-seed interim aggregate (seeds 20260526 + 20260527, 800 games/profile):**
-
-| Rank | Profile    | Wins | Win % | Completed | Unfinished | Seat Wins (R/G/Y/B) |
-|------|------------|------|-------|-----------|------------|---------------------|
-| 1    | sprinter   | 733  | 91.6% | 800/800   | 0          | 175 / 191 / 179 / 188 |
-| 2    | gambler    | 710  | 88.8% | 800/800   | 0          | 176 / 178 / 172 / 184 |
-| 3    | expectimax | 655  | 81.9% | 800/800   | 0          | 168 / 158 / 169 / 160 |
-| 4    | human_like | 494  | 61.8% | 800/800   | 0          | 124 / 117 / 129 / 124 |
-| 5    | gatekeeper | 336  | 42.0% | 800/800   | 0          | 79 / 88 / 88 / 81 |
-| 6    | assassin   | 280  | 35.0% | 800/800   | 0          | 70 / 71 / 73 / 66 |
-| 7    | engineer   | 187  | 23.4% | 800/800   | 0          | 34 / 50 / 45 / 58 |
-| 8    | balanced   | 185  | 23.1% | 800/800   | 0          | 44 / 48 / 41 / 52 |
-| 9    | tortoise   | 161  | 20.1% | 800/800   | 0          | 32 / 37 / 40 / 52 |
-| 10   | swarm      | 59   | 7.4%  | 800/800   | 0          | 12 / 15 / 14 / 18 |
-
 **Action before next Stage 2.1 run:**
 - Continue with seeds 20260528, 20260529, and 20260530 using the same command and max-turns.
 - Reassess seat-skew warnings after seed 3; treat current seat deltas as provisional.
+
+---
+
+### Stage 2.1 - Serious Baseline Ranking, Seed 20260528 (2026-05-26)
+
+```text
+Run name: baseline-v1-seed-20260528
+Date: 2026-05-26
+Candidates: balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax
+Opponents: balanced,balanced,balanced
+Games per seat: 100
+Total games per profile: 400
+Seed: 20260528
+Max turns: 20000
+Notes: AI_TESTING_PLAN.md Stage 2.1, third baseline seed run
+```
+
+**Raw leaderboard:**
+
+| Rank | Profile    | Wins | Win % | Completed | Avg Turns | Avg Rolls | Avg Captures | Seat (R/G/Y/B)       |
+|------|------------|------|-------|-----------|-----------|-----------|--------------|----------------------|
+| 1    | sprinter   | 358  | 89.5% | 400/400   | 579.4     | 694.8     | 105.0        | 91 / 92 / 87 / 88    |
+| 2    | gambler    | 353  | 88.2% | 400/400   | 613.0     | 736.1     | 115.4        | 91 / 84 / 88 / 90    |
+| 3    | expectimax | 341  | 85.2% | 400/400   | 701.3     | 841.2     | 127.3        | 88 / 86 / 88 / 79    |
+| 4    | human_like | 244  | 61.0% | 400/400   | 953.8     | 1145.1    | 192.5        | 57 / 60 / 64 / 63    |
+| 5    | gatekeeper | 182  | 45.5% | 400/400   | 1176.5    | 1412.0    | 239.7        | 44 / 41 / 51 / 46    |
+| 6    | assassin   | 139  | 34.8% | 400/400   | 1260.7    | 1512.0    | 262.0        | 32 / 38 / 36 / 33    |
+| 7    | engineer   | 106  | 26.5% | 400/400   | 1161.0    | 1393.6    | 235.3        | 25 / 28 / 24 / 29    |
+| 8    | balanced   | 89   | 22.2% | 400/400   | 1328.4    | 1594.5    | 273.8        | 20 / 18 / 26 / 25    |
+| 9    | tortoise   | 83   | 20.8% | 400/400   | 1199.6    | 1438.1    | 242.3        | 20 / 20 / 23 / 20    |
+| 10   | swarm      | 34   | 8.5%  | 400/400   | 1233.4    | 1480.4    | 251.0        | 7 / 13 / 6 / 8       |
+
+**Interpretation (Stage 2.1, single-seed interim):**
+- No unfinished games: 400/400 completed for every profile.
+- Top three remain unchanged for the third straight seed: sprinter, gambler, expectimax.
+- balanced baseline for this seed is 22.2%; sprinter (+67.3 pp), gambler (+66.0 pp), and expectimax (+63.0 pp) remain far above baseline.
+- human_like remains clearly above balanced (+38.8 pp) but below the top 3.
+- Mid-tier remains stable: gatekeeper (~45-46%) and assassin (~35%) with low seed-to-seed drift.
+
+**Three-seed interim aggregate (seeds 20260526 + 20260527 + 20260528, 1200 games/profile):**
+
+| Rank | Profile    | Wins | Win % | Completed | Unfinished | Seat Wins (R/G/Y/B) |
+|------|------------|------|-------|-----------|------------|---------------------|
+| 1    | sprinter   | 1091 | 90.9% | 1200/1200 | 0          | 266 / 283 / 266 / 276 |
+| 2    | gambler    | 1063 | 88.6% | 1200/1200 | 0          | 267 / 262 / 260 / 274 |
+| 3    | expectimax | 996  | 83.0% | 1200/1200 | 0          | 256 / 244 / 257 / 239 |
+| 4    | human_like | 738  | 61.5% | 1200/1200 | 0          | 181 / 177 / 193 / 187 |
+| 5    | gatekeeper | 518  | 43.2% | 1200/1200 | 0          | 123 / 129 / 139 / 127 |
+| 6    | assassin   | 419  | 34.9% | 1200/1200 | 0          | 102 / 109 / 109 / 99 |
+| 7    | engineer   | 293  | 24.4% | 1200/1200 | 0          | 59 / 78 / 69 / 87 |
+| 8    | balanced   | 274  | 22.8% | 1200/1200 | 0          | 64 / 66 / 67 / 77 |
+| 9    | tortoise   | 244  | 20.3% | 1200/1200 | 0          | 52 / 57 / 63 / 72 |
+| 10   | swarm      | 93   | 7.8%  | 1200/1200 | 0          | 19 / 28 / 20 / 26 |
+
+**Action before next Stage 2.1 run:**
+- Continue with seeds 20260529 and 20260530 using the same command and max-turns.
+- If rankings remain stable after seed 4, prepare Stage 2.2 aggregation table entries in advance.
 
 ---
 
