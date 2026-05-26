@@ -387,6 +387,75 @@ Notes: AI_TESTING_PLAN.md Stage 2.1, fourth baseline seed run
 
 ---
 
+### Stage 2.1 - Serious Baseline Ranking, Seed 20260530 (2026-05-26)
+
+```text
+Run name: baseline-v1-seed-20260530
+Date: 2026-05-26
+Candidates: balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax
+Opponents: balanced,balanced,balanced
+Games per seat: 100
+Total games per profile: 400
+Seed: 20260530
+Max turns: 20000
+Notes: AI_TESTING_PLAN.md Stage 2.1, fifth baseline seed run
+```
+
+**Raw leaderboard:**
+
+| Rank | Profile    | Wins | Win % | Completed | Avg Turns | Avg Rolls | Avg Captures | Seat (R/G/Y/B)       |
+|------|------------|------|-------|-----------|-----------|-----------|--------------|----------------------|
+| 1    | gambler    | 359  | 89.8% | 400/400   | 603.5     | 722.6     | 112.5        | 93 / 89 / 90 / 87    |
+| 2    | sprinter   | 358  | 89.5% | 400/400   | 569.8     | 684.2     | 103.8        | 89 / 88 / 87 / 94    |
+| 3    | expectimax | 331  | 82.8% | 400/400   | 692.3     | 830.8     | 125.1        | 87 / 80 / 82 / 82    |
+| 4    | human_like | 255  | 63.7% | 400/400   | 978.7     | 1173.8    | 197.5        | 61 / 68 / 61 / 65    |
+| 5    | gatekeeper | 154  | 38.5% | 400/400   | 1159.4    | 1390.9    | 234.7        | 36 / 36 / 43 / 39    |
+| 6    | assassin   | 152  | 38.0% | 400/400   | 1201.1    | 1441.5    | 247.5        | 37 / 39 / 40 / 36    |
+| 7    | balanced   | 105  | 26.2% | 400/400   | 1303.8    | 1564.8    | 269.8        | 26 / 32 / 27 / 20    |
+| 8    | engineer   | 74   | 18.5% | 400/400   | 1191.4    | 1430.5    | 242.8        | 21 / 17 / 17 / 19    |
+| 9    | tortoise   | 73   | 18.2% | 400/400   | 1158.1    | 1389.7    | 233.9        | 18 / 17 / 22 / 16    |
+| 10   | swarm      | 39   | 9.8%  | 400/400   | 1245.2    | 1494.0    | 253.7        | 12 / 8 / 11 / 8      |
+
+**Interpretation (Stage 2.1, single-seed):**
+- No unfinished games: 400/400 completed for every profile.
+- Top three remained in the same set for all five seeds; this seed swaps rank 1 and 2 between gambler and sprinter only.
+- balanced baseline for this seed is 26.2%; gambler (+63.6 pp), sprinter (+63.3 pp), and expectimax (+56.6 pp) remain far above baseline.
+
+**Five-seed aggregate (seeds 20260526 through 20260530, 2000 games/profile):**
+
+| Rank | Profile    | Wins | Win % | Completed | Unfinished | Seat Wins (R/G/Y/B) |
+|------|------------|------|-------|-----------|------------|---------------------|
+| 1    | sprinter   | 1817 | 90.8% | 2000/2000 | 0          | 447 / 461 / 448 / 461 |
+| 2    | gambler    | 1775 | 88.8% | 2000/2000 | 0          | 447 / 436 / 442 / 450 |
+| 3    | expectimax | 1666 | 83.3% | 2000/2000 | 0          | 425 / 408 / 426 / 407 |
+| 4    | human_like | 1241 | 62.0% | 2000/2000 | 0          | 308 / 304 / 313 / 316 |
+| 5    | gatekeeper | 853  | 42.6% | 2000/2000 | 0          | 203 / 218 / 220 / 212 |
+| 6    | assassin   | 705  | 35.2% | 2000/2000 | 0          | 169 / 182 / 179 / 175 |
+| 7    | balanced   | 484  | 24.2% | 2000/2000 | 0          | 116 / 128 / 116 / 124 |
+| 8    | engineer   | 442  | 22.1% | 2000/2000 | 0          | 97 / 110 / 108 / 127 |
+| 9    | tortoise   | 404  | 20.2% | 2000/2000 | 0          | 93 / 94 / 106 / 111 |
+| 10   | swarm      | 158  | 7.9%  | 2000/2000 | 0          | 37 / 41 / 40 / 40 |
+
+### Stage 2.2 - Aggregate Baseline Decision (2026-05-26)
+
+**Required metrics check:**
+- Total wins, games, win rate, completed/unfinished, and per-seat totals are fully available from the five-seed aggregate above.
+- Quality/stability signal is clean: every profile completed 2000/2000 games, zero unfinished.
+
+**Baseline contender rule outcome (at or above balanced 24.2%, with no unfinished disadvantage and no severe seat collapse):**
+- Contenders: sprinter, gambler, expectimax, human_like, gatekeeper, assassin, balanced.
+- Non-contenders: engineer, tortoise, swarm.
+
+**Stage 3 candidate selection:**
+- Top 3 by aggregate win rate: sprinter (90.8%), gambler (88.8%), expectimax (83.3%).
+- Gap between #3 and #4 is 21.3 percentage points (83.3% vs 62.0%), so no top-4 expansion is needed.
+
+**Action before Stage 3:**
+- Proceed with mixed-opponent robustness testing for sprinter, gambler, expectimax.
+- Run Gauntlet A first: opponents assassin,tortoise,balanced across the full standard seed set.
+
+---
+
 ## Run Log Template
 
 Copy this block for each benchmark run.
@@ -409,16 +478,16 @@ Use one row per profile after combining repeated runs for the same benchmark blo
 
 | Benchmark block | Profile | Opponents | Seeds | Games/seat | Total games | Wins | Win rate | Completed | Unfinished | Avg turns | Avg rolls | Avg captures | Seat notes | Conclusion |
 |-----------------|---------|-----------|-------|------------|-------------|------|----------|-----------|------------|-----------|-----------|--------------|------------|------------|
-| baseline-v1 | balanced | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | sprinter | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | swarm | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | assassin | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | gambler | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | tortoise | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | gatekeeper | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | engineer | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | human_like | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
-| baseline-v1 | expectimax | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
+| baseline-v1 | balanced | balanced,balanced,balanced | 5 | 100 | 2000 | 484 | 24.2% | 2000 | 0 | 1303.1 | 1563.8 | 269.0 | mild Green/Blue lift | baseline reference / contender floor |
+| baseline-v1 | sprinter | balanced,balanced,balanced | 5 | 100 | 2000 | 1817 | 90.8% | 2000 | 0 | 568.6 | 682.2 | 103.2 | stable across seats | top contender (selected for Stage 3) |
+| baseline-v1 | swarm | balanced,balanced,balanced | 5 | 100 | 2000 | 158 | 7.9% | 2000 | 0 | 1249.2 | 1499.1 | 254.5 | uniformly weak by seat | non-contender |
+| baseline-v1 | assassin | balanced,balanced,balanced | 5 | 100 | 2000 | 705 | 35.2% | 2000 | 0 | 1233.5 | 1479.8 | 255.5 | moderate seat stability | contender (below top 3) |
+| baseline-v1 | gambler | balanced,balanced,balanced | 5 | 100 | 2000 | 1775 | 88.8% | 2000 | 0 | 607.2 | 728.2 | 113.6 | stable across seats | top contender (selected for Stage 3) |
+| baseline-v1 | tortoise | balanced,balanced,balanced | 5 | 100 | 2000 | 404 | 20.2% | 2000 | 0 | 1189.2 | 1427.1 | 240.8 | slight Blue/Yellow lift | non-contender |
+| baseline-v1 | gatekeeper | balanced,balanced,balanced | 5 | 100 | 2000 | 853 | 42.6% | 2000 | 0 | 1179.6 | 1415.3 | 239.6 | modest Green/Yellow lift | contender (below top 3) |
+| baseline-v1 | engineer | balanced,balanced,balanced | 5 | 100 | 2000 | 442 | 22.1% | 2000 | 0 | 1197.4 | 1437.1 | 243.9 | Blue-heavy seat skew | non-contender |
+| baseline-v1 | human_like | balanced,balanced,balanced | 5 | 100 | 2000 | 1241 | 62.0% | 2000 | 0 | 975.2 | 1170.4 | 197.2 | stable across seats | contender (below top 3) |
+| baseline-v1 | expectimax | balanced,balanced,balanced | 5 | 100 | 2000 | 1666 | 83.3% | 2000 | 0 | 698.1 | 837.8 | 126.6 | stable, mild Y/R lift | top contender (selected for Stage 3) |
 
 ## Per-Seat Notes Template
 
