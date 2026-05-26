@@ -436,10 +436,26 @@ Notes: AI_TESTING_PLAN.md Stage 2.1, fifth baseline seed run
 | 9    | tortoise   | 404  | 20.2% | 2000/2000 | 0          | 93 / 94 / 106 / 111 |
 | 10   | swarm      | 158  | 7.9%  | 2000/2000 | 0          | 37 / 41 / 40 / 40 |
 
+**Per-seat win rates (5 seeds x 100 starts per seat = 500 seat-games each):**
+
+| Profile    | Red | Green | Yellow | Blue |
+|------------|-----|-------|--------|------|
+| sprinter   | 89.4% | 92.2% | 89.6% | 92.2% |
+| gambler    | 89.4% | 87.2% | 88.4% | 90.0% |
+| expectimax | 85.0% | 81.6% | 85.2% | 81.4% |
+| human_like | 61.6% | 60.8% | 62.6% | 63.2% |
+| gatekeeper | 40.6% | 43.6% | 44.0% | 42.4% |
+| assassin   | 33.8% | 36.4% | 35.8% | 35.0% |
+| balanced   | 23.2% | 25.6% | 23.2% | 24.8% |
+| engineer   | 19.4% | 22.0% | 21.6% | 25.4% |
+| tortoise   | 18.6% | 18.8% | 21.2% | 22.2% |
+| swarm      | 7.4%  | 8.2%  | 8.0%  | 8.0% |
+
 ### Stage 2.2 - Aggregate Baseline Decision (2026-05-26)
 
 **Required metrics check:**
-- Total wins, games, win rate, completed/unfinished, and per-seat totals are fully available from the five-seed aggregate above.
+- Total wins, games, win rate, completed/unfinished, per-seat wins, and per-seat win rates are fully available from the five-seed aggregate and per-seat table above.
+- Aggregate average turns, rolls, and captures are fully populated in the Aggregate Results Table section.
 - Quality/stability signal is clean: every profile completed 2000/2000 games, zero unfinished.
 
 **Baseline contender rule outcome (at or above balanced 24.2%, with no unfinished disadvantage and no severe seat collapse):**
