@@ -36,7 +36,7 @@ Finish the full measurement block, then adjust weights, then rerun the same bloc
 Use this first to compare all current profiles against three balanced opponents:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --seed 20260526
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --seed 20260526
 ```
 
 ### Mixed-Opponent Gauntlet
@@ -44,7 +44,7 @@ python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,g
 Use this after the baseline to test robustness against more varied playstyles:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents assassin,tortoise,balanced --benchmark-games-per-seat 100 --seed 20260526
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents assassin,tortoise,balanced --benchmark-games-per-seat 100 --seed 20260526
 ```
 
 ### Quick Screening Run
@@ -159,6 +159,7 @@ Use one row per profile after combining repeated runs for the same benchmark blo
 | baseline-v1 | tortoise | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
 | baseline-v1 | gatekeeper | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
 | baseline-v1 | engineer | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
+| baseline-v1 | human_like | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
 | baseline-v1 | expectimax | balanced,balanced,balanced | 5 | 100 | 2000 | | | | | | | | | |
 
 ## Per-Seat Notes Template
@@ -196,6 +197,6 @@ Mark a profile as weak if:
 
 ## Future Use
 
-After a human-like profile is created, add it to the same benchmark blocks rather than inventing a separate evaluation standard.
+`human_like` should stay in the same benchmark blocks as all other profiles rather than using a separate evaluation standard.
 
 After a tuning script exists, record the candidate generation rule and benchmark block used for each tuning pass so results remain comparable.

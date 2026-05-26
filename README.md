@@ -19,8 +19,9 @@ Implemented:
   - `RandomPlayer`
   - `GreedyPlayer`
   - `ExpectimaxPlayer` (one-ply with reroll-aware lookahead)
+  - `human_like` profile support (loaded from `wahoo/human_like_profile.json` when present)
   - 10-feature move scoring
-  - 8 named greedy profiles plus `random` and `expectimax` in `PROFILES`
+  - 8 named greedy profiles plus `human_like`, `random`, and `expectimax` in `PROFILES`
 - Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
 - AI scenario probes 1-6 in `tests/test_ai.py`:
   - win guardrail
@@ -103,6 +104,34 @@ Each JSONL row includes:
 - state before/after
 - legal move list
 - inferred chosen move (when inferable from state transition)
+
+## Train a Human-Like Profile
+
+Fit weights from replay files that include human reasoning notes and `turn_detail` candidate features:
+
+```powershell
+python -m wahoo.human_profile --input wahoo/game1.json --output wahoo/human_like_profile.json
+```
+
+Batch mode:
+
+```powershell
+python -m wahoo.human_profile --input-glob "wahoo/game*.json" --output wahoo/human_like_profile.json
+```
+
+Optional tuning flags:
+
+- `--scale 2.0` multiplies learned preference deltas before applying them to baseline weights.
+- `--floor 0.0` sets the minimum allowed weight value.
+
+Output file (`wahoo/human_like_profile.json`) contains:
+
+- sample count used for fitting
+- decision-type distribution for included turns
+- per-feature average chosen-vs-alternative deltas
+- final weight vector
+
+At runtime, `wahoo/ai.py` auto-loads this file if it exists and registers `human_like` in `PROFILES`.
 
 AI player behavior:
 
@@ -200,7 +229,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 73 passing tests.
+At the time this documentation was synchronized, the suite contained 77 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 
@@ -219,6 +248,7 @@ python -m tests.test_wahoo
 - `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
 - `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
 - `wahoo/reasoning_export.py` — JSONL exporter for human move reasoning notes.
+- `wahoo/human_profile.py` — trainer that fits a `human_like` profile from replay reasoning data.
 
 ## Notes
 

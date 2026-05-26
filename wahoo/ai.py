@@ -11,6 +11,9 @@ Build order (per AI_PLAYER_BUILD_PLAN.md):
   7. stats.py
 """
 
+import json
+import os
+
 try:
     from .game_state import (
         GameState,
@@ -220,6 +223,49 @@ TORTOISE_WEIGHTS  = {"DEP": 0.4, "RUN": 0.3, "SPR": 0.6, "CAP": 0.2, "SAFE": 2.5
 GATEKEEPER_WEIGHTS= {"DEP": 0.5, "RUN": 0.3, "SPR": 0.5, "CAP": 1.0, "SAFE": 2.5, "CTR": 0.4, "DEN": 1.0, "FLOW": 0.8, "HOME": 0.5, "FIN": 0.6}
 ENGINEER_WEIGHTS  = {"DEP": 0.4, "RUN": 0.4, "SPR": 0.5, "CAP": 0.2, "SAFE": 0.8, "CTR": 0.2, "DEN": 0.3, "FLOW": 1.0, "HOME": 1.0, "FIN": 1.0}
 BALANCED_WEIGHTS  = {"DEP": 0.6, "RUN": 0.5, "SPR": 0.6, "CAP": 0.6, "SAFE": 0.6, "CTR": 0.5, "DEN": 0.6, "FLOW": 0.7, "HOME": 0.7, "FIN": 0.7}
+HUMAN_LIKE_DEFAULT_WEIGHTS = {
+    "DEP": 0.78,
+    "RUN": 0.62,
+    "SPR": 0.48,
+    "CAP": 0.69,
+    "SAFE": 0.61,
+    "CTR": 0.61,
+    "DEN": 0.68,
+    "FLOW": 0.74,
+    "HOME": 0.77,
+    "FIN": 0.72,
+}
+
+
+def _load_human_like_weights() -> dict:
+    """Load human-like profile weights from local JSON if available.
+
+    Expected file format:
+      {
+        "weights": {"DEP": 0.7, ...}
+      }
+    """
+    weights = dict(HUMAN_LIKE_DEFAULT_WEIGHTS)
+    path = os.path.join(os.path.dirname(__file__), "human_like_profile.json")
+    if not os.path.exists(path):
+        return weights
+
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        loaded = payload.get("weights", {})
+        if not isinstance(loaded, dict):
+            return weights
+
+        for key in HUMAN_LIKE_DEFAULT_WEIGHTS:
+            value = loaded.get(key)
+            if isinstance(value, (int, float)):
+                # Keep weights non-negative; large values are allowed for style.
+                weights[key] = max(0.0, float(value))
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return weights
+
+    return weights
 
 
 # ---------------------------------------------------------------------------
@@ -382,5 +428,6 @@ PROFILES: dict = {
     "gatekeeper":GreedyPlayer(GATEKEEPER_WEIGHTS),
     "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
     "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
+    "human_like": GreedyPlayer(_load_human_like_weights()),
     "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
 }

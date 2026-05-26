@@ -33,9 +33,10 @@ Current profile set:
 - `tortoise`
 - `gatekeeper`
 - `engineer`
+- `human_like`
 - `expectimax`
 
-If a future `human-like` profile is added, insert it into every stage of this plan rather than creating a separate evaluation rule.
+`human_like` should be evaluated using this same protocol, not a separate standard.
 
 ## Global Test Rules
 
@@ -100,6 +101,7 @@ python -m wahoo.selfplay --list-profiles
 Interpretation:
 - Verify that all expected profiles appear.
 - Confirm that `expectimax` is listed.
+- Confirm that `human_like` is listed.
 
 Action before next stage:
 - If any expected profile is missing, fix profile registration before continuing.
@@ -114,7 +116,7 @@ Identify obviously weak profiles before spending time on large benchmark runs.
 Command:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 25 --max-turns 20000 --seed 20260526
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 25 --max-turns 20000 --seed 20260526
 ```
 
 Interpretation:
@@ -146,31 +148,31 @@ Run the following command once per seed.
 Seed `20260526`:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260526
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260526
 ```
 
 Seed `20260527`:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260527
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260527
 ```
 
 Seed `20260528`:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260528
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260528
 ```
 
 Seed `20260529`:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260529
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260529
 ```
 
 Seed `20260530`:
 
 ```powershell
-python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260530
+python -m wahoo.selfplay --benchmark-profiles balanced,sprinter,swarm,assassin,gambler,tortoise,gatekeeper,engineer,human_like,expectimax --benchmark-opponents balanced,balanced,balanced --benchmark-games-per-seat 100 --max-turns 20000 --seed 20260530
 ```
 
 Each profile will accumulate:

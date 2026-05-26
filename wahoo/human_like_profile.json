@@ -1,0 +1,46 @@
+{
+  "profile_name": "human_like",
+  "source_files": [
+    "wahoo/game1.json"
+  ],
+  "generated_at": "2026-05-26T11:27:45.374980+00:00",
+  "fit_options": {
+    "scale": 2.0,
+    "floor": 0.0
+  },
+  "sample_count": 200,
+  "decision_type_counts": {
+    "center_denial": 12,
+    "exit_only": 3,
+    "mixed": 139,
+    "capture_vs_deploy": 5,
+    "capture_vs_advance": 17,
+    "home_vs_advance": 12,
+    "center_opportunity": 9,
+    "finish_vs_fight": 3
+  },
+  "avg_delta": {
+    "DEP": 0.08833333333333332,
+    "RUN": 0.05763888888888891,
+    "SPR": -0.05763888888888891,
+    "CAP": 0.044613636363636376,
+    "SAFE": 0.0052546296296296325,
+    "CTR": 0.05333333333333334,
+    "DEN": 0.03833333333333333,
+    "FLOW": 0.01972222222222221,
+    "HOME": 0.03708333333333333,
+    "FIN": 0.0075
+  },
+  "weights": {
+    "DEP": 0.7766666666666666,
+    "RUN": 0.6152777777777778,
+    "SPR": 0.48472222222222217,
+    "CAP": 0.6892272727272727,
+    "SAFE": 0.6105092592592593,
+    "CTR": 0.6066666666666667,
+    "DEN": 0.6766666666666666,
+    "FLOW": 0.7394444444444443,
+    "HOME": 0.7741666666666667,
+    "FIN": 0.715
+  }
+}

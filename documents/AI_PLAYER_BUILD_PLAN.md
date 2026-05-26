@@ -328,6 +328,15 @@ Taken directly from `AI_Strategy_Spec.md`. Stored as module-level constants in `
 | Endgame Engineer   | 0.4 | 0.4 | 0.5 | 0.2 | 0.8  | 0.2 | 0.3 | 1.0  | 1.0  | 1.0 |
 | Balanced Pragmatist| 0.6 | 0.5 | 0.6 | 0.6 | 0.6  | 0.5 | 0.6 | 0.7  | 0.7  | 0.7 |
 
+Human-like profile (`human_like`) notes:
+- Trained from replay turns with both human reasoning and `turn_detail` candidate features.
+- Uses discretionary turns only (`len(candidate_moves) >= 2`) and learns per-feature preference deltas:
+    - `avg_delta[k] = mean(chosen_feature[k] - mean(other_feature[k]))`
+- Applies deltas to balanced baseline:
+    - `weight[k] = max(floor, BALANCED[k] + scale * avg_delta[k])`
+- Training utility lives in `wahoo/human_profile.py`.
+- Runtime loading in `wahoo/ai.py` reads `wahoo/human_like_profile.json` when present; otherwise defaults are used.
+
 The `PROFILES` dict in `ai.py`:
 
 ```python
@@ -341,8 +350,15 @@ PROFILES = {
     "gatekeeper":GreedyPlayer(GATEKEEPER_WEIGHTS),
     "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
     "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
+    "human_like": GreedyPlayer(_load_human_like_weights()),
     "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
 }
+```
+
+To (re)train `human_like` from local replay notes:
+
+```powershell
+python -m wahoo.human_profile --input wahoo/game1.json --output wahoo/human_like_profile.json
 ```
 
 ---
