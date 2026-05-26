@@ -12,6 +12,7 @@ Implemented:
 - Human pass-and-play mode.
 - Per-seat player configuration in `wahoo/play.py`, with each slot set to `human` or a named AI profile.
 - Computer self-play mode using the `balanced` AI profile for all four seats.
+- Headless self-play CLI runner in `wahoo/selfplay.py` for N-game AI balance checks.
 - Replay recording to sequential `game*.json` files and replay/continue support.
 - Auto-roll toggle using `/auto`.
 - AI strategy module in `wahoo/ai.py` containing:
@@ -30,7 +31,6 @@ Implemented:
 
 Not implemented yet:
 
-- `wahoo/selfplay.py` headless N-game runner.
 - `wahoo/stats.py` stat aggregation and CSV export.
 - Godot project files and Android build/export setup.
 
@@ -71,6 +71,22 @@ AI player behavior:
 - New games can mix human seats with profiles from `wahoo.ai.PROFILES`.
 - AI seats always auto-roll and choose moves through their configured profile.
 - Computer self-play starts with auto-roll ON and maps all four seats to `balanced`.
+
+## Run Headless Self-Play
+
+For AI balance checks without board rendering or prompts:
+
+```powershell
+python -m wahoo.selfplay --games 50 --seed 20260525
+```
+
+Useful options:
+
+- `--players balanced,assassin,tortoise,random` sets Red, Green, Yellow, and Blue profiles.
+- `--max-turns 20000` changes the per-game safety cap.
+- `--list-profiles` prints available AI profile names.
+
+The runner reports completed/unfinished games, wins by seat/profile, average turns, average rolls, and average captures.
 
 ## Replay a Saved Game
 
@@ -117,7 +133,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 43 passing tests.
+At the time this documentation was synchronized, the suite contained 51 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 

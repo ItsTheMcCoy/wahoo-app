@@ -87,10 +87,11 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `tests/test_ai.py` — probe 6 (threat escape) written; Tortoise and Gatekeeper move away from capture danger
 - `wahoo/play.py` — `settings["players"]` list, per-slot human/AI dispatch, AI auto-roll, and startup `configure_players()` implemented
 - `[C] Computer self-play` now maps all four seats to the `balanced` AI profile for backward-compatible startup behavior
+- `wahoo/selfplay.py` — headless N-game AI runner with configurable profile slots, deterministic seed support, max-turn safety cap, and compact win-rate summary
+- `tests/test_selfplay.py` — self-play CLI/function coverage added
+- 50-game balanced-vs-balanced-vs-balanced-vs-balanced smoke check completed with seed `20260525`: 50/50 games completed; wins Red 11, Green 16, Yellow 11, Blue 12
 
 **Remaining:**
-- `wahoo/selfplay.py` headless N-game runner
-- Run 50-game self-play to verify win-rate balance across profiles
 - `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
 - Hook `compute_turn_record()` into `play.py`'s `take_turn()`
 - Optional: `ExpectimaxPlayer` (stretch goal)
@@ -172,6 +173,7 @@ Current files in the project:
 | `wahoo/game_state.py` | Data model: locations, GameState, constants | In repo |
 | `wahoo/rules.py` | `legal_moves()` and `apply_move()` | In repo |
 | `wahoo/play.py` | Console game loop | In repo |
+| `wahoo/selfplay.py` | Headless N-game AI self-play CLI runner | In repo |
 | `tests/test_wahoo.py` | Rule and behavior test suite | In repo |
 | `README.md` | Run/test instructions and current features | In repo |
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
