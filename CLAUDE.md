@@ -23,7 +23,7 @@ documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
   STAT_TRACKING_PLAN.md       — Full implementation spec for stats.py and recording extensions
-  AI_Stragegy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank (filename currently misspelled)
+  AI_Strategy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank
   DEVELOPMENT_PLAN.md         — Overall project roadmap
 
 Planned but not yet present in `wahoo/`:

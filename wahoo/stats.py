@@ -8,10 +8,24 @@ import os
 
 try:
     from .ai import _marble_progress, compute_features
-    from .game_state import GameState, MARBLES_PER_PLAYER, NUM_PLAYERS
+    from .game_state import (
+        GameState,
+        LOOP_SIZE,
+        MARBLES_PER_PLAYER,
+        NUM_PLAYERS,
+        base_exit,
+        segment_offset,
+    )
 except ImportError:
     from ai import _marble_progress, compute_features
-    from game_state import GameState, MARBLES_PER_PLAYER, NUM_PLAYERS
+    from game_state import (
+        GameState,
+        LOOP_SIZE,
+        MARBLES_PER_PLAYER,
+        NUM_PLAYERS,
+        base_exit,
+        segment_offset,
+    )
 
 
 FEATURE_KEYS = ("DEP", "RUN", "SPR", "CAP", "SAFE", "CTR", "DEN", "FLOW", "HOME", "FIN")
@@ -39,6 +53,7 @@ class TurnRecord:
     home_slot_reached: int | None
     exit_base_made: bool
     opportunity_flags: dict
+    tendency_flags: dict
     pre_state_snapshot: dict
     candidate_moves: list[dict]
     chosen_move_index: int
@@ -75,6 +90,10 @@ class PlayerGameStats:
     center_entry_rate: float | None
     base_exit_on_6_rate: float | None
     home_move_rate: float | None
+    intercept_hold_rate: float | None
+    guard_exit_hold_rate: float | None
+    sandwich_trap_preserve_rate: float | None
+    bait_line_success_rate: float | None
     style_vector: dict
 
 
@@ -139,6 +158,89 @@ def _safe_rate(numerator: int, denominator: int) -> float | None:
     return numerator / denominator
 
 
+def _forward_distance(src_idx: int, dst_idx: int) -> int:
+    """Clockwise loop distance from src to dst in 0..LOOP_SIZE-1."""
+    return (dst_idx - src_idx) % LOOP_SIZE
+
+
+def _opponent_behind_within_six(state: GameState, player: int, track_idx: int) -> bool:
+    for opp in range(NUM_PLAYERS):
+        if opp == player:
+            continue
+        for marble in state.marbles[opp]:
+            if marble[0] != "TRACK":
+                continue
+            dist = _forward_distance(marble[1], track_idx)
+            if 1 <= dist <= 6:
+                return True
+    return False
+
+
+def _opponent_ahead_within_six(state: GameState, player: int, track_idx: int) -> bool:
+    for opp in range(NUM_PLAYERS):
+        if opp == player:
+            continue
+        for marble in state.marbles[opp]:
+            if marble[0] != "TRACK":
+                continue
+            dist = _forward_distance(track_idx, marble[1])
+            if 1 <= dist <= 6:
+                return True
+    return False
+
+
+def _sandwich_anchor_marbles(state: GameState, player: int) -> set[int]:
+    """Return own marble ids that currently anchor a simple sandwich trap.
+
+    A sandwich exists when an opponent track marble sits between two of the
+    player's marbles within one-roll pressure on both sides.
+    """
+    own_tracks = [
+        (m_idx, loc[1])
+        for m_idx, loc in enumerate(state.marbles[player])
+        if loc[0] == "TRACK"
+    ]
+    opponent_tracks = [
+        loc[1]
+        for opp in range(NUM_PLAYERS)
+        if opp != player
+        for loc in state.marbles[opp]
+        if loc[0] == "TRACK"
+    ]
+    anchors: set[int] = set()
+    for opp_idx in opponent_tracks:
+        for a_id, a_idx in own_tracks:
+            d1 = _forward_distance(a_idx, opp_idx)
+            if not (1 <= d1 <= 6):
+                continue
+            for b_id, b_idx in own_tracks:
+                if b_id == a_id:
+                    continue
+                d2 = _forward_distance(opp_idx, b_idx)
+                if 1 <= d2 <= 6:
+                    anchors.add(a_id)
+                    anchors.add(b_id)
+    return anchors
+
+
+def _is_bait_line_move(state: GameState, player: int, move: dict) -> bool:
+    """Conservative bait-line detection used for tendency analytics."""
+    if move["dest"][0] != "TRACK":
+        return False
+
+    dest_idx = move["dest"][1]
+    if not _opponent_behind_within_six(state, player, dest_idx):
+        return False
+
+    # Typical bait shape: move in front of your own nearby marble.
+    for m_idx, loc in enumerate(state.marbles[player]):
+        if m_idx == move["marble"] or loc[0] != "TRACK":
+            continue
+        if _forward_distance(loc[1], dest_idx) == 1:
+            return True
+    return False
+
+
 def compute_turn_record(
     game_id: str,
     turn_index: int,
@@ -171,6 +273,14 @@ def compute_turn_record(
         key: 0.0 for key in FEATURE_KEYS
     }
 
+    guard_occupant = state_before.marble_at_track(base_exit(player))
+    guard_marble_id = (
+        guard_occupant[1]
+        if guard_occupant is not None and guard_occupant[0] == player
+        else None
+    )
+    sandwich_anchors = _sandwich_anchor_marbles(state_before, player)
+
     capture_victim_progress = 0.0
     if chosen_move.get("captures") is not None:
         victim_player, victim_marble = chosen_move["captures"]
@@ -181,6 +291,48 @@ def compute_turn_record(
         "has_center": any(m["kind"] == "enter_center" for m in all_moves),
         "has_home": any(m["dest"][0] == "HOME" for m in all_moves),
         "has_exit_base": any(m["kind"] == "exit_base" for m in all_moves),
+        "opp_center_exit_threat": bool(
+            state_before.center_occupant is not None and state_before.center_occupant[0] != player
+        ),
+        "back_threat_within_6": any(
+            loc[0] == "TRACK" and _opponent_behind_within_six(state_before, player, loc[1])
+            for loc in state_before.marbles[player]
+        ),
+        "intercept_hold_available": any(
+            m["dest"][0] == "TRACK" and _opponent_ahead_within_six(state_before, player, m["dest"][1])
+            for m in all_moves
+        ),
+        "guard_exit_hold_available": bool(
+            guard_marble_id is not None and any(m["marble"] != guard_marble_id for m in all_moves)
+        ),
+        "opening_run_split_available": bool(
+            guard_marble_id is not None
+            and any(
+                m["marble"] != guard_marble_id
+                and state_before.marbles[player][m["marble"]][0] == "TRACK"
+                and 1 <= segment_offset(player, state_before.marbles[player][m["marble"]][1]) <= 13
+                for m in all_moves
+            )
+        ),
+        "sandwich_trap_present": bool(sandwich_anchors),
+        "multi_capture_choice": len({tuple(m["captures"]) for m in all_moves if m.get("captures") is not None}) >= 2,
+        "bait_line_available": any(_is_bait_line_move(state_before, player, m) for m in all_moves),
+    }
+
+    tendency_flags = {
+        "took_intercept_hold": (
+            chosen_move["dest"][0] == "TRACK"
+            and _opponent_ahead_within_six(state_before, player, chosen_move["dest"][1])
+        ),
+        "took_guard_exit_hold": bool(
+            guard_marble_id is not None and chosen_move["marble"] != guard_marble_id
+        ),
+        "preserved_sandwich_trap": bool(
+            sandwich_anchors
+            and chosen_move["marble"] not in sandwich_anchors
+            and chosen_move.get("captures") is None
+        ),
+        "bait_line_taken": _is_bait_line_move(state_before, player, chosen_move),
     }
 
     marbles_in_home = [
@@ -213,6 +365,7 @@ def compute_turn_record(
         home_slot_reached=(chosen_move["dest"][1] if chosen_move["dest"][0] == "HOME" else None),
         exit_base_made=(chosen_move["kind"] == "exit_base"),
         opportunity_flags=opportunity_flags,
+        tendency_flags=tendency_flags,
         pre_state_snapshot={
             "own_marble_locations": [list(loc) for loc in state_before.marbles[player]],
             "center_occupant": list(state_before.center_occupant) if state_before.center_occupant else None,
@@ -248,6 +401,7 @@ def turn_record_to_event(record: TurnRecord) -> dict:
         "home_slot_reached": record.home_slot_reached,
         "exit_base_made": record.exit_base_made,
         "opportunity_flags": record.opportunity_flags,
+        "tendency_flags": record.tendency_flags,
         "pre_state_snapshot": record.pre_state_snapshot,
         "candidate_moves": record.candidate_moves,
         "chosen_move_index": record.chosen_move_index,
@@ -297,6 +451,14 @@ def compile_game_stats(recording: dict) -> GameSummary:
             "capture_opps": 0,
             "center_opps": 0,
             "home_opps": 0,
+            "intercept_hold_opps": 0,
+            "guard_exit_hold_opps": 0,
+            "sandwich_trap_opps": 0,
+            "bait_line_opps": 0,
+            "intercept_hold_taken": 0,
+            "guard_exit_hold_taken": 0,
+            "sandwich_trap_preserved": 0,
+            "bait_line_taken": 0,
             "style_sum": {key: 0.0 for key in FEATURE_KEYS},
             "style_count": 0,
         }
@@ -351,6 +513,24 @@ def compile_game_stats(recording: dict) -> GameSummary:
                 counters[player]["center_opps"] += 1
             if opp.get("has_home"):
                 counters[player]["home_opps"] += 1
+            if opp.get("intercept_hold_available"):
+                counters[player]["intercept_hold_opps"] += 1
+            if opp.get("guard_exit_hold_available"):
+                counters[player]["guard_exit_hold_opps"] += 1
+            if opp.get("sandwich_trap_present"):
+                counters[player]["sandwich_trap_opps"] += 1
+            if opp.get("bait_line_available"):
+                counters[player]["bait_line_opps"] += 1
+
+            tendency = event.get("tendency_flags", {})
+            if tendency.get("took_intercept_hold"):
+                counters[player]["intercept_hold_taken"] += 1
+            if tendency.get("took_guard_exit_hold"):
+                counters[player]["guard_exit_hold_taken"] += 1
+            if tendency.get("preserved_sandwich_trap"):
+                counters[player]["sandwich_trap_preserved"] += 1
+            if tendency.get("bait_line_taken"):
+                counters[player]["bait_line_taken"] += 1
 
             if event.get("capture_made"):
                 counters[player]["captures_made"] += 1
@@ -455,6 +635,10 @@ def compile_game_stats(recording: dict) -> GameSummary:
                 center_entry_rate=_safe_rate(c["center_entries"], c["center_opps"]),
                 base_exit_on_6_rate=_safe_rate(c["base_exit_on_6_chosen"], c["base_exit_on_6_opportunities"]),
                 home_move_rate=_safe_rate(c["home_moves_made"], c["home_opps"]),
+                intercept_hold_rate=_safe_rate(c["intercept_hold_taken"], c["intercept_hold_opps"]),
+                guard_exit_hold_rate=_safe_rate(c["guard_exit_hold_taken"], c["guard_exit_hold_opps"]),
+                sandwich_trap_preserve_rate=_safe_rate(c["sandwich_trap_preserved"], c["sandwich_trap_opps"]),
+                bait_line_success_rate=_safe_rate(c["bait_line_taken"], c["bait_line_opps"]),
                 style_vector=style_vector,
             )
         )
@@ -495,7 +679,9 @@ def append_stats_csv(summary: GameSummary, path: str) -> None:
         "game_id", "player", "player_type", "won", "final_home", "total_turns", "total_rolls",
         "ones_rolled", "sixes_rolled", "captures_made", "captures_suffered", "net_captures",
         "center_entries", "center_exits", "center_bumps_suffered", "base_exit_on_6_rate",
-        "capture_conversion_rate", "center_entry_rate", "home_move_rate", "discretionary_turns",
+        "capture_conversion_rate", "center_entry_rate", "home_move_rate",
+        "intercept_hold_rate", "guard_exit_hold_rate", "sandwich_trap_preserve_rate", "bait_line_success_rate",
+        "discretionary_turns",
         "forced_turns", "no_move_turns", "first_marble_home_turn",
         "style_DEP", "style_RUN", "style_SPR", "style_CAP", "style_SAFE",
         "style_CTR", "style_DEN", "style_FLOW", "style_HOME", "style_FIN",
@@ -528,6 +714,10 @@ def append_stats_csv(summary: GameSummary, path: str) -> None:
                 "capture_conversion_rate": row.capture_conversion_rate,
                 "center_entry_rate": row.center_entry_rate,
                 "home_move_rate": row.home_move_rate,
+                "intercept_hold_rate": row.intercept_hold_rate,
+                "guard_exit_hold_rate": row.guard_exit_hold_rate,
+                "sandwich_trap_preserve_rate": row.sandwich_trap_preserve_rate,
+                "bait_line_success_rate": row.bait_line_success_rate,
                 "discretionary_turns": row.discretionary_turns,
                 "forced_turns": row.forced_move_turns,
                 "no_move_turns": row.no_move_turns,

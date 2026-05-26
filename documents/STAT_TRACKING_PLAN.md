@@ -102,6 +102,7 @@ Fields:
 - `candidate_moves` — one record per legal move, including the feature vector from `compute_features()`
 - `chosen_move_index` — index into `candidate_moves` of the chosen move
 - `decision_type` — a coarse label for the type of decision (see §4)
+- `opportunity_flags` — boolean map of which tactical opportunities were present (see §4.1)
 
 ### 3.2 Game metadata extension
 
@@ -134,6 +135,29 @@ Automatically assigned based on what move types are in the legal-move list. Used
 | `home_vs_advance` | Home move available; no capture or center options |
 | `mixed` | Multiple types present, none of the above patterns match |
 
+### 4.1 Opportunity Flags (including human-tendency flags)
+
+These flags are recorded per turn so the HT-01..HT-11 tendencies in `AI_Strategy_Spec.md` can be analyzed as rates over opportunities.
+
+| Flag | Meaning |
+|---|---|
+| `has_capture` | At least one legal capture exists |
+| `has_center` | At least one legal `enter_center` exists |
+| `has_home` | At least one legal home move exists (`enter_home` or `advance_home`) |
+| `has_exit_base` | At least one legal `exit_base` exists |
+| `opp_center_exit_threat` | At least one opponent can plausibly exit center before your next turn |
+| `back_threat_within_6` | At least one of your marbles is within six squares of a dangerous trailing opponent |
+| `intercept_hold_available` | A legal move preserves or creates an interception square against a likely opponent pass-through line |
+| `guard_exit_hold_available` | A legal move keeps a guard on your base-exit traffic square while alternatives advance elsewhere |
+| `opening_run_split_available` | You can advance a lead opening-run marble while preserving a near-exit support marble |
+| `sandwich_trap_present` | An opponent marble is between two of your marbles with meaningful capture pressure |
+| `multi_capture_choice` | Two or more distinct capture targets are legal |
+| `bait_line_available` | A legal move creates an exposure that can force opponent capture-vs-progress tradeoff |
+
+Implementation guidance:
+- Keep flag logic conservative and deterministic; ambiguous states should default to `false`.
+- Use these as analysis dimensions first (rates and win correlation), then as potential AI tuning inputs.
+
 ---
 
 ## 5. `wahoo/stats.py` Module
@@ -162,7 +186,8 @@ class TurnRecord:
     home_slot_reached: int | None    # 0–3, or None
     exit_base_made: bool
     opportunity_flags: dict     # which opportunity types were available this turn
-    # opportunity_flags keys: has_capture, has_center, has_home, has_exit_base
+    # opportunity_flags includes base flags + tendency flags from §4.1
+    tendency_flags: dict | None  # optional alias/subset for HT-01..HT-11 analytics
 ```
 
 ### 5.2 `PlayerGameStats` dataclass
@@ -207,6 +232,12 @@ class PlayerGameStats:
     center_entry_rate: float | None         # center entries / center opps
     base_exit_on_6_rate: float | None       # exits on 6 / opportunities
     home_move_rate: float | None            # home moves chosen / home opps
+
+    # Tendency-conditioned rates (derived from §4.1 flags)
+    intercept_hold_rate: float | None
+    guard_exit_hold_rate: float | None
+    sandwich_trap_preserve_rate: float | None
+    bait_line_success_rate: float | None
 
     # Style vector: average feature value of chosen moves on discretionary turns
     style_vector: dict   # 10-key float dict, keys: DEP RUN SPR CAP SAFE CTR DEN FLOW HOME FIN

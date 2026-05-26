@@ -63,6 +63,26 @@ Risk tolerance is best treated as a **cross-cutting scalar**, not as a separate 
 
 A second useful refinement is a **phase switch** rather than a separate strategy: many strong players spread early, then collapse into single-runner or finish-over-fight behavior once a leading marble or a clean home path emerges. In other words, “spread vs runner” is often a stage-dependent preference, not a permanent identity.
 
+## Human tendency hypotheses (soft priors)
+
+The following tendencies are worth adding now as soft priors. They should guide tie-breaks and weight tuning, not override legal-move quality or win guardrails. Keep each tendency evidence-driven by tracking how often it helps versus hurts in discretionary turns.
+
+| ID | Add now | Reworded tendency | Typical override condition | Suggested tracking metric |
+|---|---|---|---|---|
+| HT-01 | Yes | Players often treat their own base-exit square as conditionally safe because many recapture lines are awkward unless the opponent has exact tempo. | Take the capture anyway when it creates a near-certain win swing or prevents an opponent's immediate finish. | Recapture rate after captures on opponent base-exit squares. |
+| HT-02 | Yes | Players usually avoid parking on an opponent's center-exit lane when that opponent still has center-exit threat. | Ignore this when taking a high-value capture or stopping a leader is more urgent. | Exposure on opponent center-exit squares in turns where opponent has center occupant. |
+| HT-03 | Yes | Players prefer moves that leave at least a six-space safety buffer from dangerous marbles behind them. | Break the spacing rule when advancing secures home progress, denial, or decisive capture value. | Post-move minimum back-threat distance and threat-escape rate. |
+| HT-04 | Yes | Near opponent endgames, players may hold defensive intercept squares to punish pass-through attempts instead of pure racing. | Drop the intercept posture when it blocks your own conversion path or when other opponents already cover the lane. | Intercept-hold frequency in late game and resulting capture conversion. |
+| HT-05 | Yes | In mid/late game, players may intentionally leave a guard marble on base exit to control local traffic and center-exit lanes. | Move the guard when keeping it would cause self-blocking or miss a strong finish move. | Guard-square dwell time and net value (captures/denials minus missed progress). |
+| HT-06 | Yes | With two marbles in the opening run, players often keep one near base exit while advancing the lead marble to preserve center access options. | Override when a between-marbles capture is available or when spacing creates immediate vulnerability. | Opening-run split pattern rate and follow-up center-entry value. |
+| HT-07 | Yes (low confidence) | If an opponent is sandwiched between two of your marbles, players may play elsewhere to preserve the trap rather than collapsing it immediately. | Break the trap if immediate capture now is clearly better than delayed pressure. | Trap-preservation rate and expected value versus immediate capture baseline. |
+| HT-08 | Yes (opponent model) | Sandwiched opponents often play for a six-based escape window, so trap owners should anticipate that tempo spike. | De-prioritize this read when the trapped opponent has stronger non-six escapes already legal. | Escape-on-six rate from sandwich states. |
+| HT-09 | Yes | Center-entry decisions should price two risks: center contest risk and next-turn center-exit vulnerability. | Enter center anyway when expected shortcut gain dominates both risk terms. | Center expected-value decomposition: gain, contest loss, exit-square exposure. |
+| HT-10 | Yes | With multiple captures, players usually target the piece with greatest practical win impact (often most advanced or most critical to an imminent win). | Choose a different target when leader status, not raw progress, is the dominant danger signal. | Multi-capture target priority accuracy versus leader-threat heuristic. |
+| HT-11 | Yes | Players sometimes accept short-term exposure to force opponents into an awkward capture-versus-progress decision. | Avoid bait lines that fail if the opponent can both capture and keep their best tempo. | Bait-line success rate (opponent forced off best-valued move). |
+
+Implementation note: represent these as additive score nudges and tie-break preferences, not hard constraints. If a tendency repeatedly underperforms in logs, demote its weight or restrict it to a narrower trigger window.
+
 ## Playstyle profiles
 
 Use hard guardrails first, then style. Immediate wins should always outrank style expression. After that, score legal moves with a weighted utility function over the ten strategy dimensions. A simple, interpretable version is:

@@ -110,6 +110,11 @@ def test_compute_turn_record_exit_only_profile():
     assert set(record.chosen_features.keys()) == {
         "DEP", "RUN", "SPR", "CAP", "SAFE", "CTR", "DEN", "FLOW", "HOME", "FIN"
     }
+    assert "opp_center_exit_threat" in record.opportunity_flags
+    assert "intercept_hold_available" in record.opportunity_flags
+    assert "bait_line_available" in record.opportunity_flags
+    assert "took_guard_exit_hold" in record.tendency_flags
+    assert "bait_line_taken" in record.tendency_flags
 
 
 def test_compile_game_stats_from_turn_detail_recording():
@@ -129,6 +134,10 @@ def test_compile_game_stats_from_turn_detail_recording():
     assert red.base_exit_on_6_chosen == 1
     assert red.base_exit_on_6_rate == 1.0
     assert red.discretionary_turns >= 1
+    assert red.intercept_hold_rate is None or 0.0 <= red.intercept_hold_rate <= 1.0
+    assert red.guard_exit_hold_rate is None or 0.0 <= red.guard_exit_hold_rate <= 1.0
+    assert red.sandwich_trap_preserve_rate is None or 0.0 <= red.sandwich_trap_preserve_rate <= 1.0
+    assert red.bait_line_success_rate is None or 0.0 <= red.bait_line_success_rate <= 1.0
 
 
 def test_compile_game_stats_rejects_legacy_recording():
