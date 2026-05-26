@@ -14,7 +14,7 @@ wahoo/
   ai.py           — AI player classes, feature scoring, profiles (implemented)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
-  test_ai.py      — AI scenario probe suite (probes 1-3 implemented)
+  test_ai.py      — AI scenario probe suite (probes 1-4 implemented)
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
@@ -30,7 +30,7 @@ Planned but not yet present in `wahoo/`:
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 37 tests passing under `python -m pytest tests/ -q`.
+Current verified test status: 38 tests passing under `python -m pytest tests/ -q`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -96,7 +96,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
 - ⬜ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
 - ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
-- ⬜ Remaining scenario probes in `tests/test_ai.py`; probes 1-3 exist now
+- ⬜ Remaining scenario probes in `tests/test_ai.py`; probes 1-4 exist now
 
 ### STAT_TRACKING_PLAN.md covers
 
@@ -130,13 +130,14 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 4. ✅ `tests/test_ai.py` probe 1: win guardrail — passing for all profiles
 5. ✅ `tests/test_ai.py` probe 2: center temptation — passing for diagnostic profiles
 6. ✅ `tests/test_ai.py` probe 3: capture vs deploy — passing for diagnostic profiles
-7. ⬜ Probes 4–6 in `tests/test_ai.py` (finish or fight, center denial, threat escape)
-8. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
-9. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
-10. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
-11. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
-12. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
-13. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
+7. ✅ `tests/test_ai.py` probe 4: finish or fight — passing for diagnostic profiles
+8. ⬜ Probes 5–6 in `tests/test_ai.py` (center denial, threat escape)
+9. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
+10. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
+11. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
+12. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
+13. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
+14. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
 
 ## The 10 Strategy Features (Summary)
 

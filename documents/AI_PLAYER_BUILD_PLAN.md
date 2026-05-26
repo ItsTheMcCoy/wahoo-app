@@ -578,7 +578,7 @@ def test_threat_escape():
 2. `compute_features()` using those helpers — all 10 features
 3. `RandomPlayer` and `GreedyPlayer` with `Balanced Pragmatist` weights only
 4. Probe 1 (win guardrail) — validates the hard-rule path
-5. Probe 4–6 with Balanced weights initially; tune to confirm balanced play
+5. Probe 5–6 with Balanced weights initially; tune to confirm balanced play
 6. Add remaining 7 profiles; run probes per profile
 7. Refactor `play.py` for per-slot dispatch
 8. `selfplay.py` + win-rate table to confirm rough Elo parity across profiles

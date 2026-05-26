@@ -138,3 +138,47 @@ def test_capture_vs_deploy():
     assert swarm_choice["kind"] == "exit_base", (
         "Profile 'swarm' should prefer deploying a new marble"
     )
+
+
+# ---------------------------------------------------------------------------
+# Probe 4 — Finish or fight (closers prefer home, fighters prefer capture)
+# ---------------------------------------------------------------------------
+
+def test_finish_or_fight():
+    """
+    Player 0 has one marble already deep in home, one marble at its turn-in
+    square, one marble three squares behind a high-progress opponent, and one
+    marble in base. With roll 3, the player can either move the turn-in marble
+    into HOME(2) or capture the opponent on TRACK(13).
+
+    Endgame-focused profiles should choose the home move. Fight-focused
+    profiles should choose the capture.
+    """
+    roll = 3
+
+    marbles = _all_base()
+    marbles[0] = [
+        loc_home(3),
+        loc_base(),
+        loc_track(home_entry(0)),
+        loc_track(10),
+    ]
+    marbles[1][0] = loc_track(home_entry(1))
+    state = make_state(marbles)
+
+    moves = legal_moves(state, 0, roll)
+    home_move = next(m for m in moves if m["dest"] == loc_home(2))
+    capture_move = next(m for m in moves if m["captures"] is not None)
+    assert capture_move["dest"] == loc_track(home_entry(1))
+
+    for profile_name in ["engineer", "tortoise", "balanced"]:
+        chosen = PROFILES[profile_name].choose_move(state, 0, roll, moves)
+        assert chosen == home_move, (
+            f"Profile '{profile_name}' should prefer home progress"
+        )
+
+    for profile_name in ["assassin", "gatekeeper"]:
+        chosen = PROFILES[profile_name].choose_move(state, 0, roll, moves)
+        assert chosen == capture_move, (
+            f"Profile '{profile_name}' should prefer the capture"
+        )
