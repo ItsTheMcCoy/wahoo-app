@@ -14,6 +14,7 @@ wahoo/
   ai.py           — AI player classes, feature scoring, profiles (implemented)
   selfplay.py     — Headless N-game AI runner (implemented)
   reasoning_export.py — JSONL exporter for human move-reasoning samples
+  stats.py        — Per-game stat tracking and CSV export (present)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
   test_ai.py      — AI scenario probe suite (probes 1-6 implemented)
@@ -25,15 +26,12 @@ documents/
   STAT_TRACKING_PLAN.md       — Full implementation spec for stats.py and recording extensions
   AI_Strategy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank
   DEVELOPMENT_PLAN.md         — Overall project roadmap
-
-Planned but not yet present in `wahoo/`:
-- `stats.py` — per-game stat tracking and CSV export
 ```
 
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 73 tests passing under `python -m pytest`.
+Current verified test status: 77 tests passing under `python -m pytest tests/`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -139,9 +137,9 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 9. ✅ `tests/test_ai.py` probe 6: threat escape — passing for Tortoise and Gatekeeper
 10. ✅ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
 11. ✅ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0,p1,p2,p3`)
-12. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
-13. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
-14. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
+12. ✅ Stage 2 baseline benchmark block completed across 5 seeds (2000 games/profile) and Stage 3 candidates selected: sprinter, gambler, expectimax
+13. ✅ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
+14. ✅ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
 15. ✅ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
 
 ## The 10 Strategy Features (Summary)

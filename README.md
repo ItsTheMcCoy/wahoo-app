@@ -30,6 +30,7 @@ Implemented:
   - finish or fight
   - center denial
   - threat escape
+- Stage 2 baseline benchmark cycle completed across seeds `20260526`-`20260530` with Stage 3 candidates selected as `sprinter`, `gambler`, and `expectimax` (see `documents/AI_BENCHMARK_RESULTS.md`).
 
 Not implemented yet:
 
