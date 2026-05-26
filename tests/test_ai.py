@@ -218,3 +218,37 @@ def test_center_denial():
         assert chosen == denial_move, (
             f"Profile '{profile_name}' should bump the opponent from center"
         )
+
+
+# ---------------------------------------------------------------------------
+# Probe 6 — Threat escape (Tortoise moves away from danger)
+# ---------------------------------------------------------------------------
+
+def test_threat_escape():
+    """
+    Player 0 has one marble at TRACK(24), currently threatened by an opponent
+    at TRACK(20) on a future roll of 4, and another marble at TRACK(30). With
+    roll 4, the player can either move the threatened marble to TRACK(28) or
+    advance the other marble to TRACK(34).
+
+    Safety-focused profiles should move the threatened marble out of danger.
+    """
+    roll = 4
+
+    marbles = _all_base()
+    marbles[0] = [loc_track(24), loc_track(30), loc_base(), loc_base()]
+    marbles[1][0] = loc_track(20)
+    state = make_state(marbles)
+
+    moves = legal_moves(state, 0, roll)
+    escape_move = next(m for m in moves if m["marble"] == 0)
+    assert escape_move["dest"] == loc_track(28)
+    assert any(m["dest"] == loc_track(34) for m in moves), (
+        "Expected a non-escape advance alternative"
+    )
+
+    for profile_name in ["tortoise", "gatekeeper"]:
+        chosen = PROFILES[profile_name].choose_move(state, 0, roll, moves)
+        assert chosen == escape_move, (
+            f"Profile '{profile_name}' should move away from capture danger"
+        )

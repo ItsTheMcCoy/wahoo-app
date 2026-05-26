@@ -5,7 +5,7 @@ Build order (per AI_PLAYER_BUILD_PLAN.md):
   1. _marble_progress(), compute_exposure()  ✓
   2. compute_features()                      ✓
   3. RandomPlayer, GreedyPlayer + profiles   ✓
-  4. tests/test_ai.py probes 2–6            ← probe 6 next
+  4. tests/test_ai.py probes 2–6            ✓
   5. play.py per-slot dispatch
   6. selfplay.py
   7. stats.py
@@ -205,8 +205,8 @@ SPRINTER_WEIGHTS  = {"DEP": 0.4, "RUN": 1.0, "SPR": 0.2, "CAP": 0.4, "SAFE": 0.2
 SWARM_WEIGHTS     = {"DEP": 1.0, "RUN": 0.2, "SPR": 1.0, "CAP": 0.5, "SAFE": 0.4, "CTR": 0.4, "DEN": 0.4, "FLOW": 0.8, "HOME": 0.5, "FIN": 0.6}
 ASSASSIN_WEIGHTS  = {"DEP": 0.5, "RUN": 0.4, "SPR": 0.4, "CAP": 1.0, "SAFE": 0.2, "CTR": 0.5, "DEN": 0.9, "FLOW": 0.5, "HOME": 0.3, "FIN": 0.4}
 GAMBLER_WEIGHTS   = {"DEP": 0.7, "RUN": 0.8, "SPR": 0.3, "CAP": 0.6, "SAFE": 0.1, "CTR": 1.0, "DEN": 0.6, "FLOW": 0.2, "HOME": 0.4, "FIN": 0.5}
-TORTOISE_WEIGHTS  = {"DEP": 0.4, "RUN": 0.3, "SPR": 0.6, "CAP": 0.2, "SAFE": 1.0, "CTR": 0.1, "DEN": 0.5, "FLOW": 0.9, "HOME": 0.9, "FIN": 0.8}
-GATEKEEPER_WEIGHTS= {"DEP": 0.5, "RUN": 0.3, "SPR": 0.5, "CAP": 1.0, "SAFE": 0.7, "CTR": 0.4, "DEN": 1.0, "FLOW": 0.8, "HOME": 0.5, "FIN": 0.6}
+TORTOISE_WEIGHTS  = {"DEP": 0.4, "RUN": 0.3, "SPR": 0.6, "CAP": 0.2, "SAFE": 2.5, "CTR": 0.1, "DEN": 0.5, "FLOW": 0.9, "HOME": 0.9, "FIN": 0.8}
+GATEKEEPER_WEIGHTS= {"DEP": 0.5, "RUN": 0.3, "SPR": 0.5, "CAP": 1.0, "SAFE": 2.5, "CTR": 0.4, "DEN": 1.0, "FLOW": 0.8, "HOME": 0.5, "FIN": 0.6}
 ENGINEER_WEIGHTS  = {"DEP": 0.4, "RUN": 0.4, "SPR": 0.5, "CAP": 0.2, "SAFE": 0.8, "CTR": 0.2, "DEN": 0.3, "FLOW": 1.0, "HOME": 1.0, "FIN": 1.0}
 BALANCED_WEIGHTS  = {"DEP": 0.6, "RUN": 0.5, "SPR": 0.6, "CAP": 0.6, "SAFE": 0.6, "CTR": 0.5, "DEN": 0.6, "FLOW": 0.7, "HOME": 0.7, "FIN": 0.7}
 

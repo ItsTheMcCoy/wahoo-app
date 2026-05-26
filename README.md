@@ -19,19 +19,19 @@ Implemented:
   - 10-feature move scoring
   - 8 named greedy profiles plus `random` in `PROFILES`
 - Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
-- AI scenario probes 1-5 in `tests/test_ai.py`:
+- AI scenario probes 1-6 in `tests/test_ai.py`:
   - win guardrail
   - center temptation
   - capture vs deploy
   - finish or fight
   - center denial
+  - threat escape
 
 Not implemented yet:
 
 - Per-slot AI selection in the console game. `play.py` still uses the legacy `computer_self_play` boolean.
 - `wahoo/selfplay.py` headless N-game runner.
 - `wahoo/stats.py` stat aggregation and CSV export.
-- Full AI scenario probe suite. Probe 6 remains: threat escape.
 - Godot project files and Android build/export setup.
 
 ## Requirements
@@ -118,7 +118,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 39 passing tests.
+At the time this documentation was synchronized, the suite contained 40 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 

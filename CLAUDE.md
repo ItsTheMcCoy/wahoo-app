@@ -14,7 +14,7 @@ wahoo/
   ai.py           — AI player classes, feature scoring, profiles (implemented)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
-  test_ai.py      — AI scenario probe suite (probes 1-5 implemented)
+  test_ai.py      — AI scenario probe suite (probes 1-6 implemented)
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
@@ -30,7 +30,7 @@ Planned but not yet present in `wahoo/`:
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 38 tests passing under `python -m pytest tests/ -q`.
+Current verified test status: 40 tests passing under `python -m pytest tests/ -q`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -96,7 +96,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
 - ⬜ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
 - ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
-- ⬜ Remaining scenario probe in `tests/test_ai.py`; probes 1-5 exist now
+- ✅ Full six-probe scenario suite in `tests/test_ai.py`
 
 ### STAT_TRACKING_PLAN.md covers
 
@@ -132,7 +132,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 6. ✅ `tests/test_ai.py` probe 3: capture vs deploy — passing for diagnostic profiles
 7. ✅ `tests/test_ai.py` probe 4: finish or fight — passing for diagnostic profiles
 8. ✅ `tests/test_ai.py` probe 5: center denial — passing for Gatekeeper and Assassin
-9. ⬜ Probe 6 in `tests/test_ai.py` (threat escape)
+9. ✅ `tests/test_ai.py` probe 6: threat escape — passing for Tortoise and Gatekeeper
 10. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
 11. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
 12. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
@@ -165,8 +165,8 @@ Full formulas and helper implementations are in `documents/AI_PLAYER_BUILD_PLAN.
 | Swarm               | 1.0 | 0.2 | 1.0 | 0.5 | 0.4  | 0.4 | 0.4 | 0.8  | 0.5  | 0.6 |
 | Assassin            | 0.5 | 0.4 | 0.4 | 1.0 | 0.2  | 0.5 | 0.9 | 0.5  | 0.3  | 0.4 |
 | Shortcut Gambler    | 0.7 | 0.8 | 0.3 | 0.6 | 0.1  | 1.0 | 0.6 | 0.2  | 0.4  | 0.5 |
-| Tortoise            | 0.4 | 0.3 | 0.6 | 0.2 | 1.0  | 0.1 | 0.5 | 0.9  | 0.9  | 0.8 |
-| Gatekeeper          | 0.5 | 0.3 | 0.5 | 0.7 | 0.7  | 0.4 | 1.0 | 0.8  | 0.5  | 0.6 |
+| Tortoise            | 0.4 | 0.3 | 0.6 | 0.2 | 2.5  | 0.1 | 0.5 | 0.9  | 0.9  | 0.8 |
+| Gatekeeper          | 0.5 | 0.3 | 0.5 | 1.0 | 2.5  | 0.4 | 1.0 | 0.8  | 0.5  | 0.6 |
 | Endgame Engineer    | 0.4 | 0.4 | 0.5 | 0.2 | 0.8  | 0.2 | 0.3 | 1.0  | 1.0  | 1.0 |
 | Balanced Pragmatist | 0.6 | 0.5 | 0.6 | 0.6 | 0.6  | 0.5 | 0.6 | 0.7  | 0.7  | 0.7 |
 

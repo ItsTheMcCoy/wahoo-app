@@ -83,9 +83,9 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `tests/test_ai.py` — probe 3 (capture vs deploy) written; Assassin and Gatekeeper capture, Swarm deploys
 - `tests/test_ai.py` — probe 4 (finish or fight) written; Engineer, Tortoise, and Balanced prefer home progress; Assassin and Gatekeeper capture
 - `tests/test_ai.py` — probe 5 (center denial) written; Gatekeeper and Assassin bump opponent from center
+- `tests/test_ai.py` — probe 6 (threat escape) written; Tortoise and Gatekeeper move away from capture danger
 
 **Remaining:**
-- `tests/test_ai.py` probe 6 (threat escape)
 - Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot AI dispatch
 - `wahoo/selfplay.py` headless N-game runner
 - Run 50-game self-play to verify win-rate balance across profiles
