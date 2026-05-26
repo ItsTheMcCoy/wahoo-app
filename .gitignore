@@ -18,6 +18,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.claude/
 
 # Generated game recordings
 game*.json
