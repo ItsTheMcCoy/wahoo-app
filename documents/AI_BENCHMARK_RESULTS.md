@@ -470,6 +470,53 @@ Notes: AI_TESTING_PLAN.md Stage 2.1, fifth baseline seed run
 - Proceed with mixed-opponent robustness testing for sprinter, gambler, expectimax.
 - Run Gauntlet A first: opponents assassin,tortoise,balanced across the full standard seed set.
 
+### Stage 3 - Mixed-Opponent Robustness Testing (2026-05-26)
+
+Run configuration:
+- Profiles: sprinter,gambler,expectimax
+- Seeds: 20260526, 20260527, 20260528, 20260529, 20260530
+- Games per seat: 100
+- Max turns: 20000
+
+Full per-seed tables and command history are recorded in [stage3_mixed_opponent_results.md](stage3_mixed_opponent_results.md) and [stage3_mixed_opponent_results.json](stage3_mixed_opponent_results.json).
+
+#### Gauntlet A
+
+Opponents: assassin,tortoise,balanced
+
+| Rank | Profile | Wins | Win % | Completed | Unfinished | Avg Turns | Avg Rolls | Avg Captures |
+|------|---------|------|-------|-----------|------------|-----------|-----------|--------------|
+| 1 | sprinter | 1741 | 87.1% | 2000/2000 | 0 | 537.5 | 645.3 | 96.2 |
+| 2 | gambler | 1720 | 86.0% | 2000/2000 | 0 | 572.5 | 686.9 | 105.6 |
+| 3 | expectimax | 1549 | 77.5% | 2000/2000 | 0 | 646.3 | 775.5 | 115.1 |
+
+#### Gauntlet B
+
+Opponents: gambler,gatekeeper,engineer
+
+| Rank | Profile | Wins | Win % | Completed | Unfinished | Avg Turns | Avg Rolls | Avg Captures |
+|------|---------|------|-------|-----------|------------|-----------|-----------|--------------|
+| 1 | sprinter | 1010 | 50.5% | 2000/2000 | 0 | 423.8 | 508.7 | 67.6 |
+| 2 | gambler | 984 | 49.2% | 2000/2000 | 0 | 435.7 | 522.9 | 71.7 |
+| 3 | expectimax | 715 | 35.8% | 2000/2000 | 0 | 455.8 | 547.2 | 72.1 |
+
+#### Gauntlet C
+
+Opponents: random,balanced,balanced
+
+| Rank | Profile | Wins | Win % | Completed | Unfinished | Avg Turns | Avg Rolls | Avg Captures |
+|------|---------|------|-------|-----------|------------|-----------|-----------|--------------|
+| 1 | sprinter | 1522 | 76.1% | 2000/2000 | 0 | 461.6 | 554.2 | 70.8 |
+| 2 | gambler | 1499 | 75.0% | 2000/2000 | 0 | 485.2 | 582.5 | 77.3 |
+| 3 | expectimax | 1329 | 66.5% | 2000/2000 | 0 | 543.1 | 651.9 | 83.7 |
+
+**Stage 3 interpretation:**
+- All three candidate profiles completed cleanly across every mixed-opponent gauntlet.
+- sprinter led all three gauntlets and stayed the most robust overall.
+- gambler remained close behind sprinter in every gauntlet, especially in the balanced-heavy field.
+- expectimax stayed competitive, but trailed the other two in every mixed-opponent field.
+- The mixed-opponent block supports keeping sprinter, gambler, and expectimax as the top Stage 3 profiles, with sprinter still the strongest all-around candidate.
+
 ---
 
 ## Run Log Template

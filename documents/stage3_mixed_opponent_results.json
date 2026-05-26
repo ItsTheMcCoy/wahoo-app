@@ -1,0 +1,1654 @@
+{
+  "metadata": {
+    "generated_at_utc": "2026-05-26T21:34:07.677096+00:00",
+    "started_at_utc": "2026-05-26T20:41:48.434135+00:00",
+    "completed_at_utc": "2026-05-26T21:34:07.677096+00:00",
+    "profiles": [
+      "sprinter",
+      "gambler",
+      "expectimax"
+    ],
+    "seeds": [
+      20260526,
+      20260527,
+      20260528,
+      20260529,
+      20260530
+    ],
+    "games_per_seed_per_profile": 400,
+    "games_per_profile_per_gauntlet": 2000,
+    "games_per_seat": 100,
+    "max_turns": 20000
+  },
+  "gauntlets": {
+    "A": {
+      "opponents": [
+        "assassin",
+        "tortoise",
+        "balanced"
+      ],
+      "seeds": [
+        {
+          "seed": 20260526,
+          "profiles": [
+            {
+              "profile": "gambler",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 350,
+              "win_rate": 0.875,
+              "completed_win_rate": 0.875,
+              "avg_turns": 564.015,
+              "avg_rolls": 677.8175,
+              "avg_captures": 103.9725,
+              "seat_wins": [
+                91,
+                87,
+                86,
+                86
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 339,
+              "win_rate": 0.8475,
+              "completed_win_rate": 0.8475,
+              "avg_turns": 541.7,
+              "avg_rolls": 650.845,
+              "avg_captures": 97.0525,
+              "seat_wins": [
+                84,
+                83,
+                86,
+                86
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 298,
+              "win_rate": 0.745,
+              "completed_win_rate": 0.745,
+              "avg_turns": 668.445,
+              "avg_rolls": 801.68,
+              "avg_captures": 118.5625,
+              "seat_wins": [
+                76,
+                74,
+                74,
+                74
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260527,
+          "profiles": [
+            {
+              "profile": "gambler",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 352,
+              "win_rate": 0.88,
+              "completed_win_rate": 0.88,
+              "avg_turns": 575.515,
+              "avg_rolls": 690.0225,
+              "avg_captures": 106.2325,
+              "seat_wins": [
+                89,
+                82,
+                91,
+                90
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 350,
+              "win_rate": 0.875,
+              "completed_win_rate": 0.875,
+              "avg_turns": 546.1025,
+              "avg_rolls": 655.7775,
+              "avg_captures": 98.105,
+              "seat_wins": [
+                82,
+                91,
+                91,
+                86
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 308,
+              "win_rate": 0.77,
+              "completed_win_rate": 0.77,
+              "avg_turns": 641.225,
+              "avg_rolls": 769.69,
+              "avg_captures": 114.29,
+              "seat_wins": [
+                74,
+                80,
+                79,
+                75
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260528,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 348,
+              "win_rate": 0.87,
+              "completed_win_rate": 0.87,
+              "avg_turns": 534.01,
+              "avg_rolls": 641.11,
+              "avg_captures": 94.94,
+              "seat_wins": [
+                85,
+                87,
+                84,
+                92
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 343,
+              "win_rate": 0.8575,
+              "completed_win_rate": 0.8575,
+              "avg_turns": 570.9925,
+              "avg_rolls": 684.3675,
+              "avg_captures": 105.2825,
+              "seat_wins": [
+                84,
+                89,
+                84,
+                86
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 318,
+              "win_rate": 0.795,
+              "completed_win_rate": 0.795,
+              "avg_turns": 636.8825,
+              "avg_rolls": 764.34,
+              "avg_captures": 113.76,
+              "seat_wins": [
+                82,
+                80,
+                76,
+                80
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260529,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 351,
+              "win_rate": 0.8775,
+              "completed_win_rate": 0.8775,
+              "avg_turns": 541.6475,
+              "avg_rolls": 649.7375,
+              "avg_captures": 97.345,
+              "seat_wins": [
+                87,
+                85,
+                92,
+                87
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 330,
+              "win_rate": 0.825,
+              "completed_win_rate": 0.825,
+              "avg_turns": 591.8075,
+              "avg_rolls": 709.9425,
+              "avg_captures": 109.3325,
+              "seat_wins": [
+                86,
+                77,
+                79,
+                88
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 314,
+              "win_rate": 0.785,
+              "completed_win_rate": 0.785,
+              "avg_turns": 639.8425,
+              "avg_rolls": 768.42,
+              "avg_captures": 113.88,
+              "seat_wins": [
+                74,
+                83,
+                78,
+                79
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260530,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 353,
+              "win_rate": 0.8825,
+              "completed_win_rate": 0.8825,
+              "avg_turns": 524.12,
+              "avg_rolls": 629.0475,
+              "avg_captures": 93.7075,
+              "seat_wins": [
+                90,
+                92,
+                84,
+                87
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 345,
+              "win_rate": 0.8625,
+              "completed_win_rate": 0.8625,
+              "avg_turns": 560.115,
+              "avg_rolls": 672.31,
+              "avg_captures": 103.2325,
+              "seat_wins": [
+                88,
+                84,
+                83,
+                90
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "assassin",
+                "tortoise",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 311,
+              "win_rate": 0.7775,
+              "completed_win_rate": 0.7775,
+              "avg_turns": 645.005,
+              "avg_rolls": 773.5825,
+              "avg_captures": 115.0775,
+              "seat_wins": [
+                77,
+                81,
+                72,
+                81
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "sprinter",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1741,
+          "win_rate": 0.8705,
+          "completed_win_rate": 0.8705,
+          "avg_turns": 537.516,
+          "avg_rolls": 645.3035,
+          "avg_captures": 96.23,
+          "seat_wins": [
+            428,
+            438,
+            437,
+            438
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "gambler",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1720,
+          "win_rate": 0.86,
+          "completed_win_rate": 0.86,
+          "avg_turns": 572.489,
+          "avg_rolls": 686.892,
+          "avg_captures": 105.6105,
+          "seat_wins": [
+            438,
+            419,
+            423,
+            440
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "expectimax",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1549,
+          "win_rate": 0.7745,
+          "completed_win_rate": 0.7745,
+          "avg_turns": 646.28,
+          "avg_rolls": 775.5425,
+          "avg_captures": 115.114,
+          "seat_wins": [
+            383,
+            398,
+            379,
+            389
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        }
+      ]
+    },
+    "B": {
+      "opponents": [
+        "gambler",
+        "gatekeeper",
+        "engineer"
+      ],
+      "seeds": [
+        {
+          "seed": 20260526,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 201,
+              "win_rate": 0.5025,
+              "completed_win_rate": 0.5025,
+              "avg_turns": 437.6975,
+              "avg_rolls": 525.9525,
+              "avg_captures": 70.26,
+              "seat_wins": [
+                45,
+                50,
+                56,
+                50
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 191,
+              "win_rate": 0.4775,
+              "completed_win_rate": 0.4775,
+              "avg_turns": 433.12,
+              "avg_rolls": 520.67,
+              "avg_captures": 71.8675,
+              "seat_wins": [
+                49,
+                51,
+                38,
+                53
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 137,
+              "win_rate": 0.3425,
+              "completed_win_rate": 0.3425,
+              "avg_turns": 458.0075,
+              "avg_rolls": 549.395,
+              "avg_captures": 72.3125,
+              "seat_wins": [
+                27,
+                44,
+                39,
+                27
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260527,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 201,
+              "win_rate": 0.5025,
+              "completed_win_rate": 0.5025,
+              "avg_turns": 414.5675,
+              "avg_rolls": 497.7325,
+              "avg_captures": 65.9525,
+              "seat_wins": [
+                47,
+                56,
+                51,
+                47
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 193,
+              "win_rate": 0.4825,
+              "completed_win_rate": 0.4825,
+              "avg_turns": 421.8175,
+              "avg_rolls": 505.22,
+              "avg_captures": 68.4775,
+              "seat_wins": [
+                53,
+                43,
+                50,
+                47
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 132,
+              "win_rate": 0.33,
+              "completed_win_rate": 0.33,
+              "avg_turns": 458.47,
+              "avg_rolls": 550.335,
+              "avg_captures": 72.0375,
+              "seat_wins": [
+                29,
+                37,
+                44,
+                22
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260528,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 210,
+              "win_rate": 0.525,
+              "completed_win_rate": 0.525,
+              "avg_turns": 417.02,
+              "avg_rolls": 500.785,
+              "avg_captures": 66.7175,
+              "seat_wins": [
+                58,
+                59,
+                45,
+                48
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 209,
+              "win_rate": 0.5225,
+              "completed_win_rate": 0.5225,
+              "avg_turns": 440.3375,
+              "avg_rolls": 528.415,
+              "avg_captures": 72.5375,
+              "seat_wins": [
+                50,
+                47,
+                61,
+                51
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 138,
+              "win_rate": 0.345,
+              "completed_win_rate": 0.345,
+              "avg_turns": 455.035,
+              "avg_rolls": 546.5025,
+              "avg_captures": 72.33,
+              "seat_wins": [
+                35,
+                40,
+                34,
+                29
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260529,
+          "profiles": [
+            {
+              "profile": "gambler",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 186,
+              "win_rate": 0.465,
+              "completed_win_rate": 0.465,
+              "avg_turns": 439.88,
+              "avg_rolls": 527.725,
+              "avg_captures": 72.545,
+              "seat_wins": [
+                50,
+                39,
+                49,
+                48
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 181,
+              "win_rate": 0.4525,
+              "completed_win_rate": 0.4525,
+              "avg_turns": 421.03,
+              "avg_rolls": 504.5,
+              "avg_captures": 66.6675,
+              "seat_wins": [
+                43,
+                43,
+                49,
+                46
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 151,
+              "win_rate": 0.3775,
+              "completed_win_rate": 0.3775,
+              "avg_turns": 454.55,
+              "avg_rolls": 546.4475,
+              "avg_captures": 72.32,
+              "seat_wins": [
+                31,
+                47,
+                36,
+                37
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260530,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 217,
+              "win_rate": 0.5425,
+              "completed_win_rate": 0.5425,
+              "avg_turns": 428.8,
+              "avg_rolls": 514.7,
+              "avg_captures": 68.575,
+              "seat_wins": [
+                55,
+                60,
+                50,
+                52
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 205,
+              "win_rate": 0.5125,
+              "completed_win_rate": 0.5125,
+              "avg_turns": 443.4825,
+              "avg_rolls": 532.405,
+              "avg_captures": 73.2275,
+              "seat_wins": [
+                55,
+                46,
+                49,
+                55
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "gambler",
+                "gatekeeper",
+                "engineer"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 157,
+              "win_rate": 0.3925,
+              "completed_win_rate": 0.3925,
+              "avg_turns": 452.8225,
+              "avg_rolls": 543.105,
+              "avg_captures": 71.735,
+              "seat_wins": [
+                37,
+                51,
+                33,
+                36
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "sprinter",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1010,
+          "win_rate": 0.505,
+          "completed_win_rate": 0.505,
+          "avg_turns": 423.823,
+          "avg_rolls": 508.734,
+          "avg_captures": 67.6345,
+          "seat_wins": [
+            248,
+            268,
+            251,
+            243
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "gambler",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 984,
+          "win_rate": 0.492,
+          "completed_win_rate": 0.492,
+          "avg_turns": 435.7275,
+          "avg_rolls": 522.887,
+          "avg_captures": 71.731,
+          "seat_wins": [
+            257,
+            226,
+            247,
+            254
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "expectimax",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 715,
+          "win_rate": 0.3575,
+          "completed_win_rate": 0.3575,
+          "avg_turns": 455.777,
+          "avg_rolls": 547.157,
+          "avg_captures": 72.147,
+          "seat_wins": [
+            159,
+            219,
+            186,
+            151
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        }
+      ]
+    },
+    "C": {
+      "opponents": [
+        "random",
+        "balanced",
+        "balanced"
+      ],
+      "seeds": [
+        {
+          "seed": 20260526,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 298,
+              "win_rate": 0.745,
+              "completed_win_rate": 0.745,
+              "avg_turns": 467.13,
+              "avg_rolls": 561.3425,
+              "avg_captures": 71.8825,
+              "seat_wins": [
+                80,
+                75,
+                77,
+                66
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 297,
+              "win_rate": 0.7425,
+              "completed_win_rate": 0.7425,
+              "avg_turns": 475.435,
+              "avg_rolls": 571.475,
+              "avg_captures": 75.73,
+              "seat_wins": [
+                79,
+                67,
+                69,
+                82
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 270,
+              "win_rate": 0.675,
+              "completed_win_rate": 0.675,
+              "avg_turns": 534.0,
+              "avg_rolls": 640.265,
+              "avg_captures": 81.8,
+              "seat_wins": [
+                64,
+                69,
+                74,
+                63
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260527,
+          "profiles": [
+            {
+              "profile": "gambler",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 305,
+              "win_rate": 0.7625,
+              "completed_win_rate": 0.7625,
+              "avg_turns": 478.9975,
+              "avg_rolls": 574.465,
+              "avg_captures": 76.2125,
+              "seat_wins": [
+                72,
+                75,
+                76,
+                82
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 303,
+              "win_rate": 0.7575,
+              "completed_win_rate": 0.7575,
+              "avg_turns": 459.915,
+              "avg_rolls": 552.53,
+              "avg_captures": 70.655,
+              "seat_wins": [
+                74,
+                80,
+                75,
+                74
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 245,
+              "win_rate": 0.6125,
+              "completed_win_rate": 0.6125,
+              "avg_turns": 544.77,
+              "avg_rolls": 654.5175,
+              "avg_captures": 83.9325,
+              "seat_wins": [
+                54,
+                65,
+                63,
+                63
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260528,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 314,
+              "win_rate": 0.785,
+              "completed_win_rate": 0.785,
+              "avg_turns": 460.5775,
+              "avg_rolls": 552.955,
+              "avg_captures": 70.665,
+              "seat_wins": [
+                87,
+                76,
+                72,
+                79
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 312,
+              "win_rate": 0.78,
+              "completed_win_rate": 0.78,
+              "avg_turns": 492.3875,
+              "avg_rolls": 591.075,
+              "avg_captures": 79.1725,
+              "seat_wins": [
+                71,
+                81,
+                82,
+                78
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 281,
+              "win_rate": 0.7025,
+              "completed_win_rate": 0.7025,
+              "avg_turns": 543.4825,
+              "avg_rolls": 652.5325,
+              "avg_captures": 84.57,
+              "seat_wins": [
+                70,
+                78,
+                72,
+                61
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260529,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 295,
+              "win_rate": 0.7375,
+              "completed_win_rate": 0.7375,
+              "avg_turns": 458.6625,
+              "avg_rolls": 550.125,
+              "avg_captures": 70.425,
+              "seat_wins": [
+                78,
+                74,
+                75,
+                68
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 282,
+              "win_rate": 0.705,
+              "completed_win_rate": 0.705,
+              "avg_turns": 497.205,
+              "avg_rolls": 596.4825,
+              "avg_captures": 78.9425,
+              "seat_wins": [
+                73,
+                70,
+                65,
+                74
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 275,
+              "win_rate": 0.6875,
+              "completed_win_rate": 0.6875,
+              "avg_turns": 544.695,
+              "avg_rolls": 654.24,
+              "avg_captures": 83.425,
+              "seat_wins": [
+                60,
+                77,
+                71,
+                67
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "seed": 20260530,
+          "profiles": [
+            {
+              "profile": "sprinter",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 312,
+              "win_rate": 0.78,
+              "completed_win_rate": 0.78,
+              "avg_turns": 461.635,
+              "avg_rolls": 553.8225,
+              "avg_captures": 70.5525,
+              "seat_wins": [
+                75,
+                82,
+                76,
+                79
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "gambler",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 303,
+              "win_rate": 0.7575,
+              "completed_win_rate": 0.7575,
+              "avg_turns": 482.035,
+              "avg_rolls": 579.0,
+              "avg_captures": 76.63,
+              "seat_wins": [
+                80,
+                78,
+                66,
+                79
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            },
+            {
+              "profile": "expectimax",
+              "opponents": [
+                "random",
+                "balanced",
+                "balanced"
+              ],
+              "total_games": 400,
+              "completed_games": 400,
+              "unfinished_games": 0,
+              "wins": 258,
+              "win_rate": 0.645,
+              "completed_win_rate": 0.645,
+              "avg_turns": 548.6875,
+              "avg_rolls": 657.935,
+              "avg_captures": 84.6125,
+              "seat_wins": [
+                65,
+                60,
+                66,
+                67
+              ],
+              "seat_games": [
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          ]
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "sprinter",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1522,
+          "win_rate": 0.761,
+          "completed_win_rate": 0.761,
+          "avg_turns": 461.584,
+          "avg_rolls": 554.155,
+          "avg_captures": 70.836,
+          "seat_wins": [
+            394,
+            387,
+            375,
+            366
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "gambler",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1499,
+          "win_rate": 0.7495,
+          "completed_win_rate": 0.7495,
+          "avg_turns": 485.212,
+          "avg_rolls": 582.4995,
+          "avg_captures": 77.3375,
+          "seat_wins": [
+            375,
+            371,
+            358,
+            395
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        },
+        {
+          "profile": "expectimax",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1329,
+          "win_rate": 0.6645,
+          "completed_win_rate": 0.6645,
+          "avg_turns": 543.127,
+          "avg_rolls": 651.898,
+          "avg_captures": 83.668,
+          "seat_wins": [
+            313,
+            349,
+            346,
+            321
+          ],
+          "seat_games": [
+            500,
+            500,
+            500,
+            500
+          ]
+        }
+      ]
+    }
+  }
+}
