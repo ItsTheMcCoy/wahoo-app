@@ -10,7 +10,7 @@ Android board game implementing Wahoo (marble race). Currently in the Python pro
 wahoo/
   game_state.py   — Board model: GameState, Location types, helper functions
   rules.py        — legal_moves() and apply_move() — the canonical rules engine
-  play.py         — Console game loop, rendering, human/computer input
+  play.py         — Console game loop, rendering, per-seat human/AI input
   ai.py           — AI player classes, feature scoring, profiles (implemented)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
@@ -30,7 +30,7 @@ Planned but not yet present in `wahoo/`:
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 40 tests passing under `python -m pytest tests/ -q`.
+Current verified test status: 43 tests passing under `python -m pytest`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -94,7 +94,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ 8 named profile weight vectors (Sprinter, Swarm, Assassin, Shortcut Gambler, Tortoise, Gatekeeper, Endgame Engineer, Balanced Pragmatist)
 - ✅ `PROFILES` dict mapping name strings to pre-configured player instances, including `random`
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
-- ⬜ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
+- ✅ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool for active turn dispatch
 - ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
 - ✅ Full six-probe scenario suite in `tests/test_ai.py`
 
@@ -133,7 +133,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 7. ✅ `tests/test_ai.py` probe 4: finish or fight — passing for diagnostic profiles
 8. ✅ `tests/test_ai.py` probe 5: center denial — passing for Gatekeeper and Assassin
 9. ✅ `tests/test_ai.py` probe 6: threat escape — passing for Tortoise and Gatekeeper
-10. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
+10. ✅ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
 11. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
 12. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
 13. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`

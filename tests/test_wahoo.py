@@ -22,6 +22,9 @@ from wahoo.play import (
     append_recording_entry,
     make_recording_path,
     run_replay,
+    take_turn,
+    normalize_player_settings,
+    configure_players,
 )
 from unittest.mock import patch
 import json
@@ -417,6 +420,35 @@ def test_intro_menu_accepts_computer_option():
     assert_eq(action, "computer", "computer self-play selected from intro menu")
 
 
+def test_legacy_computer_setting_maps_to_balanced_slots():
+    print("test: legacy computer self-play setting maps to four balanced slots")
+    settings = {"auto_roll": False, "computer_self_play": True}
+    players = normalize_player_settings(settings)
+    assert_eq(players, ["balanced", "balanced", "balanced", "balanced"], "legacy setting upgraded")
+
+
+def test_configure_players_accepts_human_and_profiles():
+    print("test: player setup accepts mixed human and AI profiles")
+    settings = {"auto_roll": False}
+    with patch("wahoo.play.input", side_effect=["", "assassin", "human", "random"]):
+        players = configure_players(settings)
+    assert_eq(players, ["human", "assassin", "human", "random"], "mixed player config stored")
+
+
+def test_take_turn_routes_ai_slot_through_profile():
+    print("test: AI slot chooses move through configured profile")
+    state = GameState()
+    state.current_player = 0
+    settings = {"auto_roll": False, "players": ["balanced", "human", "human", "human"]}
+    rng = SeqRng([1])
+
+    with patch("wahoo.play.input", side_effect=AssertionError("AI turn should not prompt")):
+        turn_result = take_turn(state, rng, settings)
+
+    assert_eq(turn_result["events"][0]["outcome"].startswith("[balanced]"), True, "AI outcome labeled")
+    assert_eq(state.marbles[0][0], loc_track(0), "AI move applied")
+
+
 def test_prompt_replay_path_requires_filename():
     print("test: replay prompt requires a filename")
     settings = {"auto_roll": False}
@@ -543,6 +575,9 @@ def main():
         test_decide_starting_player_tie_keeps_first_highest,
         test_intro_menu_accepts_replay_option,
         test_intro_menu_accepts_computer_option,
+        test_legacy_computer_setting_maps_to_balanced_slots,
+        test_configure_players_accepts_human_and_profiles,
+        test_take_turn_routes_ai_slot_through_profile,
         test_prompt_replay_path_requires_filename,
         test_global_toggle_command_flips_auto_roll_during_prompt,
         test_roll_prompt_toggle_can_continue_immediately_when_enabled,

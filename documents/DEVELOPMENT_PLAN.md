@@ -32,6 +32,7 @@ Core game logic and a console-mode game loop, no graphics.
 - Startup replay and computer self-play options
 - Auto-roll toggle across prompts
 - Project reorganized into package layout (`wahoo/` + `tests/`)
+- Per-seat player configuration in `wahoo/play.py`; each slot can be `human` or a profile from `wahoo.ai.PROFILES`
 
 **Repo status:** Local and GitHub are now synchronized on `main`.
 
@@ -84,9 +85,10 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `tests/test_ai.py` — probe 4 (finish or fight) written; Engineer, Tortoise, and Balanced prefer home progress; Assassin and Gatekeeper capture
 - `tests/test_ai.py` — probe 5 (center denial) written; Gatekeeper and Assassin bump opponent from center
 - `tests/test_ai.py` — probe 6 (threat escape) written; Tortoise and Gatekeeper move away from capture danger
+- `wahoo/play.py` — `settings["players"]` list, per-slot human/AI dispatch, AI auto-roll, and startup `configure_players()` implemented
+- `[C] Computer self-play` now maps all four seats to the `balanced` AI profile for backward-compatible startup behavior
 
 **Remaining:**
-- Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot AI dispatch
 - `wahoo/selfplay.py` headless N-game runner
 - Run 50-game self-play to verify win-rate balance across profiles
 - `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`

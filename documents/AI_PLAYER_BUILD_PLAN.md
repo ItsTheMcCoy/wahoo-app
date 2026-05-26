@@ -14,7 +14,7 @@ wahoo/selfplay.py    — headless N-game runner for win-rate analysis
 tests/test_ai.py     — scenario probe suite
 ```
 
-The existing `choose_computer_move()` in `play.py` is still active today; per-slot AI dispatch remains planned work.
+`play.py` now dispatches turns through `settings["players"]`, where each of the four seats is either `"human"` or a key from `PROFILES`. The older `choose_computer_move()` helper remains in the module for legacy behavior tests, but the live game loop routes AI seats through `PROFILES[player_type].choose_move(...)`.
 
 ---
 
@@ -345,7 +345,7 @@ PROFILES = {
 
 ### 9.1 Settings change
 
-Replace the boolean `computer_self_play` flag with a per-slot player list:
+The console game uses a per-slot player list instead of the old `computer_self_play` flag:
 
 ```python
 # Before
@@ -382,7 +382,7 @@ Auto-roll is forced on for slots with an AI player type. Human slots continue to
 
 ### 9.3 Startup configuration
 
-Add a `configure_players()` function called during game setup that presents each slot and asks: human or which AI profile? The `[C] Computer self-play` option from the current menu maps to all-Balanced for backwards compatibility.
+`configure_players()` is called during normal new-game setup. It presents each slot and asks for `human` or an AI profile. The `[C] Computer self-play` option from the current menu maps to all-Balanced for backwards compatibility.
 
 ---
 
@@ -580,7 +580,7 @@ def test_threat_escape():
 4. Probe 1 (win guardrail) — validates the hard-rule path
 5. Probe 5–6 with Balanced weights initially; tune to confirm balanced play
 6. Add remaining 7 profiles; run probes per profile
-7. Refactor `play.py` for per-slot dispatch
+7. Refactor `play.py` for per-slot dispatch — complete
 8. `selfplay.py` + win-rate table to confirm rough Elo parity across profiles
 9. `ExpectimaxPlayer` (optional, after profiles are stable)
 
@@ -593,5 +593,6 @@ def test_threat_escape():
 | `wahoo/ai.py` | New — player classes, features, profiles |
 | `wahoo/selfplay.py` | New — headless N-game runner |
 | `tests/test_ai.py` | New — scenario probe suite |
-| `wahoo/play.py` | Modify `take_turn()`, settings, startup menu |
+| `wahoo/play.py` | Modified — `settings["players"]`, per-slot dispatch, startup player setup |
+| `tests/test_wahoo.py` | Modified — player setup and AI-turn dispatch regression tests |
 | `documents/AI_PLAYER_BUILD_PLAN.md` | This document |

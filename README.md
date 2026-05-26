@@ -10,7 +10,8 @@ Implemented:
 - 4-player Wahoo rules engine with legal move generation and move application.
 - Console game loop with ASCII board rendering.
 - Human pass-and-play mode.
-- Legacy computer self-play mode using `choose_computer_move()` in `wahoo/play.py`.
+- Per-seat player configuration in `wahoo/play.py`, with each slot set to `human` or a named AI profile.
+- Computer self-play mode using the `balanced` AI profile for all four seats.
 - Replay recording to sequential `game*.json` files and replay/continue support.
 - Auto-roll toggle using `/auto`.
 - AI strategy module in `wahoo/ai.py` containing:
@@ -29,7 +30,6 @@ Implemented:
 
 Not implemented yet:
 
-- Per-slot AI selection in the console game. `play.py` still uses the legacy `computer_self_play` boolean.
 - `wahoo/selfplay.py` headless N-game runner.
 - `wahoo/stats.py` stat aggregation and CSV export.
 - Godot project files and Android build/export setup.
@@ -51,8 +51,8 @@ Startup flow:
 
 - ASCII-art intro is shown first.
 - Choose one intro menu option:
-  - `S` start a new human/pass-and-play game
-  - `C` run legacy computer self-play, where all players are computer-controlled by `choose_computer_move()`
+  - `S` start a new game and configure each seat as human or AI
+  - `C` run computer self-play, where all players use the `balanced` AI profile
   - `R` replay a saved game
   - `E` exit
 - Type `/auto` at supported prompts to toggle auto-roll on or off.
@@ -66,12 +66,11 @@ Auto-roll behavior:
 - Manual move choices are numbered `1..N`.
 - `/auto` can be used during startup, replay prompts, and turn prompts.
 
-Legacy computer self-play behavior:
+AI player behavior:
 
-- Computer move priority is: capture, then exit base, then get home.
-- Center entry is only chosen when the current player has at least one other marble already in play.
-- Computer self-play starts with auto-roll ON.
-- This mode does **not** yet use the named AI profiles from `wahoo/ai.py`.
+- New games can mix human seats with profiles from `wahoo.ai.PROFILES`.
+- AI seats always auto-roll and choose moves through their configured profile.
+- Computer self-play starts with auto-roll ON and maps all four seats to `balanced`.
 
 ## Replay a Saved Game
 
@@ -118,7 +117,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 40 passing tests.
+At the time this documentation was synchronized, the suite contained 43 passing tests.
 
 You can still run the legacy rule/behavior test harness directly:
 

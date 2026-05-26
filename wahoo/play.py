@@ -15,6 +15,7 @@ from .game_state import (
     NUM_PLAYERS, base_exit,
 )
 from .rules import legal_moves, apply_move
+from .ai import PROFILES
 
 
 PLAYER_NAMES = ["Red", "Green", "Yellow", "Blue"]
@@ -37,6 +38,8 @@ __        __    _
 DEFAULT_RECORDING_PATH = "wahoo_history.json"
 RECORDING_BASENAME = "game"
 AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
+HUMAN_PLAYER_TYPE = "human"
+DEFAULT_AI_PROFILE = "balanced"
 
 
 def colorize(text: str, player: int) -> str:
@@ -465,6 +468,67 @@ def update_exit_base_cursor(state: GameState, player: int, chosen: dict) -> None
         state.next_base_exit_marble[player] = (chosen["marble"] + 1) % MARBLES_PER_PLAYER
 
 
+def normalize_player_settings(settings: dict) -> list:
+    """Return the four-seat player config, upgrading legacy settings if needed."""
+    if "players" not in settings:
+        if settings.get("computer_self_play"):
+            settings["players"] = [DEFAULT_AI_PROFILE] * NUM_PLAYERS
+        else:
+            settings["players"] = [HUMAN_PLAYER_TYPE] * NUM_PLAYERS
+
+    players = settings["players"]
+    if len(players) != NUM_PLAYERS:
+        raise ValueError(f"settings['players'] must contain exactly {NUM_PLAYERS} entries")
+
+    valid_types = {HUMAN_PLAYER_TYPE, *PROFILES.keys()}
+    invalid = [player_type for player_type in players if player_type not in valid_types]
+    if invalid:
+        valid = ", ".join(sorted(valid_types))
+        raise ValueError(f"Invalid player type(s): {', '.join(invalid)}. Valid values: {valid}")
+    return players
+
+
+def player_type_for(settings: dict, player: int) -> str:
+    """Return the configured controller type for one seat."""
+    return normalize_player_settings(settings)[player]
+
+
+def is_ai_slot(settings: dict, player: int) -> bool:
+    """True when this seat is controlled by an AI profile."""
+    return player_type_for(settings, player) != HUMAN_PLAYER_TYPE
+
+
+def should_auto_roll_for(settings: dict, player: int) -> bool:
+    """AI seats always auto-roll; humans follow the global auto-roll toggle."""
+    return settings["auto_roll"] or is_ai_slot(settings, player)
+
+
+def configure_players(settings: dict) -> list:
+    """Prompt for the controller assigned to each player seat."""
+    profile_names = sorted(PROFILES.keys())
+    print("\n=== Player Setup ===")
+    print("Press Enter for human, or type an AI profile name.")
+    print("AI profiles: " + ", ".join(profile_names))
+
+    players = []
+    for player in range(NUM_PLAYERS):
+        while True:
+            response = read_user_input(
+                f"{player_label(player)} controller [human]: ",
+                settings,
+            ).strip().lower()
+            if response in ("", HUMAN_PLAYER_TYPE, "h"):
+                players.append(HUMAN_PLAYER_TYPE)
+                break
+            if response in PROFILES:
+                players.append(response)
+                break
+            print("Please enter human or one of: " + ", ".join(profile_names))
+
+    settings["players"] = players
+    return players
+
+
 def show_intro_and_choose_action(settings: dict) -> str:
     """Display intro art and let the user start, replay, self-play, or exit."""
     print(INTRO_ART)
@@ -506,7 +570,7 @@ def decide_starting_player(rng: random.Random, settings: dict) -> tuple[int, int
     leaders = []
 
     for player in range(NUM_PLAYERS):
-        if settings["auto_roll"]:
+        if should_auto_roll_for(settings, player):
             print(f"{player_label(player)} auto-rolling for first turn.")
         else:
             read_user_input(
@@ -555,7 +619,8 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
     }
 
     while True:
-        if settings["auto_roll"]:
+        player_type = player_type_for(settings, player)
+        if should_auto_roll_for(settings, player):
             print(f"\n--- {player_label(player)}'s turn. Auto-rolling.")
         else:
             read_user_input(
@@ -568,10 +633,7 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         if not moves:
             outcome = "no legal move"
         else:
-            if settings["computer_self_play"]:
-                chosen = choose_computer_move(state, player, roll, moves)
-                outcome = f"computer-selected {format_move(chosen, player, roll)}"
-            else:
+            if player_type == HUMAN_PLAYER_TYPE:
                 auto_move = maybe_auto_choose_move(state, player, roll, moves)
                 if auto_move is not None:
                     chosen = auto_move
@@ -581,6 +643,9 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
                     prompt_moves = build_prompt_moves(state, player, roll, moves)
                     chosen = choose_move(prompt_moves, player, roll, settings)
                     outcome = format_move(chosen, player, roll)
+            else:
+                chosen = PROFILES[player_type].choose_move(state, player, roll, moves)
+                outcome = f"[{player_type}] {format_move(chosen, player, roll)}"
 
             update_exit_base_cursor(state, player, chosen)
             apply_move(state, chosen)
@@ -614,7 +679,7 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
 def main():
     args = sys.argv[1:]
     recording_path = None
-    settings = {"auto_roll": False, "computer_self_play": False}
+    settings = {"auto_roll": False, "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS}
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
         recording, state = run_replay(replay_path, settings)
@@ -638,8 +703,10 @@ def main():
             print(f"Continuing recorded game from {replay_path}")
         else:
             if action == "computer":
-                settings["computer_self_play"] = True
+                settings["players"] = [DEFAULT_AI_PROFILE] * NUM_PLAYERS
                 settings["auto_roll"] = True
+            else:
+                configure_players(settings)
             state = GameState()
             state.current_player, top_roll = decide_starting_player(rng, settings)
             recording = {
@@ -656,8 +723,9 @@ def main():
             write_recording(recording, recording_path)
             print(render_board(state))
             print(f"{player_label(state.current_player)} had the highest roll, with {top_roll}, they go first!")
-            if settings["computer_self_play"]:
-                print("Computer self-play is ON.")
+            ai_players = [p for p in settings["players"] if p != HUMAN_PLAYER_TYPE]
+            if ai_players:
+                print("Players: " + ", ".join(settings["players"]))
             print(f"Recording game history to {recording_path}")
 
     while True:
