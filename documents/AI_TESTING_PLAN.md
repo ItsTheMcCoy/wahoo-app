@@ -263,6 +263,13 @@ Action before next stage:
 - If only one profile remains clearly robust, still run Stage 4 to confirm against the nearest competitor.
 - If all three remain close, carry all three into Stage 4 pairwise confirmation.
 
+**Stage 3 summary:**
+- Gauntlet A: sprinter 87.1%, gambler 86.0%, expectimax 77.5%.
+- Gauntlet B: sprinter 50.5%, gambler 49.2%, expectimax 35.8%.
+- Gauntlet C: sprinter 76.1%, gambler 75.0%, expectimax 66.5%.
+- Outcome: sprinter and gambler remain the strongest mixed-field profiles; expectimax is still viable but trails the top two on every mixed-opponent field.
+- Follow-up: advance sprinter and gambler as the clearest robust finalists, with expectimax kept as the third comparison profile for Stage 4 unless a narrower finalist set is needed.
+
 ## Stage 4 - Pairwise Confirmation Matrix
 
 Purpose:
