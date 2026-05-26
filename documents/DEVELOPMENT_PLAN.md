@@ -4,14 +4,17 @@ Current state of the project and the path forward. Updated as phases complete.
 
 ## Project Goal
 
-Build an Android game implementing the Wahoo board game. Online multiplayer, learn-as-you-go hobby project.
+Build a browser-based game implementing the Wahoo board game, playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Online multiplayer, learn-as-you-go hobby project.
 
 ## Tech Stack
 
 - **Engine:** Godot 4 (chosen for free licensing, Python-like GDScript, strong 2D support, and a built-in high-level multiplayer API)
 - **Rules engine prototype:** Python (current phase)
-- **Target platform:** Android (with desktop for development)
-- **Multiplayer transport:** Godot ENet to start (LAN); decision on internet play deferred to Phase 5
+- **Primary target platform:** Web/HTML5 (playable in any browser, shareable by URL — no install required)
+- **Secondary target platform:** Desktop (Windows/macOS) for development and testing convenience
+- **Multiplayer transport:** WebRTC via Godot's `WebRTCMultiplayerPeer`; requires a lightweight signaling server to broker initial peer connections
+- **Signaling server hosting:** Free tier on Railway or Render (sufficient for small friend groups)
+- **iOS/Android native builds:** Out of scope — browser covers all mobile devices without requiring Apple Developer account or per-platform distribution management
 
 ## Phase Status
 
@@ -101,14 +104,14 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 
 ### Phase 2a — Godot Bootstrap — *Not started*
 
-Port the rules engine to Godot. No graphics yet — just confirm the engine runs on a phone.
+Port the rules engine to Godot. No graphics yet — confirm the engine runs correctly on desktop and exports to a browser.
 
 - Install Godot 4 and complete the official "Your First 2D Game" tutorial
 - Port `wahoo/game_state.py` and `wahoo/rules.py` to GDScript (mechanical translation, languages are similar)
-- Port `tests.py` and verify all tests pass in GDScript
-- Build a minimal Godot project with a "Roll" button and text output of game state
-- Configure Android export (SDK install, signing keys, deployment) — fiddly setup done once now rather than at the end
-- Deploy to a phone and confirm it runs
+- Port `tests/test_wahoo.py` scenarios and verify all rule behaviors pass in GDScript
+- Build a minimal Godot project with a "Roll" button and text output of game state — run on desktop first
+- Configure HTML5 export — fiddly setup done once now rather than at the end
+- Load the exported build in a desktop browser and a mobile browser; confirm input and layout are functional
 
 ### Phase 2b — Visual Board — *Not started*
 
@@ -135,37 +138,40 @@ Port the validated Python AI from Phase 1b into GDScript and wire it into the Go
 
 The full design framework, strategy dimensions, playstyle profiles, scenario probes, and logging schema are in `documents/AI_Stragegy_Spec.md` and `documents/wahoo_strategy_metric_tracking_agent_spec.md`. The Python prototype in Phase 1b is the reference implementation — if behavior differs in Godot, the Python behavior wins.
 
-### Phase 4 — LAN Multiplayer — *Not started*
+### Phase 4 — Internet Multiplayer — *Not started*
 
-Network play over a local network.
+Network play over the internet via WebRTC, accessible from the browser with no install required.
 
-- Godot high-level multiplayer with ENet
-- Host/join by IP address (host starts a game, others connect with the host's IP)
-- Synchronize game state across clients
+- Deploy a lightweight signaling server (e.g., on Railway or Render free tier) to broker WebRTC peer connections
+- Implement Godot's `WebRTCMultiplayerPeer` for peer-to-peer game state sync after signaling
+- Room-code lobby: host creates a game and shares a short code; others enter the code to join
+- Synchronize game state across clients with authoritative host
 - Handle turn ordering across the network
-- Disconnect/reconnect handling (at least graceful failure)
+- Disconnect/reconnect handling (at least graceful failure — show a "player disconnected" state)
 
-This covers "playing with family in the same house" with zero infrastructure cost. Sufficient for v1.
+This covers "share a URL and a room code with friends" with minimal infrastructure cost. Sufficient for v1.
 
 ### Phase 5 — Decide Next Direction — *Not started*
 
-After Phase 4 is working, decide whether to ship as LAN-only v1, or invest further. Three realistic options:
+After Phase 4 is working, decide whether to ship as-is or invest further. Three realistic options:
 
-- **Tier A (already built):** LAN play. Done after Phase 4.
-- **Tier B:** Room-code internet play. One player hosts a public game, shares a code, others join. Requires either a relay server (Nakama free tier exists) or peer-to-peer with NAT traversal. Significant additional work.
-- **Tier C:** Full matchmaking ("find me a random opponent"). Requires accounts, backend, queueing. Real product work, likely overscoped for a hobby project.
+- **Tier A (already built):** Browser game with room-code multiplayer, shareable by URL. Done after Phase 4.
+- **Tier B:** Persistent hosting with a stable public URL. Move the game and signaling server to a proper host (e.g., a cheap VPS or static host + serverless signaling) so friends always have a reliable link rather than a dev server. Low complexity, mostly ops work.
+- **Tier C:** Accounts, game history, leaderboards. Real product work — likely overscoped for a hobby project but possible if appetite exists.
 
 Decision deferred until Phase 4 is functional and the appetite for further work is clear.
 
 ## Cross-Cutting Concerns
 
-**Cross-device development.** Code lives in `https://github.com/ItsTheMcCoy/wahoo-app`. Edit on any device, push to the repo, pull from any other device.
+**Cross-device development.** Code lives in `https://github.com/ItsTheMcCoy/wahoo-app`. Edit on any device, push to the repo, pull from any other device. The browser-first target means friends on any platform (Windows, Mac, Android, iPhone, iPad) can play via a shared URL with no install required.
+
+**No iOS/Android native builds.** Native mobile builds are out of scope — the browser covers all mobile devices without requiring an Apple Developer account or per-platform distribution. If this changes, iOS requires a Mac and $99/yr Apple Developer account; Android APK sideloading is feasible but unnecessary if the web version is sufficient.
 
 **Rules vs. code consistency.** `RULES.md` is the authoritative spec. If the code and the spec disagree, the spec wins and the code should be fixed. This matters most when AI assistants (Cowork, Claude Code) work on the project — they should read the spec first.
 
 **Visual layout is a rendering concern, not a rules concern.** The rules engine uses abstract `Location` values (`BASE`, `TRACK(i)`, `HOME(j)`, `CENTER`). Pixel coordinates and screen geometry belong in a separate layout module added in Phase 2b. This keeps the rules code portable and unaffected by UI changes.
 
-**Android export should happen early, not at the end.** Originally planned as Phase 5; moved up to Phase 2a so deployment issues surface before the project gets large. Phone-specific bugs (input handling, screen sizes, performance) are easier to find when the codebase is small.
+**HTML5 export should be confirmed early, not at the end.** Configured in Phase 2a so browser-specific issues (input handling, viewport scaling, mobile layout) surface before the project gets large. Browser bugs are easier to find when the codebase is small.
 
 ## File Inventory
 

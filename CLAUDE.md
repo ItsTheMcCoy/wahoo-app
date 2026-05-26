@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-Android board game implementing Wahoo (marble race). Currently in the Python prototype phase — building and validating game logic, AI players, and stat tracking before porting to Godot 4.
+Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. Currently in the Python prototype phase — building and validating game logic, AI players, and stat tracking before porting to Godot 4 with HTML5 as the primary export target.
 
 ## Codebase Overview
 
