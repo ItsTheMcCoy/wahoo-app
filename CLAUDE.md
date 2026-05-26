@@ -14,7 +14,7 @@ wahoo/
   ai.py           — AI player classes, feature scoring, profiles (implemented)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
-  test_ai.py      — AI scenario probe suite (probes 1-4 implemented)
+  test_ai.py      — AI scenario probe suite (probes 1-5 implemented)
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
@@ -96,7 +96,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
 - ⬜ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool
 - ⬜ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0 p1 p2 p3`
-- ⬜ Remaining scenario probes in `tests/test_ai.py`; probes 1-4 exist now
+- ⬜ Remaining scenario probe in `tests/test_ai.py`; probes 1-5 exist now
 
 ### STAT_TRACKING_PLAN.md covers
 
@@ -131,13 +131,14 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 5. ✅ `tests/test_ai.py` probe 2: center temptation — passing for diagnostic profiles
 6. ✅ `tests/test_ai.py` probe 3: capture vs deploy — passing for diagnostic profiles
 7. ✅ `tests/test_ai.py` probe 4: finish or fight — passing for diagnostic profiles
-8. ⬜ Probes 5–6 in `tests/test_ai.py` (center denial, threat escape)
-9. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
-10. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
-11. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
-12. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
-13. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
-14. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
+8. ✅ `tests/test_ai.py` probe 5: center denial — passing for Gatekeeper and Assassin
+9. ⬜ Probe 6 in `tests/test_ai.py` (threat escape)
+10. ⬜ Refactor `play.py`: replace `computer_self_play` bool with `players` list; add per-slot dispatch
+11. ⬜ `wahoo/selfplay.py` headless runner (`python -m wahoo.selfplay --games N --players p0 p1 p2 p3`)
+12. ⬜ Run 50-game self-play, verify rough win-rate balance across profiles
+13. ⬜ `wahoo/stats.py` with `TurnRecord`, `PlayerGameStats`, `GameSummary`
+14. ⬜ Hook `compute_turn_record()` into `play.py`'s `take_turn()`
+15. ⬜ `ExpectimaxPlayer` (stretch goal, after everything else is stable)
 
 ## The 10 Strategy Features (Summary)
 

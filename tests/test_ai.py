@@ -182,3 +182,39 @@ def test_finish_or_fight():
         assert chosen == capture_move, (
             f"Profile '{profile_name}' should prefer the capture"
         )
+
+
+# ---------------------------------------------------------------------------
+# Probe 5 — Center denial (Gatekeeper bumps opponent from center)
+# ---------------------------------------------------------------------------
+
+def test_center_denial():
+    """
+    Player 0 has two marbles in base, one marble at offset 5 from its base
+    exit, and one established runner farther along the track.  An opponent is
+    occupying center.  With roll 1, the offset-5 marble can enter center and
+    bump the opponent, while other moves include normal advancement and deploys.
+
+    Center-control profiles should choose the denial move.
+    """
+    roll = 1
+    center_occupant = (1, 0)
+
+    marbles = _all_base()
+    marbles[0] = [loc_base(), loc_base(), loc_track(5), loc_track(18)]
+    marbles[center_occupant[0]][center_occupant[1]] = loc_center()
+    state = make_state(marbles, center_occupant=center_occupant)
+
+    moves = legal_moves(state, 0, roll)
+    denial_move = next(m for m in moves if m["kind"] == "enter_center")
+    assert denial_move["dest"] == loc_center()
+    assert denial_move["captures"] == center_occupant
+    assert any(m["kind"] == "advance" for m in moves), (
+        "Expected at least one non-center advance alternative"
+    )
+
+    for profile_name in ["gatekeeper", "assassin"]:
+        chosen = PROFILES[profile_name].choose_move(state, 0, roll, moves)
+        assert chosen == denial_move, (
+            f"Profile '{profile_name}' should bump the opponent from center"
+        )

@@ -5,7 +5,7 @@ Build order (per AI_PLAYER_BUILD_PLAN.md):
   1. _marble_progress(), compute_exposure()  ✓
   2. compute_features()                      ✓
   3. RandomPlayer, GreedyPlayer + profiles   ✓
-  4. tests/test_ai.py probes 2–6            ← next
+  4. tests/test_ai.py probes 2–6            ← probe 6 next
   5. play.py per-slot dispatch
   6. selfplay.py
   7. stats.py
