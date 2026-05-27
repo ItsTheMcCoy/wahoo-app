@@ -566,6 +566,56 @@ Full per-layout tables and command history are recorded in [stage4_pairwise_conf
 
 ---
 
+### Stage 1.5 - Automated Tuner Dry Run (2026-05-27)
+
+```text
+Run name: sprinter-tuner-dryrun-v1
+Date: 2026-05-27
+Script: scripts/tune_profile_against_sprinter.py
+Generations: 2
+Population size: 6
+Elite count: 2
+Games per seat: 3
+Search seeds: 20260601
+Holdout seeds: 20260526
+Max turns: 20000
+Checkpoint: documents/sprinter_tuning_checkpoint_dryrun.json
+Outputs: documents/sprinter_tuning_results_dryrun.json, documents/sprinter_tuning_results_dryrun.md
+Notes: Pipeline smoke test for tuner wiring and artifact generation.
+```
+
+**Dry run result summary:**
+- Best candidate id: `seed_sprinter`
+- Parent id: `None`
+- Search score: `0.2000`
+- Search win rates: sprinter `16.67%`, gambler `16.67%`, balanced `66.67%`
+- Search unfinished rate: `0.00%`
+- Search seat spread: `33.33%`
+- Holdout score: `0.2431`
+- Holdout win rate vs sprinter: `16.67%`
+
+**Interpretation:**
+- Dry run passed as an execution check: script ran end-to-end and produced checkpoint, JSON, and markdown outputs.
+- Metrics are intentionally noisy and not decision-grade due to very small sample size.
+- No promotion decision should be made from this run.
+
+**Next action:**
+- Run a calibration pass with larger sample sizes before any candidate shortlisting.
+
+Calibration command:
+
+```powershell
+c:/Users/macwe/OneDrive/Documents/Claude/Projects/Wahoo-app/.venv-1/Scripts/python.exe scripts/tune_profile_against_sprinter.py --generations 4 --population-size 12 --elite-count 3 --games-per-seat 8 --max-turns 20000 --search-seeds 20260601,20260602 --holdout-seeds 20260526,20260527 --checkpoint-json documents/sprinter_tuning_checkpoint_calibration.json --output-json documents/sprinter_tuning_results_calibration.json --output-md documents/sprinter_tuning_results_calibration.md
+```
+
+Faster daytime calibration command:
+
+```powershell
+c:/Users/macwe/OneDrive/Documents/Claude/Projects/Wahoo-app/.venv-1/Scripts/python.exe scripts/tune_profile_against_sprinter.py --generations 3 --population-size 8 --elite-count 2 --games-per-seat 5 --max-turns 20000 --search-seeds 20260601 --holdout-seeds 20260526 --checkpoint-json documents/sprinter_tuning_checkpoint_daytime.json --output-json documents/sprinter_tuning_results_daytime.json --output-md documents/sprinter_tuning_results_daytime.md
+```
+
+---
+
 ## Run Log Template
 
 Copy this block for each benchmark run.
