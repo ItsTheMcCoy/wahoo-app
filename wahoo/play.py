@@ -64,6 +64,19 @@ AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
 HUMAN_PLAYER_TYPE = "human"
 DEFAULT_AI_PROFILE = "balanced"
 
+DIFFICULTY_LEVELS = [
+    ("beginner", ["swarm", "tortoise"], "tortoise"),
+    ("easy", ["engineer", "balanced"], "balanced"),
+    ("normal", ["assassin", "gatekeeper"], "gatekeeper"),
+    ("hard", ["human_like", "expectimax"], "expectimax"),
+    ("expert", ["gambler", "sprinter"], "sprinter"),
+]
+
+DIFFICULTY_TO_DEFAULT_PROFILE = {
+    name: default_profile
+    for name, _profiles, default_profile in DIFFICULTY_LEVELS
+}
+
 
 def colorize(text: str, player: int) -> str:
     """Colorize text for a player when ANSI output is available."""
@@ -486,6 +499,8 @@ def format_move(move: dict, player: int, roll: int) -> str:
     token = colored_marble_token(player, move["marble"])
     if move["kind"] == "exit_base":
         desc = f"Move {token} out of base"
+    elif move["kind"] == "exit_center":
+        desc = f"Move {token} > exit center"
     elif move["kind"] == "enter_center":
         desc = f"Move {token} to center"
     elif move["kind"] in ("enter_home", "advance_home"):
@@ -681,30 +696,134 @@ def should_auto_roll_for(settings: dict, player: int) -> bool:
     return settings["auto_roll"] or is_ai_slot(settings, player)
 
 
+def _resolve_profile_from_difficulty(response: str) -> str | None:
+    """Return default profile for a difficulty token or numbered choice."""
+    token = response.strip().lower()
+    if not token:
+        return None
+
+    if token.isdigit():
+        idx = int(token)
+        if 1 <= idx <= len(DIFFICULTY_LEVELS):
+            return DIFFICULTY_LEVELS[idx - 1][2]
+
+    return DIFFICULTY_TO_DEFAULT_PROFILE.get(token)
+
+
+def prompt_difficulty_profile(settings: dict, prompt_label: str = "Choose difficulty") -> str:
+    """Prompt for a difficulty level and return its default AI profile."""
+    print("\nDifficulty levels:")
+    for idx, (name, profiles, default_profile) in enumerate(DIFFICULTY_LEVELS, start=1):
+        available = ", ".join(p for p in profiles if p in PROFILES)
+        print(f"  [{idx}] {name.title()} (default: {default_profile}; profiles: {available})")
+
+    while True:
+        response = read_user_input(
+            f"{prompt_label} [1-{len(DIFFICULTY_LEVELS)} or name]: ",
+            settings,
+        )
+        profile = _resolve_profile_from_difficulty(response)
+        if profile and profile in PROFILES:
+            return profile
+        print("Please enter a valid difficulty number or name.")
+
+
+def _resolve_profile_choice(response: str, profile_names: list[str]) -> str | None:
+    """Return AI profile from number or direct profile name token."""
+    token = response.strip().lower()
+    if not token:
+        return None
+
+    if token.isdigit():
+        idx = int(token)
+        if 1 <= idx <= len(profile_names):
+            return profile_names[idx - 1]
+
+    if token in PROFILES:
+        return token
+    return None
+
+
+def prompt_ai_profile(settings: dict, prompt_label: str = "Choose AI profile") -> str:
+    """Prompt for an AI profile using a numbered list or profile name."""
+    profile_names = sorted(PROFILES.keys())
+    print("\nAI profiles:")
+    for idx, profile in enumerate(profile_names, start=1):
+        print(f"  [{idx}] {profile}")
+
+    while True:
+        response = read_user_input(
+            f"{prompt_label} [1-{len(profile_names)} or name]: ",
+            settings,
+        )
+        profile = _resolve_profile_choice(response, profile_names)
+        if profile is not None:
+            return profile
+        print("Please enter a valid profile number or profile name.")
+
+
+def prompt_controller_for_player(settings: dict, player: int) -> str:
+    """Prompt for one seat controller via numbered menu."""
+    print(f"\n{player_label(player)} controller setup:")
+    print("  [1] Human")
+    print("  [2] AI by difficulty")
+    print("  [3] AI by profile")
+
+    while True:
+        response = read_user_input("Choose controller [1-3]: ", settings).strip().lower()
+        direct_profile = _resolve_profile_choice(response, sorted(PROFILES.keys()))
+        direct_difficulty_profile = _resolve_profile_from_difficulty(response)
+
+        if response in ("1", "human", "h", ""):
+            return HUMAN_PLAYER_TYPE
+        if direct_profile is not None:
+            return direct_profile
+        if direct_difficulty_profile is not None and direct_difficulty_profile in PROFILES:
+            return direct_difficulty_profile
+        if response in ("2", "difficulty", "d"):
+            return prompt_difficulty_profile(settings, prompt_label=f"{player_label(player)} difficulty")
+        if response in ("3", "profile", "p"):
+            return prompt_ai_profile(settings, prompt_label=f"{player_label(player)} profile")
+
+        print("Please enter 1 (human), 2 (difficulty), or 3 (profile).")
+
+
 def configure_players(settings: dict) -> list:
     """Prompt for the controller assigned to each player seat."""
-    profile_names = sorted(PROFILES.keys())
     print("\n=== Player Setup ===")
-    print("Press Enter for human, or type an AI profile name.")
-    print("AI profiles: " + ", ".join(profile_names))
+    print("Use numbered choices for each seat.")
+    print("Type /auto anytime to toggle auto-roll mode.")
 
     players = []
     for player in range(NUM_PLAYERS):
-        while True:
-            response = read_user_input(
-                f"{player_label(player)} controller [human]: ",
-                settings,
-            ).strip().lower()
-            if response in ("", HUMAN_PLAYER_TYPE, "h"):
-                players.append(HUMAN_PLAYER_TYPE)
-                break
-            if response in PROFILES:
-                players.append(response)
-                break
-            print("Please enter human or one of: " + ", ".join(profile_names))
+        players.append(prompt_controller_for_player(settings, player))
 
     settings["players"] = players
     return players
+
+
+def configure_computer_self_play(settings: dict) -> list:
+    """Prompt setup for all-AI self-play with numbered choices."""
+    print("\n=== Computer Self-Play Setup ===")
+    print("  [1] Use one difficulty for all seats")
+    print("  [2] Use one profile for all seats")
+    print("  [3] Configure each seat individually")
+
+    while True:
+        response = read_user_input("Choose setup [1-3]: ", settings).strip().lower()
+        if response in ("1", "difficulty", "d"):
+            profile = prompt_difficulty_profile(settings, prompt_label="Self-play difficulty")
+            players = [profile] * NUM_PLAYERS
+            settings["players"] = players
+            return players
+        if response in ("2", "profile", "p"):
+            profile = prompt_ai_profile(settings, prompt_label="Self-play profile")
+            players = [profile] * NUM_PLAYERS
+            settings["players"] = players
+            return players
+        if response in ("3", "mixed", "m"):
+            return configure_players(settings)
+        print("Please enter 1 (difficulty), 2 (profile), or 3 (per-seat setup).")
 
 
 def show_intro_and_choose_action(settings: dict) -> str:
@@ -986,7 +1105,7 @@ def main():
                 print(f"Continuing recorded game from {replay_path} at index {replay_index}")
         else:
             if action == "computer":
-                settings["players"] = [DEFAULT_AI_PROFILE] * NUM_PLAYERS
+                configure_computer_self_play(settings)
                 settings["auto_roll"] = True
             else:
                 configure_players(settings)

@@ -11,6 +11,7 @@ from wahoo.rules import legal_moves, apply_move
 from wahoo.play import (
     maybe_auto_choose_move,
     choose_computer_move,
+    format_move,
     update_exit_base_cursor,
     build_prompt_moves,
     read_user_input,
@@ -183,6 +184,17 @@ def test_center_exit():
         for roll in range(2, 7):
             moves = legal_moves(state, p, roll)
             assert find_move(moves, "exit_center") is None
+
+
+def test_format_move_labels_center_exit_clearly():
+    print("test: center exit move text is explicit")
+    state = GameState()
+    state.marbles[0][0] = loc_center()
+    state.center_occupant = (0, 0)
+    moves = legal_moves(state, 0, 1)
+    move = find_move(moves, "exit_center")
+    text = format_move(move, 0, 1)
+    assert "> exit center" in text, f"expected explicit center-exit label, got: {text}"
 
 
 def test_home_entry_no_exact():
@@ -785,6 +797,7 @@ def main():
         test_no_center_after_first_6,
         test_center_capture_on_entry,
         test_center_exit,
+        test_format_move_labels_center_exit_clearly,
         test_home_entry_no_exact,
         test_exact_landing_on_home_entry_stays_on_track,
         test_home_overshoot_illegal,

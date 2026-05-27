@@ -1,0 +1,1004 @@
+{
+  "generated_at_utc": "2026-05-27T01:50:43.684115+00:00",
+  "config": {
+    "generations": 2,
+    "population_size": 6,
+    "elite_count": 2,
+    "games_per_seat": 3,
+    "max_turns": 20000,
+    "search_seeds": [
+      20260601
+    ],
+    "holdout_seeds": [
+      20260526
+    ],
+    "weight_sigma": 0.18,
+    "phase_sigma": 0.08,
+    "max_weight": 3.0,
+    "max_phase_weight": 1.5,
+    "random_seed": 20260601,
+    "objective": {
+      "score": "0.50*wr_sprinter + 0.20*wr_gambler + 0.15*wr_balanced + 0.10*min_seed_wr_sprinter - 0.30*unfinished_rate - 0.10*seat_spread"
+    }
+  },
+  "best_candidate": {
+    "candidate": {
+      "candidate_id": "seed_sprinter",
+      "parent_id": null,
+      "weights": {
+        "DEP": 0.4,
+        "RUN": 1.0,
+        "SPR": 0.2,
+        "CAP": 0.4,
+        "SAFE": 0.2,
+        "CTR": 0.9,
+        "DEN": 0.3,
+        "FLOW": 0.4,
+        "HOME": 0.5,
+        "FIN": 0.9
+      },
+      "phase_weights": {
+        "early": {
+          "DEP": 0.3,
+          "RUN": 0.0,
+          "SPR": 0.2,
+          "CAP": 0.0,
+          "SAFE": 0.0,
+          "CTR": 0.0,
+          "DEN": 0.0,
+          "FLOW": 0.0,
+          "HOME": 0.0,
+          "FIN": 0.0
+        },
+        "mid": {
+          "DEP": 0.0,
+          "RUN": 0.0,
+          "SPR": 0.0,
+          "CAP": 0.1,
+          "SAFE": 0.0,
+          "CTR": 0.1,
+          "DEN": 0.0,
+          "FLOW": 0.0,
+          "HOME": 0.0,
+          "FIN": 0.0
+        },
+        "late": {
+          "DEP": 0.0,
+          "RUN": 0.0,
+          "SPR": 0.0,
+          "CAP": 0.0,
+          "SAFE": 0.2,
+          "CTR": 0.0,
+          "DEN": 0.0,
+          "FLOW": 0.0,
+          "HOME": 0.4,
+          "FIN": 0.5
+        }
+      }
+    },
+    "search_metrics": {
+      "score": 0.2,
+      "wr_vs_sprinter": 0.16666666666666666,
+      "wr_vs_gambler": 0.16666666666666666,
+      "wr_vs_balanced": 0.6666666666666666,
+      "min_seed_wr_vs_sprinter": 0.16666666666666666,
+      "unfinished_rate": 0.0,
+      "seat_spread": 0.3333333333333333,
+      "total_games": 36,
+      "seed_metrics": [
+        {
+          "seed": 20260601,
+          "opponent": "sprinter",
+          "wins": 2,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            0,
+            0,
+            2,
+            0
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.16666666666666666
+        },
+        {
+          "seed": 20260601,
+          "opponent": "gambler",
+          "wins": 2,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.16666666666666666
+        },
+        {
+          "seed": 20260601,
+          "opponent": "balanced",
+          "wins": 8,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            2,
+            1,
+            2,
+            3
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.6666666666666666
+        }
+      ]
+    },
+    "holdout_metrics": {
+      "score": 0.24305555555555555,
+      "wr_vs_sprinter": 0.16666666666666666,
+      "wr_vs_gambler": 0.08333333333333333,
+      "wr_vs_balanced": 0.9166666666666666,
+      "min_seed_wr_vs_sprinter": 0.16666666666666666,
+      "unfinished_rate": 0.0,
+      "seat_spread": 0.1111111111111111,
+      "total_games": 36,
+      "seed_metrics": [
+        {
+          "seed": 20260526,
+          "opponent": "sprinter",
+          "wins": 2,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            0,
+            0,
+            0,
+            2
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.16666666666666666
+        },
+        {
+          "seed": 20260526,
+          "opponent": "gambler",
+          "wins": 1,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.08333333333333333
+        },
+        {
+          "seed": 20260526,
+          "opponent": "balanced",
+          "wins": 11,
+          "total_games": 12,
+          "unfinished_games": 0,
+          "seat_wins": [
+            3,
+            3,
+            3,
+            2
+          ],
+          "seat_games": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "win_rate": 0.9166666666666666
+        }
+      ]
+    }
+  },
+  "generation_history": [
+    {
+      "generation": 1,
+      "best": {
+        "candidate": {
+          "candidate_id": "seed_sprinter",
+          "parent_id": null,
+          "weights": {
+            "DEP": 0.4,
+            "RUN": 1.0,
+            "SPR": 0.2,
+            "CAP": 0.4,
+            "SAFE": 0.2,
+            "CTR": 0.9,
+            "DEN": 0.3,
+            "FLOW": 0.4,
+            "HOME": 0.5,
+            "FIN": 0.9
+          },
+          "phase_weights": {
+            "early": {
+              "DEP": 0.3,
+              "RUN": 0.0,
+              "SPR": 0.2,
+              "CAP": 0.0,
+              "SAFE": 0.0,
+              "CTR": 0.0,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.0,
+              "FIN": 0.0
+            },
+            "mid": {
+              "DEP": 0.0,
+              "RUN": 0.0,
+              "SPR": 0.0,
+              "CAP": 0.1,
+              "SAFE": 0.0,
+              "CTR": 0.1,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.0,
+              "FIN": 0.0
+            },
+            "late": {
+              "DEP": 0.0,
+              "RUN": 0.0,
+              "SPR": 0.0,
+              "CAP": 0.0,
+              "SAFE": 0.2,
+              "CTR": 0.0,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.4,
+              "FIN": 0.5
+            }
+          }
+        },
+        "search_metrics": {
+          "score": 0.2,
+          "wr_vs_sprinter": 0.16666666666666666,
+          "wr_vs_gambler": 0.16666666666666666,
+          "wr_vs_balanced": 0.6666666666666666,
+          "min_seed_wr_vs_sprinter": 0.16666666666666666,
+          "unfinished_rate": 0.0,
+          "seat_spread": 0.3333333333333333,
+          "total_games": 36,
+          "seed_metrics": [
+            {
+              "seed": 20260601,
+              "opponent": "sprinter",
+              "wins": 2,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                0,
+                0,
+                2,
+                0
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.16666666666666666
+            },
+            {
+              "seed": 20260601,
+              "opponent": "gambler",
+              "wins": 2,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                1,
+                0,
+                0,
+                1
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.16666666666666666
+            },
+            {
+              "seed": 20260601,
+              "opponent": "balanced",
+              "wins": 8,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                2,
+                1,
+                2,
+                3
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.6666666666666666
+            }
+          ]
+        }
+      },
+      "elites": [
+        {
+          "candidate": {
+            "candidate_id": "seed_sprinter",
+            "parent_id": null,
+            "weights": {
+              "DEP": 0.4,
+              "RUN": 1.0,
+              "SPR": 0.2,
+              "CAP": 0.4,
+              "SAFE": 0.2,
+              "CTR": 0.9,
+              "DEN": 0.3,
+              "FLOW": 0.4,
+              "HOME": 0.5,
+              "FIN": 0.9
+            },
+            "phase_weights": {
+              "early": {
+                "DEP": 0.3,
+                "RUN": 0.0,
+                "SPR": 0.2,
+                "CAP": 0.0,
+                "SAFE": 0.0,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "mid": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.1,
+                "SAFE": 0.0,
+                "CTR": 0.1,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "late": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.0,
+                "SAFE": 0.2,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.4,
+                "FIN": 0.5
+              }
+            }
+          },
+          "search_metrics": {
+            "score": 0.2,
+            "wr_vs_sprinter": 0.16666666666666666,
+            "wr_vs_gambler": 0.16666666666666666,
+            "wr_vs_balanced": 0.6666666666666666,
+            "min_seed_wr_vs_sprinter": 0.16666666666666666,
+            "unfinished_rate": 0.0,
+            "seat_spread": 0.3333333333333333,
+            "total_games": 36,
+            "seed_metrics": [
+              {
+                "seed": 20260601,
+                "opponent": "sprinter",
+                "wins": 2,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  0,
+                  0,
+                  2,
+                  0
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.16666666666666666
+              },
+              {
+                "seed": 20260601,
+                "opponent": "gambler",
+                "wins": 2,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  1,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.16666666666666666
+              },
+              {
+                "seed": 20260601,
+                "opponent": "balanced",
+                "wins": 8,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  2,
+                  1,
+                  2,
+                  3
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.6666666666666666
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "candidate_id": "seed_gambler",
+            "parent_id": null,
+            "weights": {
+              "DEP": 0.7,
+              "RUN": 0.8,
+              "SPR": 0.3,
+              "CAP": 0.6,
+              "SAFE": 0.1,
+              "CTR": 1.0,
+              "DEN": 0.6,
+              "FLOW": 0.2,
+              "HOME": 0.4,
+              "FIN": 0.5
+            },
+            "phase_weights": {
+              "early": {
+                "DEP": 0.3,
+                "RUN": 0.0,
+                "SPR": 0.2,
+                "CAP": 0.0,
+                "SAFE": 0.0,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "mid": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.1,
+                "SAFE": 0.0,
+                "CTR": 0.1,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "late": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.0,
+                "SAFE": 0.2,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.4,
+                "FIN": 0.5
+              }
+            }
+          },
+          "search_metrics": {
+            "score": 0.16944444444444445,
+            "wr_vs_sprinter": 0.08333333333333333,
+            "wr_vs_gambler": 0.08333333333333333,
+            "wr_vs_balanced": 0.8333333333333334,
+            "min_seed_wr_vs_sprinter": 0.08333333333333333,
+            "unfinished_rate": 0.0,
+            "seat_spread": 0.2222222222222222,
+            "total_games": 36,
+            "seed_metrics": [
+              {
+                "seed": 20260601,
+                "opponent": "sprinter",
+                "wins": 1,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  0,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.08333333333333333
+              },
+              {
+                "seed": 20260601,
+                "opponent": "gambler",
+                "wins": 1,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  0,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.08333333333333333
+              },
+              {
+                "seed": 20260601,
+                "opponent": "balanced",
+                "wins": 10,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  3,
+                  2,
+                  3,
+                  2
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.8333333333333334
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "generation": 2,
+      "best": {
+        "candidate": {
+          "candidate_id": "seed_sprinter",
+          "parent_id": null,
+          "weights": {
+            "DEP": 0.4,
+            "RUN": 1.0,
+            "SPR": 0.2,
+            "CAP": 0.4,
+            "SAFE": 0.2,
+            "CTR": 0.9,
+            "DEN": 0.3,
+            "FLOW": 0.4,
+            "HOME": 0.5,
+            "FIN": 0.9
+          },
+          "phase_weights": {
+            "early": {
+              "DEP": 0.3,
+              "RUN": 0.0,
+              "SPR": 0.2,
+              "CAP": 0.0,
+              "SAFE": 0.0,
+              "CTR": 0.0,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.0,
+              "FIN": 0.0
+            },
+            "mid": {
+              "DEP": 0.0,
+              "RUN": 0.0,
+              "SPR": 0.0,
+              "CAP": 0.1,
+              "SAFE": 0.0,
+              "CTR": 0.1,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.0,
+              "FIN": 0.0
+            },
+            "late": {
+              "DEP": 0.0,
+              "RUN": 0.0,
+              "SPR": 0.0,
+              "CAP": 0.0,
+              "SAFE": 0.2,
+              "CTR": 0.0,
+              "DEN": 0.0,
+              "FLOW": 0.0,
+              "HOME": 0.4,
+              "FIN": 0.5
+            }
+          }
+        },
+        "search_metrics": {
+          "score": 0.2,
+          "wr_vs_sprinter": 0.16666666666666666,
+          "wr_vs_gambler": 0.16666666666666666,
+          "wr_vs_balanced": 0.6666666666666666,
+          "min_seed_wr_vs_sprinter": 0.16666666666666666,
+          "unfinished_rate": 0.0,
+          "seat_spread": 0.3333333333333333,
+          "total_games": 36,
+          "seed_metrics": [
+            {
+              "seed": 20260601,
+              "opponent": "sprinter",
+              "wins": 2,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                0,
+                0,
+                2,
+                0
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.16666666666666666
+            },
+            {
+              "seed": 20260601,
+              "opponent": "gambler",
+              "wins": 2,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                1,
+                0,
+                0,
+                1
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.16666666666666666
+            },
+            {
+              "seed": 20260601,
+              "opponent": "balanced",
+              "wins": 8,
+              "total_games": 12,
+              "unfinished_games": 0,
+              "seat_wins": [
+                2,
+                1,
+                2,
+                3
+              ],
+              "seat_games": [
+                3,
+                3,
+                3,
+                3
+              ],
+              "win_rate": 0.6666666666666666
+            }
+          ]
+        }
+      },
+      "elites": [
+        {
+          "candidate": {
+            "candidate_id": "seed_sprinter",
+            "parent_id": null,
+            "weights": {
+              "DEP": 0.4,
+              "RUN": 1.0,
+              "SPR": 0.2,
+              "CAP": 0.4,
+              "SAFE": 0.2,
+              "CTR": 0.9,
+              "DEN": 0.3,
+              "FLOW": 0.4,
+              "HOME": 0.5,
+              "FIN": 0.9
+            },
+            "phase_weights": {
+              "early": {
+                "DEP": 0.3,
+                "RUN": 0.0,
+                "SPR": 0.2,
+                "CAP": 0.0,
+                "SAFE": 0.0,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "mid": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.1,
+                "SAFE": 0.0,
+                "CTR": 0.1,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "late": {
+                "DEP": 0.0,
+                "RUN": 0.0,
+                "SPR": 0.0,
+                "CAP": 0.0,
+                "SAFE": 0.2,
+                "CTR": 0.0,
+                "DEN": 0.0,
+                "FLOW": 0.0,
+                "HOME": 0.4,
+                "FIN": 0.5
+              }
+            }
+          },
+          "search_metrics": {
+            "score": 0.2,
+            "wr_vs_sprinter": 0.16666666666666666,
+            "wr_vs_gambler": 0.16666666666666666,
+            "wr_vs_balanced": 0.6666666666666666,
+            "min_seed_wr_vs_sprinter": 0.16666666666666666,
+            "unfinished_rate": 0.0,
+            "seat_spread": 0.3333333333333333,
+            "total_games": 36,
+            "seed_metrics": [
+              {
+                "seed": 20260601,
+                "opponent": "sprinter",
+                "wins": 2,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  0,
+                  0,
+                  2,
+                  0
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.16666666666666666
+              },
+              {
+                "seed": 20260601,
+                "opponent": "gambler",
+                "wins": 2,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  1,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.16666666666666666
+              },
+              {
+                "seed": 20260601,
+                "opponent": "balanced",
+                "wins": 8,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  2,
+                  1,
+                  2,
+                  3
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.6666666666666666
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "candidate_id": "g2_m5",
+            "parent_id": "seed_gambler",
+            "weights": {
+              "DEP": 0.5218426009880683,
+              "RUN": 0.7549504126112769,
+              "SPR": 0.25859664806776855,
+              "CAP": 0.6886822147929949,
+              "SAFE": 0.0,
+              "CTR": 1.1790779280828072,
+              "DEN": 0.7128452701086408,
+              "FLOW": 0.36321084147062843,
+              "HOME": 0.6406411347224845,
+              "FIN": 0.20334575023056284
+            },
+            "phase_weights": {
+              "early": {
+                "DEP": 0.3512907330314737,
+                "RUN": 0.0,
+                "SPR": 0.2113184512854507,
+                "CAP": 0.0,
+                "SAFE": 0.006091296364036253,
+                "CTR": 0.0085961753610401,
+                "DEN": 0.011508536726501683,
+                "FLOW": 0.0,
+                "HOME": 0.016141240094260215,
+                "FIN": 0.0
+              },
+              "mid": {
+                "DEP": 0.0,
+                "RUN": 0.032284258224648005,
+                "SPR": 0.0,
+                "CAP": 0.061722450147786594,
+                "SAFE": 0.0,
+                "CTR": 0.10039968477567453,
+                "DEN": 0.08657149093208494,
+                "FLOW": 0.0,
+                "HOME": 0.0,
+                "FIN": 0.0
+              },
+              "late": {
+                "DEP": 0.09798001963658898,
+                "RUN": 0.058118516237279615,
+                "SPR": 0.0,
+                "CAP": 0.06959349210427766,
+                "SAFE": 0.1469993632161668,
+                "CTR": 0.0,
+                "DEN": 0.1440306015676392,
+                "FLOW": 0.0,
+                "HOME": 0.41353659160512224,
+                "FIN": 0.5499244170874389
+              }
+            }
+          },
+          "search_metrics": {
+            "score": 0.18611111111111112,
+            "wr_vs_sprinter": 0.08333333333333333,
+            "wr_vs_gambler": 0.16666666666666666,
+            "wr_vs_balanced": 0.8333333333333334,
+            "min_seed_wr_vs_sprinter": 0.08333333333333333,
+            "unfinished_rate": 0.0,
+            "seat_spread": 0.2222222222222222,
+            "total_games": 36,
+            "seed_metrics": [
+              {
+                "seed": 20260601,
+                "opponent": "sprinter",
+                "wins": 1,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  0,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.08333333333333333
+              },
+              {
+                "seed": 20260601,
+                "opponent": "gambler",
+                "wins": 2,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  1,
+                  0,
+                  0,
+                  1
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.16666666666666666
+              },
+              {
+                "seed": 20260601,
+                "opponent": "balanced",
+                "wins": 10,
+                "total_games": 12,
+                "unfinished_games": 0,
+                "seat_wins": [
+                  3,
+                  2,
+                  3,
+                  2
+                ],
+                "seat_games": [
+                  3,
+                  3,
+                  3,
+                  3
+                ],
+                "win_rate": 0.8333333333333334
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
