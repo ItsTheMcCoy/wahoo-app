@@ -8,7 +8,6 @@ const WahooRules = preload("res://scripts/wahoo_rules.gd")
 
 var _rng := RandomNumberGenerator.new()
 var _state: WahooState
-var _current_player := 0
 
 func _ready() -> void:
     _rng.randomize()
@@ -18,9 +17,14 @@ func _ready() -> void:
 
 func _on_roll_pressed() -> void:
     var roll := _rng.randi_range(1, 6)
-    var legal := WahooRules.legal_moves(_state, _current_player, roll)
-    _render_status("Player %d rolled %d\nLegal moves found: %d" % [_current_player + 1, roll, legal.size()])
-    _current_player = (_current_player + 1) % WahooState.NUM_PLAYERS
+    var player := _state.current_player
+    var legal := WahooRules.legal_moves(_state, player, roll)
+    var line := "Player %d rolled %d\nLegal moves found: %d" % [player + 1, roll, legal.size()]
+    if legal.size() > 0:
+        WahooRules.apply_move(_state, legal[0])
+        line += "\nApplied first legal move: %s" % String(legal[0]["kind"])
+    _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+    _render_status(line)
 
 func _render_status(header: String) -> void:
     _status.text = "%s\n\nCurrent phase goals:\n- Port game_state.py to GDScript\n- Port rules.py to GDScript\n- Recreate rule tests in Godot" % header
