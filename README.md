@@ -11,7 +11,7 @@ Implemented:
 - Console game loop with ASCII board rendering.
 - Human pass-and-play mode.
 - Per-seat player configuration in `wahoo/play.py`, with each slot set to `human` or a named AI profile.
-- Computer self-play mode using the `balanced` AI profile for all four seats.
+- Computer self-play mode with setup choices: one difficulty for all seats, one profile for all seats, or per-seat mixed setup.
 - Headless self-play CLI runner in `wahoo/selfplay.py` for N-game AI balance checks and seat-rotated profile benchmarking.
 - Replay recording to sequential `game*.json` files and replay/continue support.
 - Auto-roll toggle using `/auto`.
@@ -61,7 +61,10 @@ Startup flow:
 - ASCII-art intro is shown first.
 - Choose one intro menu option:
   - `S` start a new game and configure each seat as human or AI
-  - `C` run computer self-play, where all players use the `balanced` AI profile
+  - `C` run computer self-play and choose one of:
+    - one difficulty for all seats
+    - one profile for all seats
+    - per-seat mixed setup
   - `R` replay a saved game
   - `E` exit
 - Type `/auto` at supported prompts to toggle auto-roll on or off.
@@ -138,7 +141,7 @@ AI player behavior:
 
 - New games can mix human seats with profiles from `wahoo.ai.PROFILES`.
 - AI seats always auto-roll and choose moves through their configured profile.
-- Computer self-play starts with auto-roll ON and maps all four seats to `balanced`.
+- Computer self-play starts with auto-roll ON and now supports profile/difficulty selection before the run starts.
 
 ## Run Headless Self-Play
 
@@ -248,7 +251,7 @@ Run the full test suite with:
 python -m pytest tests/
 ```
 
-At the time this documentation was synchronized, the suite contained 77 passing tests.
+Test counts change as new coverage is added. Use the command output as the source of truth for the current pass count.
 
 You can still run the legacy rule/behavior test harness directly:
 

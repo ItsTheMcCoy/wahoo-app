@@ -93,7 +93,7 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `tests/test_ai.py` — probe 5 (center denial) written; Gatekeeper and Assassin bump opponent from center
 - `tests/test_ai.py` — probe 6 (threat escape) written; Tortoise and Gatekeeper move away from capture danger
 - `wahoo/play.py` — `settings["players"]` list, per-slot human/AI dispatch, AI auto-roll, and startup `configure_players()` implemented
-- `[C] Computer self-play` now maps all four seats to the `balanced` AI profile for backward-compatible startup behavior
+- `[C] Computer self-play` now supports three setup modes: one difficulty for all seats, one profile for all seats, or per-seat mixed configuration
 - `wahoo/selfplay.py` — headless N-game AI runner with configurable profile slots, deterministic seed support, max-turn safety cap, compact win-rate summary, and seat-rotated profile benchmark mode
 - `tests/test_selfplay.py` — self-play CLI/function coverage added
 - 50-game balanced-vs-balanced-vs-balanced-vs-balanced smoke check re-run after gameplay bug fix with seed `20260525`: 50/50 games completed; wins Red 11, Green 14, Yellow 12, Blue 13 (avg turns 1219.4, avg rolls 1462.9, avg captures 249.0)
@@ -102,11 +102,12 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - `wahoo/play.py` — turn-detail events (`event.type = "turn_detail"`) now recorded alongside existing turn events; recording header upgraded to version 2 with `players`; post-game stats report + CSV append integrated
 - `tests/test_stats.py` — stats module and CSV/output behavior coverage added
 - `wahoo/ai.py` — `ExpectimaxPlayer` implemented (one-ply, reroll-aware lookahead), registered as `expectimax` in `PROFILES`
+- `scripts/tune_profile_against_sprinter.py` — automated random-plus-mutation tuner with checkpointing and holdout scoring, plus plan docs under `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md`
 
 **Remaining:**
-- Build a human-like profile after additional games are played with recorded human reasoning
+- Build a stronger post-sprinter candidate via larger calibration/overnight tuning runs and promotion-gate validation
+- Build a richer human-like profile after additional games are played with recorded human reasoning
 - Encode observed human tendencies as measurable targets for profile adjustments
-- Add a tuning script after the human-like profile exists to search/refine weight variants against benchmark opponents
 
 ### Phase 2a — Godot Bootstrap — *Not started*
 

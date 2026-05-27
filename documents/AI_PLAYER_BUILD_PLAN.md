@@ -404,7 +404,7 @@ Auto-roll is forced on for slots with an AI player type. Human slots continue to
 
 ### 9.3 Startup configuration
 
-`configure_players()` is called during normal new-game setup. It presents each slot and asks for `human` or an AI profile. The `[C] Computer self-play` option from the current menu maps to all-Balanced for backwards compatibility.
+`configure_players()` is called during normal new-game setup. It supports per-seat controller selection using numbered prompts (`human`, AI-by-difficulty, or AI-by-profile). The `[C] Computer self-play` option now offers three setup paths: one difficulty for all seats, one profile for all seats, or per-seat mixed configuration.
 
 ---
 
@@ -623,7 +623,7 @@ def test_threat_escape():
 
 - Build a human-like profile after additional games are played with recorded human reasoning.
 - Encode observed human tendencies as measurable targets for profile adjustments.
-- Add a tuning script after the human-like profile exists to search/refine weight variants against benchmark opponents.
+- Run larger calibration and overnight tuning cycles with `scripts/tune_profile_against_sprinter.py`, then promote candidates through the Stage 2-5 acceptance pipeline.
 
 ---
 
