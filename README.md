@@ -167,6 +167,24 @@ python -m wahoo.selfplay --benchmark-profiles balanced,assassin,tortoise,sprinte
 The runner reports completed/unfinished games, wins by seat/profile, average turns, average rolls, and average captures.
 Benchmark mode prints a leaderboard with per-seat win breakdown for each candidate profile.
 
+## Tune A Profile To Beat Sprinter
+
+For automated search over GreedyPlayer weights and phase weights, use:
+
+```powershell
+python scripts/tune_profile_against_sprinter.py --generations 8 --population-size 20 --elite-count 4 --games-per-seat 15 --max-turns 20000 --search-seeds 20260601,20260602,20260603 --holdout-seeds 20260526,20260527,20260528,20260529,20260530 --checkpoint-json documents/sprinter_tuning_checkpoint.json --output-json documents/sprinter_tuning_results.json --output-md documents/sprinter_tuning_results.md
+```
+
+Primary references for this workflow:
+- `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md`
+- `documents/AI_TESTING_PLAN.md`
+- `documents/AI_BENCHMARK_RESULTS.md`
+
+Outputs:
+- `documents/sprinter_tuning_checkpoint.json` (generation checkpoints)
+- `documents/sprinter_tuning_results.json` (machine-readable best-candidate results)
+- `documents/sprinter_tuning_results.md` (human-readable summary)
+
 ## Replay a Saved Game
 
 Each new game writes its own history file automatically using a simple sequential name like:
@@ -245,11 +263,13 @@ python -m tests.test_wahoo
 - `documents/DEVELOPMENT_PLAN.md` — phase roadmap and current project status.
 - `documents/AI_PLAYER_BUILD_PLAN.md` — AI implementation plan and remaining AI work.
 - `documents/AI_TESTING_PLAN.md` — step-by-step protocol for benchmarking, robustness checks, and pairwise AI profile evaluation.
+- `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md` — objective function, acceptance gates, and automated tuning workflow to surpass sprinter.
 - `documents/AI_Strategy_Spec.md` — strategy dimensions and scenario probe bank.
 - `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
 - `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
 - `wahoo/reasoning_export.py` — JSONL exporter for human move reasoning notes.
 - `wahoo/human_profile.py` — trainer that fits a `human_like` profile from replay reasoning data.
+- `scripts/tune_profile_against_sprinter.py` — random-plus-mutation tuning harness with checkpointing and holdout evaluation.
 
 ## Notes
 

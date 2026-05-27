@@ -22,6 +22,10 @@ This plan uses two existing entry points:
 - `python -m wahoo.selfplay --benchmark-*` for seat-rotated gauntlet benchmarking
 - `python -m wahoo.selfplay --games ... --players ...` for direct matchup confirmation
 
+Companion tuning workflow:
+- `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md` defines the objective function, acceptance gates, and seed split policy for automated weight search.
+- `scripts/tune_profile_against_sprinter.py` automates candidate generation, scoring, checkpointing, and holdout verification.
+
 ## Profiles Under Test
 
 Current profile set:
@@ -135,6 +139,25 @@ Action before next stage:
 - Record the results in `documents/AI_BENCHMARK_RESULTS.md`.
 - Keep all profiles for Stage 2 unless a profile is clearly broken or pathological.
 - If a profile has excessive unfinished games, rerun the same command once with a different seed to check whether that behavior repeats.
+
+### Optional Stage 1.5 - Automated Candidate Search
+
+Purpose:
+Generate new candidate profiles before full Stage 2 comparisons.
+
+Command:
+
+```powershell
+python scripts/tune_profile_against_sprinter.py --generations 8 --population-size 20 --elite-count 4 --games-per-seat 15 --max-turns 20000 --search-seeds 20260601,20260602,20260603 --holdout-seeds 20260526,20260527,20260528,20260529,20260530 --checkpoint-json documents/sprinter_tuning_checkpoint.json --output-json documents/sprinter_tuning_results.json --output-md documents/sprinter_tuning_results.md
+```
+
+Interpretation:
+- This step is for candidate discovery only, not final promotion.
+- Keep objective weights fixed during one tuning cycle.
+
+Action before Stage 2:
+- Promote top 3 to 5 candidates from `documents/sprinter_tuning_results.json`.
+- Run Stage 2 through Stage 5 exactly as written below.
 
 ## Stage 2 - Serious Baseline Ranking
 

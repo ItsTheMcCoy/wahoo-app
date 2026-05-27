@@ -2,6 +2,10 @@
 
 Protocol and results log for evaluating Wahoo AI profile strength with the benchmark mode in `wahoo/selfplay.py`.
 
+## Companion Plan
+
+For the dedicated training workflow focused on surpassing sprinter while preserving mixed-field robustness, see [documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md](documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md).
+
 ## Goal
 
 Measure which AI profiles are actually stronger under controlled conditions, not just which profile wins a single seeded run.
@@ -128,6 +132,22 @@ Interpretation notes:
 - Lower unfinished count is a quality signal.
 - Seat imbalance should be treated as a warning flag.
 - Very high average turns may indicate a safe but overly passive profile.
+
+## Tuning Artifacts To Record
+
+When using the automated tuner workflow, include these artifacts in each cycle log:
+
+- `documents/sprinter_tuning_checkpoint.json`
+- `documents/sprinter_tuning_results.json`
+- `documents/sprinter_tuning_results.md`
+
+For each tuning cycle, record:
+- script command line used
+- search seeds and holdout seeds
+- objective function version
+- best candidate id and parent id
+- best-candidate weights and phase weights
+- holdout win rates vs sprinter, gambler, and balanced
 
 ## Run Log
 
