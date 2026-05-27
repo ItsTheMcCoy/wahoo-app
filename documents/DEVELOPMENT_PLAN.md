@@ -109,7 +109,7 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - Build a richer human-like profile after additional games are played with recorded human reasoning
 - Encode observed human tendencies as measurable targets for profile adjustments
 
-### Phase 2a — Godot Bootstrap — *Not started*
+### Phase 2a — Godot Bootstrap — *In progress*
 
 Port the rules engine to Godot. No graphics yet — confirm the engine runs correctly on desktop and exports to a browser.
 
@@ -119,6 +119,11 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 - Build a minimal Godot project with a "Roll" button and text output of game state — run on desktop first
 - Configure HTML5 export — fiddly setup done once now rather than at the end
 - Load the exported build in a desktop browser and a mobile browser; confirm input and layout are functional
+
+**Done:**
+- Created initial Godot project scaffold under `godot/` with `project.godot`, `scenes/Main.tscn`, and bootstrap scripts in `scripts/`
+- Added a minimal desktop-run scene with a Roll button and text output placeholder for rules-port integration
+- Added `godot/README.md` with setup and run steps for continuing Phase 2a work
 
 ### Phase 2b — Visual Board — *Not started*
 

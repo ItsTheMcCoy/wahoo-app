@@ -36,6 +36,10 @@ Not implemented yet:
 
 - Godot project files and Android build/export setup.
 
+In progress now:
+
+- Initial Godot 4 bootstrap scaffold under `godot/` (`project.godot`, `scenes/Main.tscn`, and starter scripts) for Phase 2a.
+
 ## Requirements
 
 - Python 3.10+
@@ -258,6 +262,18 @@ You can still run the legacy rule/behavior test harness directly:
 ```powershell
 python -m tests.test_wahoo
 ```
+
+## Godot Bootstrap (Phase 2a)
+
+The repository now includes a starter Godot project in `godot/`.
+
+To open it:
+
+1. Install Godot 4.x.
+2. In Godot Project Manager, import `godot/project.godot`.
+3. Run the project and verify the bootstrap scene loads.
+
+See `godot/README.md` for current scope and next porting steps.
 
 ## Documentation Map
 
