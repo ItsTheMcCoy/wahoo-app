@@ -1,0 +1,419 @@
+{
+  "metadata": {
+    "generated_at_utc": "2026-05-26T22:59:01.408798+00:00",
+    "started_at_utc": "2026-05-26T22:32:47.421602+00:00",
+    "completed_at_utc": "2026-05-26T22:59:01.408798+00:00",
+    "profiles": [
+      "sprinter",
+      "gambler",
+      "expectimax"
+    ],
+    "layouts": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      20260531,
+      20260532,
+      20260533,
+      20260534
+    ],
+    "games_per_layout": 500,
+    "total_games_per_profile_per_pair": 2000,
+    "max_turns": 20000
+  },
+  "pairs": {
+    "sprinter_vs_gambler": {
+      "profiles": [
+        "sprinter",
+        "gambler"
+      ],
+      "layouts": [
+        {
+          "layout": 1,
+          "seed": 20260531,
+          "lineup": [
+            "sprinter",
+            "gambler",
+            "sprinter",
+            "gambler"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 256,
+            "gambler": 244
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "gambler": 500
+          },
+          "avg_turns": 324.832,
+          "avg_rolls": 389.286,
+          "avg_captures": 40.642
+        },
+        {
+          "layout": 2,
+          "seed": 20260532,
+          "lineup": [
+            "gambler",
+            "sprinter",
+            "gambler",
+            "sprinter"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 275,
+            "gambler": 225
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "gambler": 500
+          },
+          "avg_turns": 321.11,
+          "avg_rolls": 384.946,
+          "avg_captures": 40.262
+        },
+        {
+          "layout": 3,
+          "seed": 20260533,
+          "lineup": [
+            "sprinter",
+            "sprinter",
+            "gambler",
+            "gambler"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 254,
+            "gambler": 246
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "gambler": 500
+          },
+          "avg_turns": 319.468,
+          "avg_rolls": 383.592,
+          "avg_captures": 40.338
+        },
+        {
+          "layout": 4,
+          "seed": 20260534,
+          "lineup": [
+            "gambler",
+            "gambler",
+            "sprinter",
+            "sprinter"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 273,
+            "gambler": 227
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "gambler": 500
+          },
+          "avg_turns": 321.738,
+          "avg_rolls": 385.732,
+          "avg_captures": 40.29
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "sprinter",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1058,
+          "win_rate": 0.529,
+          "completed_win_rate": 0.529,
+          "avg_turns": 321.787,
+          "avg_rolls": 385.889,
+          "avg_captures": 40.383
+        },
+        {
+          "profile": "gambler",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 942,
+          "win_rate": 0.471,
+          "completed_win_rate": 0.471,
+          "avg_turns": 321.787,
+          "avg_rolls": 385.889,
+          "avg_captures": 40.383
+        }
+      ]
+    },
+    "sprinter_vs_expectimax": {
+      "profiles": [
+        "sprinter",
+        "expectimax"
+      ],
+      "layouts": [
+        {
+          "layout": 1,
+          "seed": 20260531,
+          "lineup": [
+            "sprinter",
+            "expectimax",
+            "sprinter",
+            "expectimax"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 282,
+            "expectimax": 218
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 319.152,
+          "avg_rolls": 382.492,
+          "avg_captures": 33.288
+        },
+        {
+          "layout": 2,
+          "seed": 20260532,
+          "lineup": [
+            "expectimax",
+            "sprinter",
+            "expectimax",
+            "sprinter"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 306,
+            "expectimax": 194
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 318.708,
+          "avg_rolls": 382.208,
+          "avg_captures": 33.442
+        },
+        {
+          "layout": 3,
+          "seed": 20260533,
+          "lineup": [
+            "sprinter",
+            "sprinter",
+            "expectimax",
+            "expectimax"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 317,
+            "expectimax": 183
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 325.082,
+          "avg_rolls": 390.214,
+          "avg_captures": 34.334
+        },
+        {
+          "layout": 4,
+          "seed": 20260534,
+          "lineup": [
+            "expectimax",
+            "expectimax",
+            "sprinter",
+            "sprinter"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "sprinter": 289,
+            "expectimax": 211
+          },
+          "total_games_by_profile": {
+            "sprinter": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 322.648,
+          "avg_rolls": 386.632,
+          "avg_captures": 33.96
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "sprinter",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1194,
+          "win_rate": 0.597,
+          "completed_win_rate": 0.597,
+          "avg_turns": 321.3975,
+          "avg_rolls": 385.3865,
+          "avg_captures": 33.756
+        },
+        {
+          "profile": "expectimax",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 806,
+          "win_rate": 0.403,
+          "completed_win_rate": 0.403,
+          "avg_turns": 321.3975,
+          "avg_rolls": 385.3865,
+          "avg_captures": 33.756
+        }
+      ]
+    },
+    "gambler_vs_expectimax": {
+      "profiles": [
+        "gambler",
+        "expectimax"
+      ],
+      "layouts": [
+        {
+          "layout": 1,
+          "seed": 20260531,
+          "lineup": [
+            "gambler",
+            "expectimax",
+            "gambler",
+            "expectimax"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "gambler": 295,
+            "expectimax": 205
+          },
+          "total_games_by_profile": {
+            "gambler": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 339.854,
+          "avg_rolls": 407.43,
+          "avg_captures": 38.574
+        },
+        {
+          "layout": 2,
+          "seed": 20260532,
+          "lineup": [
+            "expectimax",
+            "gambler",
+            "expectimax",
+            "gambler"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "gambler": 296,
+            "expectimax": 204
+          },
+          "total_games_by_profile": {
+            "gambler": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 338.744,
+          "avg_rolls": 406.416,
+          "avg_captures": 38.546
+        },
+        {
+          "layout": 3,
+          "seed": 20260533,
+          "lineup": [
+            "gambler",
+            "gambler",
+            "expectimax",
+            "expectimax"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "gambler": 289,
+            "expectimax": 211
+          },
+          "total_games_by_profile": {
+            "gambler": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 332.214,
+          "avg_rolls": 398.74,
+          "avg_captures": 38.054
+        },
+        {
+          "layout": 4,
+          "seed": 20260534,
+          "lineup": [
+            "expectimax",
+            "expectimax",
+            "gambler",
+            "gambler"
+          ],
+          "games": 500,
+          "completed_games": 500,
+          "unfinished_games": 0,
+          "wins_by_profile": {
+            "gambler": 281,
+            "expectimax": 219
+          },
+          "total_games_by_profile": {
+            "gambler": 500,
+            "expectimax": 500
+          },
+          "avg_turns": 343.822,
+          "avg_rolls": 412.248,
+          "avg_captures": 39.508
+        }
+      ],
+      "aggregate": [
+        {
+          "profile": "gambler",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 1161,
+          "win_rate": 0.5805,
+          "completed_win_rate": 0.5805,
+          "avg_turns": 338.6585,
+          "avg_rolls": 406.2085,
+          "avg_captures": 38.6705
+        },
+        {
+          "profile": "expectimax",
+          "total_games": 2000,
+          "completed_games": 2000,
+          "unfinished_games": 0,
+          "wins": 839,
+          "win_rate": 0.4195,
+          "completed_win_rate": 0.4195,
+          "avg_turns": 338.6585,
+          "avg_rolls": 406.2085,
+          "avg_captures": 38.6705
+        }
+      ]
+    }
+  }
+}

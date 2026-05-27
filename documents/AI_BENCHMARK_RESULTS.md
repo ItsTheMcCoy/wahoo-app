@@ -517,6 +517,33 @@ Opponents: random,balanced,balanced
 - expectimax stayed competitive, but trailed the other two in every mixed-opponent field.
 - The mixed-opponent block supports keeping sprinter, gambler, and expectimax as the top Stage 3 profiles, with sprinter still the strongest all-around candidate.
 
+### Stage 4 - Pairwise Confirmation (2026-05-26)
+
+Run configuration:
+- Profiles: sprinter,gambler,expectimax
+- Layouts: 1,2,3,4
+- Seeds: 20260531,20260532,20260533,20260534
+- Games per layout: 500
+- Total games per pair: 2000
+- Max turns: 20000
+
+Full per-layout tables and command history are recorded in [stage4_pairwise_confirmation_results.md](stage4_pairwise_confirmation_results.md) and [stage4_pairwise_confirmation_results.json](stage4_pairwise_confirmation_results.json).
+
+#### Pairwise Aggregate Summary
+
+| Pair | Winner | Winner Wins | Winner Win % | Runner-up Wins | Runner-up Win % | Margin | Completed | Unfinished | Avg Turns | Avg Rolls | Avg Captures |
+|------|--------|-------------|--------------|----------------|-----------------|--------|-----------|------------|-----------|-----------|--------------|
+| sprinter vs gambler | sprinter | 1058 | 52.9% | 942 | 47.1% | +5.8 pp | 2000/2000 | 0 | 321.8 | 385.9 | 40.4 |
+| sprinter vs expectimax | sprinter | 1194 | 59.7% | 806 | 40.3% | +19.4 pp | 2000/2000 | 0 | 321.4 | 385.4 | 33.8 |
+| gambler vs expectimax | gambler | 1161 | 58.1% | 839 | 41.9% | +16.1 pp | 2000/2000 | 0 | 338.7 | 406.2 | 38.7 |
+
+**Stage 4 interpretation:**
+- All pairwise blocks completed cleanly with zero unfinished games.
+- sprinter beat gambler head-to-head by 5.8 percentage points.
+- sprinter beat expectimax by a wide 19.4-point margin.
+- gambler beat expectimax by 16.1 points.
+- Pairwise confirmation supports final ordering among the top three as: sprinter > gambler > expectimax.
+
 ---
 
 ## Run Log Template
