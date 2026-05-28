@@ -93,4 +93,4 @@ Current status:
 - Desktop browser validation: complete (scene load + repeated Roll interaction verified).
 - Mobile browser validation: complete (Roll interaction and state updates verified over HTTPS).
 - Mobile text readability: fixed (responsive full-viewport layout, 22 px title, 16 px status, 60 px tap target for Roll).
-- Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.
+- Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.

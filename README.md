@@ -47,7 +47,7 @@ Phase 2b complete:
 - `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
 - `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, legal-move destination highlighting, tap-to-move selection, movement animation, turn status, Roll button state, and a win overlay.
-- Phase 2b validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.
+- Phase 2b validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
 
 ## Requirements
 
