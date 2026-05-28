@@ -1,6 +1,6 @@
-# Godot Bootstrap (Phase 2a)
+# Godot Project (Phase 2a/2b)
 
-This folder contains the initial Godot 4 project scaffold for Phase 2a in `documents/DEVELOPMENT_PLAN.md`.
+This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phase 2a is complete; Phase 2b has started with the visual board layout module.
 
 ## Current scope
 
@@ -9,6 +9,8 @@ This folder contains the initial Godot 4 project scaffold for Phase 2a in `docum
 - GDScript state model (`wahoo_state.gd`) — complete port of Python's `game_state.py`
 - GDScript rules engine (`wahoo_rules.gd`) — complete port of Python's `rules.py`
 - Startup parity smoke tests (`wahoo_rules_smoke.gd`) — 27 checks covering all major rule behaviours, all passing
+- Visual board layout mapping (`wahoo_layout.gd`) — normalized coordinates for track, base, home, and center locations
+- Layout smoke tests (`wahoo_layout_smoke.gd`) — 5 checks covering board topology and normalized coordinate bounds
 - HTML5 export configured and validated on desktop and mobile browsers
 
 ## Open in Godot
@@ -28,10 +30,10 @@ This folder contains the initial Godot 4 project scaffold for Phase 2a in `docum
 
 - Project opens and runs on desktop.
 - Main scene loads and UI responds to Roll clicks on desktop and mobile (responsive layout).
-- 27 rule parity smoke tests run at startup and all pass, covering base-exit, track advance, center entry/exit, home lane, capture, win condition, and edge cases (pass-over-opponent, other-player home-entry, slot-0 blocking).
+- 32 headless smoke tests pass: 27 rule parity checks plus 5 visual layout checks.
 - HTML5 export builds and loads correctly in desktop and mobile browsers.
 
-## Run parity smoke tests headlessly
+## Run smoke tests headlessly
 
 Run this from the `godot/` directory:
 
@@ -39,7 +41,7 @@ Run this from the `godot/` directory:
 Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd
 ```
 
-This executes the Godot parity smoke suite without opening the game UI and exits non-zero if any test fails.
+This executes the Godot rule and layout smoke suites without opening the game UI and exits non-zero if any test fails.
 
 ### Windows PATH note
 
@@ -47,15 +49,25 @@ This executes the Godot parity smoke suite without opening the game UI and exits
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`, not `godot`
 - If you create a `godot` alias or wrapper on your machine, `godot --headless --script res://scripts/run_smoke.gd` works the same way
 
-## Next phase: Phase 2b — Visual Board
+## Current phase: Phase 2b — Visual Board
 
-Phase 2a is complete. The next work is tracked in `documents/DEVELOPMENT_PLAN.md` under **Phase 2b**:
+Phase 2a is complete. Phase 2b is in progress and tracked in `documents/DEVELOPMENT_PLAN.md` under **Phase 2b**:
 
-- Add a layout module mapping `Location` tuples → pixel coordinates (separate from rules code)
-- Draw the board, marble pieces, home rows, and center hole
-- Highlight legal-move destinations after a roll
-- Tap-to-move interaction
-- Animate marble movement, roll button, current-player indicator, and win screen
+Current Godot state:
+
+- `scenes/Main.tscn` is still a text bootstrap scene with a Roll button and status output.
+- `scripts/main.gd` currently rolls, finds legal moves, applies the first legal move automatically, advances the player, and re-renders text.
+- `scripts/wahoo_layout.gd` now maps rules locations to normalized visual board coordinates; drawing, marble rendering, tap-to-move selection, animation, and win screen are still pending.
+
+Recommended Phase 2b order:
+
+1. Done: add `scripts/wahoo_layout.gd` for abstract `Location` -> normalized board coordinate mapping.
+2. Create the visual board surface and draw static track/base/home/center geometry.
+3. Render marble nodes from `WahooState` using player colors.
+4. Change Roll behavior to highlight legal move choices instead of auto-applying the first move.
+5. Add tap/click move selection, then refresh from authoritative state.
+6. Add basic movement animation, current-player indicator, turn announcements, and win screen.
+7. Re-run headless smoke tests and Web export validation after interaction works.
 
 ## HTML5 export (Phase 2a)
 

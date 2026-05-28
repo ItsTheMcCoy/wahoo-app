@@ -1,6 +1,6 @@
 # Wahoo Text Game
 
-Console-based Python prototype of Wahoo for 4 players. The current project phase is validating the rules engine, replay support, simple computer self-play, and the first AI strategy module before porting the game to Godot 4 for the browser (HTML5).
+Console-based Python prototype plus Godot 4 browser-port scaffold for Wahoo. The current project phase is Phase 2b: building the visual board and hot-seat interaction layer on top of the validated rules engine.
 
 ## Current State
 
@@ -34,13 +34,19 @@ Implemented:
 
 Not implemented yet:
 
-- Godot visual board and interaction layer (Phase 2b) — next phase.
+- Godot visual board drawing and interaction layer beyond the Phase 2b layout module.
 - Stronger sprinter-beating AI candidate (requires a larger overnight tuning run).
 - Richer human-like AI profile (requires more recorded human-reasoning games).
 
 Phase 2a complete:
 
 - Godot 4 bootstrap under `godot/`: GDScript rules port, 27 parity smoke tests (all passing), HTML5 export validated on desktop and mobile browsers, mobile-friendly layout.
+
+Phase 2b in progress:
+
+- `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
+- `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
+- Static board drawing, marble nodes, destination highlighting, tap-to-move interaction, movement animation, and win screen are still pending.
 
 ## Requirements
 
@@ -265,9 +271,9 @@ You can still run the legacy rule/behavior test harness directly:
 python -m tests.test_wahoo
 ```
 
-## Godot Bootstrap (Phase 2a)
+## Godot Port (Phase 2a/2b)
 
-The repository now includes a starter Godot project in `godot/`.
+The repository includes a Godot project in `godot/`. Phase 2a is complete, and Phase 2b has started with the visual board layout module.
 
 To open it:
 
@@ -275,7 +281,7 @@ To open it:
 2. In Godot Project Manager, import `godot/project.godot`.
 3. Run the project and verify the bootstrap scene loads.
 
-To run parity smoke checks headlessly from `godot/`:
+To run Godot smoke checks headlessly from `godot/`:
 
 ```powershell
 Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd
@@ -292,7 +298,7 @@ Version control policy:
 - The Godot project is standardized on `4.6.3`.
 - Commit source-adjacent Godot metadata sidecar files (for example `*.uid` and `*.import`).
 
-See `godot/README.md` for current scope and next porting steps.
+This runs both the rule parity suite and the visual layout suite. See `godot/README.md` for current scope and next porting steps.
 
 ## Documentation Map
 

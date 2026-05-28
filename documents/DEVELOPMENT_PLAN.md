@@ -179,11 +179,28 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 
 **Remaining (Phase 2a):** *(all done)*
 
-### Phase 2b — Visual Board — *Not started*
+### Phase 2b — Visual Board — *In progress*
 
 Replace text output with a real graphical board. Hot-seat 4-player on one device.
 
-- Add a layout module mapping `Location` → pixel coordinates (kept separate from rules code)
+**Current project state reviewed:**
+- Phase 2a prerequisites are complete: Godot 4.6.3 project scaffold exists, `wahoo_state.gd` and `wahoo_rules.gd` are ported, 27 parity smoke checks pass at startup/headless, and Web export has been validated on desktop and mobile.
+- Current Godot UI is still the bootstrap text surface in `godot/scenes/Main.tscn` and `godot/scripts/main.gd`: full-screen `PanelContainer`, status `RichTextLabel`, and a Roll button that auto-applies the first legal move.
+- The Phase 2b layout module now exists in `godot/scripts/wahoo_layout.gd`; board drawing, marble nodes, destination highlighting, tap-to-move selection, movement animation, and win screen are still pending.
+- Existing Godot rules code uses abstract locations (`BASE`, `TRACK`, `HOME`, `CENTER`) and is ready for a separate visual layout layer without changing rule behavior.
+
+**Recommended implementation order:**
+1. ✅ Add `godot/scripts/wahoo_layout.gd` to map every `Location` value to normalized board coordinates. Keep it independent from `wahoo_rules.gd`.
+2. Replace the text-first main scene with a visual board scene while preserving a compact status/debug label for roll and smoke-test output during development.
+3. Draw static board geometry: plus-shaped track, per-player base clusters, home rows, center hole, and track squares.
+4. Render marbles from `WahooState` using player colors and stable node names so state refreshes are deterministic.
+5. On Roll, compute legal moves and highlight selectable marbles/destinations instead of automatically applying the first legal move.
+6. Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
+7. Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
+8. Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
+9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
+
+**Remaining Phase 2b tasks:**
 - Draw the plus-shaped board, base clusters, home rows, center hole, and track squares
 - Render marbles with player colors
 - Highlight legal-move destinations after a roll
@@ -241,7 +258,7 @@ Decision deferred until Phase 4 is functional and the appetite for further work 
 
 ## File Inventory
 
-Current files in the project:
+Key files in the project:
 
 | File | Purpose | Status |
 |------|---------|--------|
@@ -250,15 +267,39 @@ Current files in the project:
 | `wahoo/play.py` | Console game loop | In repo |
 | `wahoo/selfplay.py` | Headless N-game AI self-play CLI runner + profile benchmark mode | In repo |
 | `wahoo/reasoning_export.py` | Export human move-reasoning examples from replays to JSONL | In repo |
+| `wahoo/human_profile.py` | Fit a `human_like` AI profile from replay reasoning data | In repo |
+| `wahoo/human_like_profile.json` | Generated/current human-like AI profile weights | In repo |
 | `tests/test_wahoo.py` | Rule and behavior test suite | In repo |
+| `tests/test_ai.py` | AI scenario probe coverage | In repo |
 | `tests/test_reasoning_export.py` | Reasoning export utility tests | In repo |
+| `tests/test_human_profile.py` | Human-like profile trainer tests | In repo |
+| `tests/test_selfplay.py` | Self-play runner tests | In repo |
+| `tests/test_stats.py` | Stat tracking tests | In repo |
 | `README.md` | Run/test instructions and current features | In repo |
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
 | `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |
 | `documents/AI_Strategy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema | In repo |
 | `documents/AI_PLAYER_BUILD_PLAN.md` | Implementation spec for `wahoo/ai.py`: class interfaces, feature formulas, profile weights, test plan | In repo |
 | `documents/AI_TESTING_PLAN.md` | End-to-end benchmark protocol: baseline, robustness, pairwise confirmation, final ranking | In repo |
+| `documents/AI_BENCHMARK_RESULTS.md` | Current AI benchmark results and profile rankings | In repo |
+| `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md` | Training/tuning plan for a sprinter-beating profile | In repo |
 | `documents/STAT_TRACKING_PLAN.md` | Per-game/player/turn stat tracking design: extended recording schema, `wahoo/stats.py` plan, CSV export, style vector analysis | In repo |
 | `documents/wahoo_strategy_metric_tracking_agent_spec.md` | Metric tracking plan spec: data tables, decision/capture/shortcut logging, analysis guidance | In repo |
 | `documents/DEVELOPMENT_PLAN.md` | This document | In repo |
+| `documents/stage3_mixed_opponent_results.md` | Mixed-opponent AI gauntlet results | In repo |
+| `documents/stage4_pairwise_confirmation_results.md` | Pairwise AI confirmation results | In repo |
+| `scripts/run_mixed_opponent_gauntlets.py` | Stage 3 mixed-opponent benchmark runner | In repo |
+| `scripts/run_stage4_pairwise_confirmation.py` | Stage 4 pairwise confirmation benchmark runner | In repo |
+| `scripts/tune_profile_against_sprinter.py` | Random-plus-mutation tuning harness for AI weights | In repo |
+| `godot/project.godot` | Godot 4.6.3 project file | In repo |
+| `godot/scenes/Main.tscn` | Current Phase 2a bootstrap scene; to be replaced/expanded in Phase 2b | In repo |
+| `godot/scripts/main.gd` | Current text bootstrap controller with Roll button and smoke summary | In repo |
+| `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |
+| `godot/scripts/wahoo_rules.gd` | GDScript port of Python rules engine | In repo |
+| `godot/scripts/wahoo_rules_smoke.gd` | Godot parity smoke tests | In repo |
+| `godot/scripts/wahoo_layout.gd` | Normalized visual board coordinate mapping for track, base, home, and center locations | In repo |
+| `godot/scripts/wahoo_layout_smoke.gd` | Godot smoke checks for visual board layout mapping | In repo |
+| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner | In repo |
+| `godot/export_presets.cfg` | Web export preset | In repo |
+| `godot/README.md` | Godot setup, validation, and next-phase notes | In repo |
 | `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
