@@ -12,12 +12,17 @@ static func run() -> Dictionary:
         _test_cannot_exit_onto_own_marble,
         _test_center_entry_optional,
         _test_cannot_enter_center_by_jumping_own_marble,
+        _test_no_center_after_first_6,
+        _test_center_capture_on_entry,
         _test_center_exit,
         _test_capture_opponent_on_track,
         _test_cannot_pass_own_marble,
         _test_wrap_around_track,
+        _test_home_entry_indices_all_players,
+        _test_home_entry_no_exact,
         _test_home_overshoot_illegal,
         _test_home_blocked_by_own_marble,
+        _test_win_condition,
         _test_format_location_uses_human_friendly_home_numbers,
         _test_exact_landing_on_home_entry_stays_on_track,
     ]:
@@ -113,6 +118,35 @@ static func _test_cannot_enter_center_by_jumping_own_marble() -> Dictionary:
             return _fail(name, "blocked marble should have no legal moves")
     return _ok(name)
 
+static func _test_no_center_after_first_6() -> Dictionary:
+    var name := "no center entry after offset 5"
+    var state := WahooState.new_game()
+    state.marbles[0][0] = WahooState.loc_track(WahooState.base_exit(0) + 6)
+    for roll in [1, 2, 3, 4, 5, 6]:
+        var moves := WahooRules.legal_moves(state, 0, roll)
+        if _find_move(moves, "enter_center") != null:
+            return _fail(name, "unexpected center entry from offset 6 on roll %d" % roll)
+    return _ok(name)
+
+static func _test_center_capture_on_entry() -> Dictionary:
+    var name := "entering center captures occupant"
+    var state := WahooState.new_game()
+    state.marbles[0][0] = WahooState.loc_track(WahooState.base_exit(0))
+    state.marbles[1][0] = WahooState.loc_center()
+    state.center_occupant = [1, 0]
+    var moves := WahooRules.legal_moves(state, 0, 6)
+    var move = _find_move(moves, "enter_center")
+    if move == null:
+        return _fail(name, "missing center entry move")
+    if move["captures"] != [1, 0]:
+        return _fail(name, "expected center capture [1, 0], got %s" % str(move["captures"]))
+    WahooRules.apply_move(state, move)
+    if state.marbles[1][0] != WahooState.loc_base():
+        return _fail(name, "captured center marble did not return to base")
+    if state.center_occupant != [0, 0]:
+        return _fail(name, "center occupant did not update to entering marble")
+    return _ok(name)
+
 static func _test_center_exit() -> Dictionary:
     var name := "center exit lands on previous segment offset 5"
     for player in range(WahooState.NUM_PLAYERS):
@@ -164,6 +198,27 @@ static func _test_wrap_around_track() -> Dictionary:
         return _fail(name, "expected wraparound advance to track 1")
     return _ok(name)
 
+static func _test_home_entry_indices_all_players() -> Dictionary:
+    var name := "home_entry indices match board mapping"
+    var expected := [54, 12, 26, 40]
+    for player in range(WahooState.NUM_PLAYERS):
+        var actual := WahooState.home_entry(player)
+        if actual != expected[player]:
+            return _fail(name, "player %d expected %d got %d" % [player, expected[player], actual])
+    return _ok(name)
+
+static func _test_home_entry_no_exact() -> Dictionary:
+    var name := "home entry does not require exact roll"
+    var state := WahooState.new_game()
+    state.marbles[0][0] = WahooState.loc_track(WahooState.home_entry(0))
+    for roll in [1, 2, 3, 4]:
+        var expected_kind := "enter_home" if roll == 1 else "advance_home"
+        var expected_dest := WahooState.loc_home(roll - 1)
+        var moves := WahooRules.legal_moves(state, 0, roll)
+        if _find_move(moves, expected_kind, expected_dest) == null:
+            return _fail(name, "roll %d missing %s to %s" % [roll, expected_kind, str(expected_dest)])
+    return _ok(name)
+
 static func _test_home_overshoot_illegal() -> Dictionary:
     var name := "home overshoot is illegal"
     var state := WahooState.new_game()
@@ -185,6 +240,17 @@ static func _test_home_blocked_by_own_marble() -> Dictionary:
     for move in moves:
         if int(move["marble"]) == 0:
             return _fail(name, "marble 0 should be blocked by own marble in home slot 3")
+    return _ok(name)
+
+static func _test_win_condition() -> Dictionary:
+    var name := "player wins with four marbles in home"
+    var state := WahooState.new_game()
+    for marble in range(WahooState.MARBLES_PER_PLAYER):
+        state.marbles[0][marble] = WahooState.loc_home(marble)
+    if not state.player_won(0):
+        return _fail(name, "expected player 0 to be in a winning state")
+    if state.player_won(1):
+        return _fail(name, "player 1 should not be in a winning state")
     return _ok(name)
 
 static func _test_format_location_uses_human_friendly_home_numbers() -> Dictionary:

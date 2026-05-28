@@ -34,11 +34,13 @@ Implemented:
 
 Not implemented yet:
 
-- Godot project files and Android build/export setup.
+- Godot visual board and interaction layer (Phase 2b).
+- Godot-side parity coverage for the full Python rule test bank.
+- HTML5 export validation and browser/mobile verification.
 
 In progress now:
 
-- Initial Godot 4 bootstrap scaffold under `godot/` (`project.godot`, `scenes/Main.tscn`, and starter scripts) for Phase 2a.
+- Godot 4 bootstrap under `godot/` with translated state/rules scripts and startup rule smoke checks in the main scene status output.
 
 ## Requirements
 

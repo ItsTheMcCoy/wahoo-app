@@ -113,7 +113,7 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 
 Port the rules engine to Godot. No graphics yet — confirm the engine runs correctly on desktop and exports to a browser.
 
-- Install Godot 4 and complete the official "Your First 2D Game" tutorial
+- Complete the official "Your First 2D Game" tutorial
 - Port `wahoo/game_state.py` and `wahoo/rules.py` to GDScript (mechanical translation, languages are similar)
 - Port `tests/test_wahoo.py` scenarios and verify all rule behaviors pass in GDScript
 - Build a minimal Godot project with a "Roll" button and text output of game state — run on desktop first
@@ -121,9 +121,17 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 - Load the exported build in a desktop browser and a mobile browser; confirm input and layout are functional
 
 **Done:**
+- Installed Gdot 6.6.3
 - Created initial Godot project scaffold under `godot/` with `project.godot`, `scenes/Main.tscn`, and bootstrap scripts in `scripts/`
-- Added a minimal desktop-run scene with a Roll button and text output placeholder for rules-port integration
+- Ported Python state and rules logic into `godot/scripts/wahoo_state.gd` and `godot/scripts/wahoo_rules.gd`
+- Added a minimal desktop-run scene with a Roll button and text output wired to legal move generation/application
+- Added startup rule smoke checks in `godot/scripts/wahoo_rules_smoke.gd` and surfaced pass/fail summary in the main scene
 - Added `godot/README.md` with setup and run steps for continuing Phase 2a work
+
+**Remaining (Phase 2a):**
+- Continue converting `tests/test_wahoo.py` scenarios into Godot-side parity checks until rule behavior confidence is high
+- Add a runnable Godot-side parity test path (script or scene action) that does not rely on manual UI inspection
+- Configure HTML5 export and validate desktop/mobile browser behavior
 
 ### Phase 2b — Visual Board — *Not started*
 

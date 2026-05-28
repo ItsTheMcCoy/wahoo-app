@@ -26,9 +26,6 @@ This folder contains the initial Godot 4 project scaffold for Phase 2a in `docum
 
 ## Next implementation step
 
-Port Python logic from:
-
-- `wahoo/game_state.py` -> `godot/scripts/wahoo_state.gd`
-- `wahoo/rules.py` -> `godot/scripts/wahoo_rules.gd`
-
-Then add Godot-side rule parity tests matching `tests/test_wahoo.py` scenarios.
+- Continue expanding `godot/scripts/wahoo_rules_smoke.gd` toward parity with high-value scenarios from `tests/test_wahoo.py`.
+- Add a repeatable Godot-side test execution path (scene action or script runner) so parity checks can run without manual move clicks.
+- After parity confidence improves, configure HTML5 export and validate in desktop and mobile browsers.
