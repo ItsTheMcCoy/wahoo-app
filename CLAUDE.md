@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. Currently in the Python prototype phase — building and validating game logic, AI players, and stat tracking before porting to Godot 4 with HTML5 as the primary export target.
+Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. The Python rules engine and AI layer are nearly complete (Phase 1/1b). Phase 2a (Godot bootstrap) is complete — GDScript rules port validated by 27 parity smoke tests, HTML5 export working on desktop and mobile. Current work is Phase 2b: visual board in Godot.
 
 ## Codebase Overview
 
@@ -20,6 +20,13 @@ tests/
   test_ai.py      — AI scenario probe suite (probes 1-6 implemented)
   test_selfplay.py — Self-play runner and CLI tests
   test_reasoning_export.py — Reasoning export utility tests
+godot/
+  project.godot               — Godot 4.6.3 project (Phase 2a complete)
+  scripts/wahoo_state.gd      — GDScript port of game_state.py
+  scripts/wahoo_rules.gd      — GDScript port of rules.py
+  scripts/wahoo_rules_smoke.gd — 27 parity smoke tests (all passing)
+  scripts/run_smoke.gd        — Headless smoke runner
+  scenes/Main.tscn            — Bootstrap scene: Roll button + state/smoke output
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
@@ -31,7 +38,7 @@ documents/
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 77 tests passing under `python -m pytest tests/`.
+Current verified test status: 78 tests passing under `python -m pytest tests/`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 
@@ -95,6 +102,7 @@ Two detailed specs drive remaining AI/stat work. **Read them before changing ai.
 - ✅ 8 named profile weight vectors (Sprinter, Swarm, Assassin, Shortcut Gambler, Tortoise, Gatekeeper, Endgame Engineer, Balanced Pragmatist)
 - ✅ `PROFILES` dict mapping name strings to pre-configured player instances, including `random`
 - ✅ Phase modifiers: early/mid/late based on marbles-in-home count
+- ✅ `play.py` — `PROFILE_DISPLAY_ORDER` list controls the order profiles appear in the "AI by profile" menu (easiest → hardest by Stage 2.2 benchmark win rate). When adding a new profile to `PROFILES`, insert it at the correct position in `PROFILE_DISPLAY_ORDER` and add a description to `PROFILE_DESCRIPTIONS`.
 - ✅ `play.py` refactor: `settings["players"]` list replaces `settings["computer_self_play"]` bool for active turn dispatch
 - ✅ `selfplay.py`: `python -m wahoo.selfplay --games N --players p0,p1,p2,p3`
 - ✅ `selfplay.py` benchmark mode: `--benchmark-profiles`, `--benchmark-opponents`, `--benchmark-games-per-seat`

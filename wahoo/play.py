@@ -9,6 +9,7 @@ import sys
 import os
 import json
 import re
+import time
 
 try:
     from .game_state import (
@@ -63,6 +64,7 @@ DEFAULT_STATS_CSV_PATH = "wahoo_stats.csv"
 AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
 HUMAN_PLAYER_TYPE = "human"
 DEFAULT_AI_PROFILE = "balanced"
+DEFAULT_AI_DELAY = 1.5  # seconds to pause after each AI move when humans are in the game
 
 DIFFICULTY_LEVELS = [
     ("beginner", ["swarm", "tortoise"], "tortoise"),
@@ -76,6 +78,36 @@ DIFFICULTY_TO_DEFAULT_PROFILE = {
     name: default_profile
     for name, _profiles, default_profile in DIFFICULTY_LEVELS
 }
+
+PROFILE_DESCRIPTIONS = {
+    "random":     "Makes completely random moves — useful as a baseline",
+    "sprinter":   "Rushes one marble home as fast as possible; loves the center shortcut",
+    "swarm":      "Deploys all marbles early and spreads across the board",
+    "assassin":   "Aggressively hunts and captures high-progress opponents",
+    "gambler":    "Takes big risks on center shortcuts for massive leaps forward",
+    "tortoise":   "Plays it safe, avoids capture danger, and finishes methodically",
+    "gatekeeper": "Defends the center hole and punishes opponents who try to use it",
+    "engineer":   "Focuses on precise home-lane navigation and efficient finishing",
+    "balanced":   "Well-rounded pragmatic strategy balancing all goals",
+    "human_like": "Attempts to mimic recorded human play tendencies",
+    "expectimax": "One-ply lookahead that considers likely opponent responses",
+}
+
+# Profiles ordered easiest → hardest based on Stage 2.2 benchmark win rates
+# (vs balanced,balanced,balanced over 2000 games per profile, 5 seeds).
+PROFILE_DISPLAY_ORDER = [
+    "random",      # random baseline
+    "swarm",       # 7.9%
+    "tortoise",    # 20.2%
+    "engineer",    # 22.1%
+    "balanced",    # 24.2%
+    "assassin",    # 35.2%
+    "gatekeeper",  # 42.6%
+    "human_like",  # 62.0%
+    "expectimax",  # 83.3%
+    "gambler",     # 88.8%
+    "sprinter",    # 90.8%
+]
 
 
 def colorize(text: str, player: int) -> str:
@@ -696,6 +728,38 @@ def should_auto_roll_for(settings: dict, player: int) -> bool:
     return settings["auto_roll"] or is_ai_slot(settings, player)
 
 
+def _pause_for_ai_turn(settings: dict, player: int) -> None:
+    """Sleep after an AI move so human players can read the board."""
+    if not is_ai_slot(settings, player):
+        return
+    if HUMAN_PLAYER_TYPE not in settings.get("players", []):
+        return
+    delay = settings.get("ai_delay", 0.0)
+    if delay > 0:
+        time.sleep(delay)
+
+
+def _prompt_ai_delay(settings: dict) -> None:
+    """Ask how long to pause after each AI turn. Press Enter to keep default."""
+    current = settings.get("ai_delay", DEFAULT_AI_DELAY)
+    while True:
+        raw = read_user_input(
+            f"Pause after each AI turn in seconds [{current}] (0 to disable): ",
+            settings,
+        ).strip()
+        if raw == "":
+            settings["ai_delay"] = current
+            return
+        try:
+            delay = float(raw)
+            if delay >= 0:
+                settings["ai_delay"] = delay
+                return
+        except ValueError:
+            pass
+        print("Please enter a number of seconds (0 to disable).")
+
+
 def _resolve_profile_from_difficulty(response: str) -> str | None:
     """Return default profile for a difficulty token or numbered choice."""
     token = response.strip().lower()
@@ -746,10 +810,14 @@ def _resolve_profile_choice(response: str, profile_names: list[str]) -> str | No
 
 def prompt_ai_profile(settings: dict, prompt_label: str = "Choose AI profile") -> str:
     """Prompt for an AI profile using a numbered list or profile name."""
-    profile_names = sorted(PROFILES.keys())
-    print("\nAI profiles:")
+    known = set(PROFILES.keys())
+    ordered = [p for p in PROFILE_DISPLAY_ORDER if p in known]
+    ordered += sorted(known - set(ordered))  # append any new profiles not in the order list
+    profile_names = ordered
+    print("\nAI profiles (easiest → hardest):")
     for idx, profile in enumerate(profile_names, start=1):
-        print(f"  [{idx}] {profile}")
+        desc = PROFILE_DESCRIPTIONS.get(profile, "")
+        print(f"  [{idx}] {profile:<12} — {desc}")
 
     while True:
         response = read_user_input(
@@ -771,19 +839,23 @@ def prompt_controller_for_player(settings: dict, player: int) -> str:
 
     while True:
         response = read_user_input("Choose controller [1-3]: ", settings).strip().lower()
-        direct_profile = _resolve_profile_choice(response, sorted(PROFILES.keys()))
-        direct_difficulty_profile = _resolve_profile_from_difficulty(response)
 
+        # Check numbered menu options first so "2" and "3" aren't mistaken for
+        # difficulty/profile indices.
         if response in ("1", "human", "h", ""):
             return HUMAN_PLAYER_TYPE
-        if direct_profile is not None:
-            return direct_profile
-        if direct_difficulty_profile is not None and direct_difficulty_profile in PROFILES:
-            return direct_difficulty_profile
         if response in ("2", "difficulty", "d"):
             return prompt_difficulty_profile(settings, prompt_label=f"{player_label(player)} difficulty")
         if response in ("3", "profile", "p"):
             return prompt_ai_profile(settings, prompt_label=f"{player_label(player)} profile")
+
+        # Allow typing a profile name or difficulty name directly.
+        direct_profile = _resolve_profile_choice(response, sorted(PROFILES.keys()))
+        if direct_profile is not None:
+            return direct_profile
+        direct_difficulty_profile = _resolve_profile_from_difficulty(response)
+        if direct_difficulty_profile is not None and direct_difficulty_profile in PROFILES:
+            return direct_difficulty_profile
 
         print("Please enter 1 (human), 2 (difficulty), or 3 (profile).")
 
@@ -799,6 +871,8 @@ def configure_players(settings: dict) -> list:
         players.append(prompt_controller_for_player(settings, player))
 
     settings["players"] = players
+    if any(p != HUMAN_PLAYER_TYPE for p in players):
+        _prompt_ai_delay(settings)
     return players
 
 
@@ -824,6 +898,22 @@ def configure_computer_self_play(settings: dict) -> list:
         if response in ("3", "mixed", "m"):
             return configure_players(settings)
         print("Please enter 1 (difficulty), 2 (profile), or 3 (per-seat setup).")
+
+
+def prompt_game_type(settings: dict) -> None:
+    """Ask whether to start a standard or training game."""
+    print("\nGame type:")
+    print("  [S] Standard  — normal play, no reasoning prompts")
+    print("  [T] Training  — prompts for human reasoning after each manual choice")
+    while True:
+        choice = read_user_input("Choose game type [S/T]: ", settings).strip().lower()
+        if choice in ("s", "standard", ""):
+            settings["training_mode"] = False
+            return
+        if choice in ("t", "training"):
+            settings["training_mode"] = True
+            return
+        print("Please enter S for Standard or T for Training.")
 
 
 def show_intro_and_choose_action(settings: dict) -> str:
@@ -937,8 +1027,11 @@ def format_turn_detail_summary(event: dict) -> str:
 def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
     """One full turn for state.current_player, including 6-rerolls."""
     player = state.current_player
+    settings["turn_number"] = settings.get("turn_number", 0) + 1
+    turn_num = settings["turn_number"]
     turn_result = {
         "player": player,
+        "turn_number": turn_num,
         "events": [],
         "detail_events": [],
         "won": False,
@@ -949,10 +1042,10 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         roll_index += 1
         player_type = player_type_for(settings, player)
         if should_auto_roll_for(settings, player):
-            print(f"\n--- {player_label(player)}'s turn. Auto-rolling.")
+            print(f"\n--- Turn {turn_num} — {player_label(player)}'s turn. Auto-rolling.")
         else:
             read_user_input(
-                f"\n--- {player_label(player)}'s turn. Press Enter to roll. ",
+                f"\n--- Turn {turn_num} — {player_label(player)}'s turn. Press Enter to roll. ",
                 settings,
                 allow_auto_continue=True,
             )
@@ -982,8 +1075,12 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
                     prompt_moves = build_prompt_moves(state, player, roll, moves)
                     chosen = choose_move(prompt_moves, player, roll, settings)
                     outcome = format_move(chosen, player, roll)
-                    human_reasoning = prompt_human_reasoning(settings)
-                    reasoning_non_optimal = True if human_reasoning is not None else None
+                    if settings.get("training_mode"):
+                        human_reasoning = prompt_human_reasoning(settings)
+                        reasoning_non_optimal = True if human_reasoning is not None else None
+                    else:
+                        human_reasoning = None
+                        reasoning_non_optimal = None
             else:
                 chosen = PROFILES[player_type].choose_move(state, player, roll, moves)
                 outcome = f"[{player_type}] {format_move(chosen, player, roll)}"
@@ -1036,7 +1133,10 @@ def take_turn(state: GameState, rng: random.Random, settings: dict) -> dict:
         if turn_result["won"]:
             break
         if roll != 6:
+            _pause_for_ai_turn(settings, player)
             break
+
+        _pause_for_ai_turn(settings, player)
 
     state.current_player = (player + 1) % NUM_PLAYERS
     return turn_result
@@ -1050,6 +1150,9 @@ def main():
         "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS,
         "track_stats": True,
         "stats_csv_path": DEFAULT_STATS_CSV_PATH,
+        "ai_delay": DEFAULT_AI_DELAY,
+        "training_mode": False,
+        "turn_number": 0,
     }
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
@@ -1108,6 +1211,7 @@ def main():
                 configure_computer_self_play(settings)
                 settings["auto_roll"] = True
             else:
+                prompt_game_type(settings)
                 configure_players(settings)
             state = GameState()
             state.current_player, top_roll = decide_starting_player(rng, settings)

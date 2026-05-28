@@ -1,6 +1,6 @@
 # Wahoo Text Game
 
-Console-based Python prototype of Wahoo for 4 players. The current project phase is validating the rules engine, replay support, simple computer self-play, and the first AI strategy module before porting the game to Godot 4 for Android.
+Console-based Python prototype of Wahoo for 4 players. The current project phase is validating the rules engine, replay support, simple computer self-play, and the first AI strategy module before porting the game to Godot 4 for the browser (HTML5).
 
 ## Current State
 
@@ -34,13 +34,13 @@ Implemented:
 
 Not implemented yet:
 
-- Godot visual board and interaction layer (Phase 2b).
-- Godot-side parity coverage for the full Python rule test bank.
-- HTML5 export validation and browser/mobile verification.
+- Godot visual board and interaction layer (Phase 2b) — next phase.
+- Stronger sprinter-beating AI candidate (requires a larger overnight tuning run).
+- Richer human-like AI profile (requires more recorded human-reasoning games).
 
-In progress now:
+Phase 2a complete:
 
-- Godot 4 bootstrap under `godot/` with translated state/rules scripts and startup rule smoke checks in the main scene status output.
+- Godot 4 bootstrap under `godot/`: GDScript rules port, 27 parity smoke tests (all passing), HTML5 export validated on desktop and mobile browsers, mobile-friendly layout.
 
 ## Requirements
 

@@ -485,7 +485,7 @@ def test_legacy_computer_setting_maps_to_balanced_slots():
 def test_configure_players_accepts_human_and_profiles():
     print("test: player setup accepts mixed human and AI profiles")
     settings = {"auto_roll": False}
-    with patch("wahoo.play.input", side_effect=["", "assassin", "human", "random"]):
+    with patch("wahoo.play.input", side_effect=["", "assassin", "human", "random", ""]):
         players = configure_players(settings)
     assert_eq(players, ["human", "assassin", "human", "random"], "mixed player config stored")
 
@@ -523,7 +523,7 @@ def test_take_turn_captures_human_reasoning_for_manual_multi_choice():
     state.current_player = 0
     state.pending_roll = 1
     state.marbles[0][0] = loc_track(5)
-    settings = {"auto_roll": False, "players": ["human", "human", "human", "human"]}
+    settings = {"auto_roll": False, "players": ["human", "human", "human", "human"], "training_mode": True}
     rng = SeqRng([6])
 
     # Enter to roll, choose first listed move, then provide optional reasoning.

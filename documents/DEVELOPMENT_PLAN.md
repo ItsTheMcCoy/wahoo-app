@@ -2,6 +2,10 @@
 
 Current state of the project and the path forward. Updated as phases complete.
 
+## Session Note
+
+Work is intentionally paused here and will resume on a later day.
+
 ## Project Goal
 
 Build a browser-based game implementing the Wahoo board game, playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Online multiplayer, learn-as-you-go hobby project.
@@ -15,6 +19,23 @@ Build a browser-based game implementing the Wahoo board game, playable on any de
 - **Multiplayer transport:** WebRTC via Godot's `WebRTCMultiplayerPeer`; requires a lightweight signaling server to broker initial peer connections
 - **Signaling server hosting:** Free tier on Railway or Render (sufficient for small friend groups)
 - **iOS/Android native builds:** Out of scope — browser covers all mobile devices without requiring Apple Developer account or per-platform distribution management
+
+## User feedback
+
+This section will be used to provide feedback to AI Agents during the build process.
+This section should be addressed before advancing any other in progress phases.
+
+1. ✅ Instead of offering user a chance to type in human reasoning after selecting a move for every game.  Let's only offer human reasoning during "Training" games.  On launch, after entering "S" to start a new game, give user option to start a standard game or a training game. Standard game would not prompt for human reasoning
+   - **Addressed:** After "S" → Start, user is now asked Standard vs Training. Reasoning prompts only appear in Training mode.
+
+2. ✅ Include turn numbers during each turn.  This will allow an AI agent to inspect certain sections of a game and see the board state.  I will then be able to better explain bugs and other thoughts to the AI agent.
+   - **Addressed:** Each turn header now reads "--- Turn N — [Color]'s turn." with a sequential counter.
+
+3. ✅ When starting a new game.  I'm not sure what selecting "AI by difficulty" and "AI by profile" is doing.  After selecting either, the next player is asked to select their controller setup.  I imagined that selecting 2 would present a numbered list of the different difficulty levels.  And the game would automatically randomly select one of the profiles in that difficulty level.  And when selecting AI by profile, the user would be presented with a numbered list of AI profiles (with short description of play style) to select from.
+   - **Addressed:** Fixed a bug where typing "2" was silently resolved as difficulty index 2 (skipping the sub-menu). Menu options 1/2/3 are now checked before any index resolution. AI profile list now includes a one-line description per profile and is ordered easiest → hardest based on Stage 2.2 benchmark win rates (sprinter 90.8% … random ~0%).
+
+4. ✅ I would like to figure out how to slow the game down while computer players are performing actions.  This will allow the human player to understand what is happening in real time.
+   - **Addressed:** AI delay (configurable pause after each AI move) was already implemented. At game setup, when AI players are present, the user is prompted for a delay in seconds (default 1.5 s, enter 0 to disable).
 
 ## Phase Status
 
@@ -37,7 +58,11 @@ Core game logic and a console-mode game loop, no graphics.
 - Auto-roll toggle across prompts
 - Project reorganized into package layout (`wahoo/` + `tests/`)
 - Per-seat player configuration in `wahoo/play.py`; each slot can be `human` or a profile from `wahoo.ai.PROFILES`
-- Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context)
+- Standard vs Training game mode selection on new game start; human reasoning prompts only appear in Training mode
+- Turn numbers displayed in each turn header for easy game inspection
+- AI by difficulty / AI by profile menus fixed to always show sub-menus (were silently resolving as indices); AI profiles now display a one-line description and are listed easiest → hardest based on Stage 2.2 benchmark win rates (`PROFILE_DISPLAY_ORDER` in `play.py`)
+- Configurable AI delay (default 1.5 s pause after each AI move when humans are present)
+- Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context, Training mode only)
 - `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 
 **Repo status:** Local and GitHub are now synchronized on `main`.
@@ -109,11 +134,10 @@ The full design framework, strategy dimensions, playstyle profiles, and scenario
 - Build a richer human-like profile after additional games are played with recorded human reasoning
 - Encode observed human tendencies as measurable targets for profile adjustments
 
-### Phase 2a — Godot Bootstrap — *In progress*
+### Phase 2a — Godot Bootstrap — *Complete*
 
 Port the rules engine to Godot. No graphics yet — confirm the engine runs correctly on desktop and exports to a browser.
 
-- Complete the official "Your First 2D Game" tutorial
 - Port `wahoo/game_state.py` and `wahoo/rules.py` to GDScript (mechanical translation, languages are similar)
 - Port `tests/test_wahoo.py` scenarios and verify all rule behaviors pass in GDScript
 - Build a minimal Godot project with a "Roll" button and text output of game state — run on desktop first
@@ -121,6 +145,7 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 - Load the exported build in a desktop browser and a mobile browser; confirm input and layout are functional
 
 **Done:**
+- Completed the official "Your First 2D Game" tutorial
 - Installed Godot 4.6.3
 - Created initial Godot project scaffold under `godot/` with `project.godot`, `scenes/Main.tscn`, and bootstrap scripts in `scripts/`
 - Ported Python state and rules logic into `godot/scripts/wahoo_state.gd` and `godot/scripts/wahoo_rules.gd`
@@ -131,12 +156,17 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 - Added a repeatable headless parity runner via `Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd` (or `godot --headless --script res://scripts/run_smoke.gd` if a `godot` alias/wrapper is configured)
 - Added `godot/README.md` with setup and run steps for continuing Phase 2a work
 - Added `godot/export_presets.cfg` Web preset and verified export command wiring
+- Installed matching Godot 4.6.3 export templates for Web export
+- Successfully exported the Godot project for Web (`godot/build/web/index.html` and related artifacts)
+- Validated desktop-browser interaction on the exported build by clicking Roll repeatedly
+- Validated mobile-browser interaction over HTTPS tunnel; Roll input works and state text updates
+- Identified mobile UX readability issue: status text is currently too small on phone screens
 - Standardized the Godot project/tooling target on version 4.6.3
 - Adopted a VCS policy to commit source-adjacent Godot metadata sidecars (`*.uid`, `*.import`)
+- Expanded parity smoke suite to 27 tests, adding: all-base-marbles exit eligible, pass-over-opponent, home-slot-0 blocked, and other-player's-home-entry is normal track
+- Fixed mobile text readability: Panel now fills the viewport (20 px margins), Title 22 px, Status 16 px, Roll button 60 px tall with 18 px font
 
-**Remaining (Phase 2a):**
-- Continue converting `tests/test_wahoo.py` scenarios into Godot-side parity checks until rule behavior confidence is high
-- Install matching Godot 4.6.3 export templates, then run Web export and validate desktop/mobile browser behavior
+**Remaining (Phase 2a):** *(all done)*
 
 ### Phase 2b — Visual Board — *Not started*
 
