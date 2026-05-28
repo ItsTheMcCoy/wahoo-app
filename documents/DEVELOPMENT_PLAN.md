@@ -223,15 +223,64 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 
 **Remaining Phase 2b tasks:** *(all done)*
 
-### Phase 3 — Single-Device AI (Godot) — *Not started*
+### Phase 3a — GDScript AI Engine — *Complete*
 
-Port the validated Python AI from Phase 1b into GDScript and wire it into the Godot game.
+Translate `wahoo/ai.py` into a self-contained `godot/scripts/wahoo_ai.gd` script. No UI changes.
 
-- Translate `wahoo/ai.py` (`RandomPlayer`, `GreedyPlayer`) to GDScript — mechanical translation, same algorithm
-- Per-slot AI selection in the Godot UI (human or one of the AI tiers)
-- Port the scenario probe tests to GDScript to confirm parity with Python behavior
-- Optional: named playstyle profiles (Sprinter, Assassin, Tortoise, etc.) as selectable AI personalities
-- Optional: one-ply expectimax if greedy feels too weak
+**Files created:**
+- `godot/scripts/wahoo_ai.gd` — helper functions (`_marble_progress`, `_loc_progress`, `_self_block_count`, `compute_exposure`), `compute_features()` (all 10 features), `_game_phase()`, `DEFAULT_PHASE_WEIGHTS`, all 9 profile weight constant dicts (Sprinter, Swarm, Assassin, Gambler, Tortoise, Gatekeeper, Engineer, Balanced, HumanLike — hardcoded), `RandomPlayer` and `GreedyPlayer` classes, `make_profiles()` factory function
+
+**Notes:**
+- Pure translation — same algorithm, same constants. Python behavior is authoritative.
+- `GreedyPlayer` includes the win-guardrail check and is fully deterministic.
+- `state.clone()` and `apply_move()` are called via already-ported `wahoo_state.gd` / `wahoo_rules.gd`.
+- HumanLike uses hardcoded `HUMAN_LIKE_DEFAULT_WEIGHTS` values (no file I/O needed in Godot).
+- GDScript inner classes cannot reference the outer class by name during compilation (same-file limit), so `GreedyPlayer` accesses outer static functions via a lazy runtime `load()` that returns from Godot's resource cache with no re-parse cost.
+- `run_smoke.gd` updated to include an `ai_load` suite (12 checks: 10 profile instantiations + RandomPlayer and GreedyPlayer choose_move smoke).
+
+**Verification:** Headless smoke run passes 44/44 (32 original + 12 new AI load checks).
+
+---
+
+### Phase 3b — AI Parity Smoke Tests — *Not started*
+
+Port all 6 scenario probes from `tests/test_ai.py` to GDScript and run them headlessly, confirming Godot AI behavior matches Python.
+
+**Files to create/modify:**
+- **Create** `godot/scripts/wahoo_ai_smoke.gd` — hand-crafted state setup + assertions for all 6 probes: (1) win guardrail, (2) center temptation, (3) capture vs deploy, (4) finish or fight, (5) center denial, (6) threat escape
+- **Modify** `godot/scripts/run_smoke.gd` — invoke AI smoke tests alongside existing rule/layout smokes; print pass/fail counts
+
+**Reference:** `tests/test_ai.py` (probes 1–6) for probe state setups; `godot/scripts/wahoo_rules_smoke.gd` for the GDScript state-setup pattern.
+
+**Verification:** `godot --headless --script res://scripts/run_smoke.gd` — all 6 AI probes report PASS.
+
+---
+
+### Phase 3c — Game Loop AI Integration — *Not started*
+
+Wire AI players into the Godot game so AI seats auto-play their turns, and add per-seat AI selection to the game setup.
+
+**Files to modify:**
+- `godot/scenes/Main.tscn` — add a pre-game setup screen with four seat rows, each with a dropdown: Human / Random / [profile names]
+- `godot/scripts/main.gd` — store a per-seat player type array; after Roll completes, if the current seat is AI call `WahooAI.choose_move()` automatically instead of waiting for tap input; add a short visual pause (`await get_tree().create_timer(1.5).timeout`) before executing AI moves; disable Roll button and marble tap targets during AI turns
+
+**Verification:** Launch game, configure one seat as Sprinter AI — AI seat rolls and moves automatically each turn without requiring tap input.
+
+---
+
+### Phase 3d — Expectimax (Optional Stretch) — *Not started*
+
+Port `ExpectimaxPlayer` to GDScript and expose it as an AI selection option.
+
+**Files to modify:**
+- `godot/scripts/wahoo_ai.gd` — add `ExpectimaxPlayer` class with `_expected_after_turn()` and `_evaluate()`; add `"expectimax"` to `PROFILES`
+- `godot/scripts/main.gd` — include `"expectimax"` in the seat selection dropdown
+
+**Notes:** Expectimax loops 6 die values × all legal moves per evaluation — may cause visible frame stalls on Web/WASM. Test performance before shipping; skip if GreedyPlayer feels sufficiently challenging.
+
+**Verification:** Expectimax seat plays in ≤2s per turn on the web export.
+
+---
 
 The full design framework, strategy dimensions, playstyle profiles, scenario probes, and logging schema are in `documents/AI_Strategy_Spec.md` and `documents/wahoo_strategy_metric_tracking_agent_spec.md`. The Python prototype in Phase 1b is the reference implementation — if behavior differs in Godot, the Python behavior wins.
 
@@ -314,7 +363,8 @@ Key files in the project:
 | `godot/scripts/wahoo_rules_smoke.gd` | Godot parity smoke tests | In repo |
 | `godot/scripts/wahoo_layout.gd` | Normalized visual board coordinate mapping for track, base, home, and center locations | In repo |
 | `godot/scripts/wahoo_layout_smoke.gd` | Godot smoke checks for visual board layout mapping | In repo |
-| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner | In repo |
+| `godot/scripts/wahoo_ai.gd` | GDScript port of Python AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts, `make_profiles()` | In repo |
+| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (rules + layout + AI load; 44 checks) | In repo |
 | `godot/export_presets.cfg` | Web export preset | In repo |
 | `godot/README.md` | Godot setup, validation, and next-phase notes | In repo |
 | `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
