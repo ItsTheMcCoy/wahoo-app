@@ -19,6 +19,7 @@ func _ready() -> void:
     _rng.randomize()
     _state = WahooState.new_game()
     _roll_button.pressed.connect(_on_roll_pressed)
+    _board.move_selected.connect(_on_board_move_selected)
     _smoke_summary = _build_smoke_summary()
     _board.set_state(_state)
     _render_status("Waiting for first roll")
@@ -37,11 +38,46 @@ func _on_roll_pressed() -> void:
         _pending_roll = roll
         _state.pending_roll = roll
         _board.set_legal_moves(_pending_moves, player)
-        line += "\nChoose a highlighted marble/destination (tap-to-move next)"
+        line += "\nChoose a highlighted marble or destination"
     else:
         _state.pending_roll = null
-        _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+        if roll != 6:
+            _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+        else:
+            line += "\nRolled a 6; roll again"
     _board.set_state(_state)
+    _render_status(line)
+
+func _on_board_move_selected(move: Dictionary) -> void:
+    if _pending_moves.is_empty() or _pending_roll == null:
+        return
+
+    var player := _state.current_player
+    var roll := int(_pending_roll)
+    WahooRules.apply_move(_state, move)
+    _state.pending_roll = null
+    _pending_moves = []
+    _pending_roll = null
+    _board.clear_legal_moves()
+    _board.set_state(_state)
+
+    var line := "Player %d moved marble %d to %s" % [
+        player + 1,
+        int(move["marble"]) + 1,
+        WahooState.format_location(move["dest"]),
+    ]
+    var captures: Variant = move.get("captures", null)
+    if captures != null:
+        line += "\nCaptured Player %d marble %d" % [int(captures[0]) + 1, int(captures[1]) + 1]
+
+    if _state.player_won(player):
+        line += "\nPlayer %d wins!" % (player + 1)
+        _roll_button.disabled = true
+    elif roll == 6:
+        line += "\nRolled a 6; Player %d rolls again" % (player + 1)
+    else:
+        _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+
     _render_status(line)
 
 func _render_status(header: String) -> void:
