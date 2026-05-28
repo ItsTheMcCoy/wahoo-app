@@ -25,6 +25,7 @@ func _ready() -> void:
     _render_status("Waiting for first roll")
 
 func _on_roll_pressed() -> void:
+    _roll_button.disabled = true
     _board.clear_legal_moves()
     _pending_moves = []
     _pending_roll = null
@@ -47,18 +48,24 @@ func _on_roll_pressed() -> void:
             line += "\nRolled a 6; roll again"
     _board.set_state(_state)
     _render_status(line)
+    _roll_button.disabled = false
 
 func _on_board_move_selected(move: Dictionary) -> void:
     if _pending_moves.is_empty() or _pending_roll == null:
         return
 
+    _roll_button.disabled = true
     var player := _state.current_player
     var roll := int(_pending_roll)
-    WahooRules.apply_move(_state, move)
     _state.pending_roll = null
     _pending_moves = []
     _pending_roll = null
     _board.clear_legal_moves()
+
+    _render_status("Player %d moving marble %d..." % [player + 1, int(move["marble"]) + 1])
+    await _board.animate_move(move, player)
+
+    WahooRules.apply_move(_state, move)
     _board.set_state(_state)
 
     var line := "Player %d moved marble %d to %s" % [
@@ -75,8 +82,10 @@ func _on_board_move_selected(move: Dictionary) -> void:
         _roll_button.disabled = true
     elif roll == 6:
         line += "\nRolled a 6; Player %d rolls again" % (player + 1)
+        _roll_button.disabled = false
     else:
         _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+        _roll_button.disabled = false
 
     _render_status(line)
 

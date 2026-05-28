@@ -19,6 +19,8 @@ const MARBLE_HIGHLIGHT := Color(1.0, 1.0, 1.0, 0.48)
 const MOVE_SOURCE_RING := Color(1.0, 0.97, 0.55, 0.95)
 const MOVE_DEST_FILL := Color(1.0, 0.92, 0.18, 0.26)
 const MOVE_DEST_RING := Color(1.0, 0.78, 0.10, 0.95)
+const MOVE_ANIMATION_SECONDS := 0.36
+const CAPTURE_ANIMATION_SECONDS := 0.30
 const PLAYER_COLORS := [
     Color(0.86, 0.20, 0.17),
     Color(0.16, 0.60, 0.27),
@@ -33,6 +35,7 @@ var _marble_nodes: Array = []
 var _legal_moves: Array = []
 var _legal_move_player := -1
 var _selected_marble := -1
+var _animation_in_progress := false
 
 func _ready() -> void:
     _ensure_marble_nodes()
@@ -59,8 +62,44 @@ func clear_legal_moves() -> void:
     _refresh_marble_nodes()
     queue_redraw()
 
+func animate_move(move: Dictionary, player: int) -> void:
+    if _state == null:
+        return
+
+    _animation_in_progress = true
+    _refresh_marble_nodes()
+
+    var marble_id := int(move["marble"])
+    var moving_token: Control = _marble_nodes[player][marble_id]
+    var moving_dest := _token_position_for_location(move["dest"], player, marble_id)
+    var original_moving_z := moving_token.z_index
+    moving_token.z_index = 100
+
+    var captured_token: Control = null
+    var original_captured_z := 0
+    var captures: Variant = move.get("captures", null)
+    if captures != null:
+        var cap_player := int(captures[0])
+        var cap_marble := int(captures[1])
+        captured_token = _marble_nodes[cap_player][cap_marble]
+        original_captured_z = captured_token.z_index
+        captured_token.z_index = 90
+
+    var tween := create_tween()
+    tween.set_parallel(true)
+    tween.tween_property(moving_token, "position", moving_dest, MOVE_ANIMATION_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+    if captured_token != null:
+        var captured_home := _token_position_for_location(WahooState.loc_base(), int(captures[0]), int(captures[1]))
+        tween.tween_property(captured_token, "position", captured_home, CAPTURE_ANIMATION_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+    await tween.finished
+    moving_token.z_index = original_moving_z
+    if captured_token != null:
+        captured_token.z_index = original_captured_z
+    _animation_in_progress = false
+
 func _gui_input(event: InputEvent) -> void:
-    if _legal_moves.is_empty() or _legal_move_player < 0:
+    if _animation_in_progress or _legal_moves.is_empty() or _legal_move_player < 0:
         return
     if event is InputEventMouseButton:
         var mouse_event := event as InputEventMouseButton
@@ -236,17 +275,24 @@ func _refresh_marble_nodes() -> void:
         for marble_id in range(WahooState.MARBLES_PER_PLAYER):
             var token: Control = _marble_nodes[player][marble_id]
             var loc: Array = _state.marbles[player][marble_id]
-            var normalized := WahooLayout.location_normalized(loc, player, marble_id)
-            var center := _board_rect.position + Vector2(
-                normalized.x * _board_rect.size.x,
-                normalized.y * _board_rect.size.y
-            )
             token.size = Vector2(token_side, token_side)
-            token.position = center - token.size * 0.5
+            token.position = _token_position_for_location(loc, player, marble_id)
             token.z_index = 10 + player
             token.visible = true
             token.set_selectable(_marble_has_legal_move(player, marble_id))
             token.set_selected(player == _legal_move_player and marble_id == _selected_marble)
+
+func _token_position_for_location(loc: Array, player: int, marble_id: int) -> Vector2:
+    var normalized := WahooLayout.location_normalized(loc, player, marble_id)
+    var center := _board_rect.position + Vector2(
+        normalized.x * _board_rect.size.x,
+        normalized.y * _board_rect.size.y
+    )
+    return center - _token_size() * 0.5
+
+func _token_size() -> Vector2:
+    var token_side: float = max(14.0, _cell_size * 0.72)
+    return Vector2(token_side, token_side)
 
 func _marble_has_legal_move(player: int, marble_id: int) -> bool:
     if player != _legal_move_player:
