@@ -56,6 +56,8 @@ This section should be addressed before advancing any other in progress phases.
   - These changes should have any effect on the layout of the rest of the board.
    - **Addressed:** Updated Python board base coordinates so Yellow is shifted up/right and Green shifted left; renderer now trims trailing fully-empty bottom rows (removing the blank rows under Yellow) without changing other base placements.
 
+10. During human vs AI play, I noticed that AI profiles will land on an opponents base exit (when the opponent has marbles in base) or opponents center exit (when the opponent has a marble in the center), when there are less risky moves avaiable.  Is there a way to get all of the AI profiles to determine if landing in either of those positions is more or less risky than other potential moves?
+
 
 ## Phase Status
 
@@ -242,17 +244,15 @@ Translate `wahoo/ai.py` into a self-contained `godot/scripts/wahoo_ai.gd` script
 
 ---
 
-### Phase 3b — AI Parity Smoke Tests — *Not started*
+### Phase 3b — AI Parity Smoke Tests — *Complete*
 
 Port all 6 scenario probes from `tests/test_ai.py` to GDScript and run them headlessly, confirming Godot AI behavior matches Python.
 
-**Files to create/modify:**
-- **Create** `godot/scripts/wahoo_ai_smoke.gd` — hand-crafted state setup + assertions for all 6 probes: (1) win guardrail, (2) center temptation, (3) capture vs deploy, (4) finish or fight, (5) center denial, (6) threat escape
-- **Modify** `godot/scripts/run_smoke.gd` — invoke AI smoke tests alongside existing rule/layout smokes; print pass/fail counts
+**Files created/modified:**
+- **Created** `godot/scripts/wahoo_ai_smoke.gd` — hand-crafted state setup + assertions for all 6 probes: (1) win guardrail, (2) center temptation, (3) capture vs deploy, (4) finish or fight, (5) center denial, (6) threat escape
+- **Modified** `godot/scripts/run_smoke.gd` — added `ai_smoke` suite alongside existing rule/layout/ai_load smokes
 
-**Reference:** `tests/test_ai.py` (probes 1–6) for probe state setups; `godot/scripts/wahoo_rules_smoke.gd` for the GDScript state-setup pattern.
-
-**Verification:** `godot --headless --script res://scripts/run_smoke.gd` — all 6 AI probes report PASS.
+**Verification:** `godot --headless --script res://scripts/run_smoke.gd` — 50/50 passed (44 original + 6 new AI scenario probes).
 
 ---
 
@@ -364,7 +364,8 @@ Key files in the project:
 | `godot/scripts/wahoo_layout.gd` | Normalized visual board coordinate mapping for track, base, home, and center locations | In repo |
 | `godot/scripts/wahoo_layout_smoke.gd` | Godot smoke checks for visual board layout mapping | In repo |
 | `godot/scripts/wahoo_ai.gd` | GDScript port of Python AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts, `make_profiles()` | In repo |
-| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (rules + layout + AI load; 44 checks) | In repo |
+| `godot/scripts/wahoo_ai_smoke.gd` | GDScript AI scenario probes: 6 parity checks matching Python test_ai.py (win guardrail, center temptation, capture vs deploy, finish or fight, center denial, threat escape) | In repo |
+| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (rules + layout + AI load + AI smoke; 50 checks) | In repo |
 | `godot/export_presets.cfg` | Web export preset | In repo |
 | `godot/README.md` | Godot setup, validation, and next-phase notes | In repo |
 | `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
