@@ -185,15 +185,15 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 
 **Current project state reviewed:**
 - Phase 2a prerequisites are complete: Godot 4.6.3 project scaffold exists, `wahoo_state.gd` and `wahoo_rules.gd` are ported, 27 parity smoke checks pass at startup/headless, and Web export has been validated on desktop and mobile.
-- Current Godot UI is still the bootstrap text surface in `godot/scenes/Main.tscn` and `godot/scripts/main.gd`: full-screen `PanelContainer`, status `RichTextLabel`, and a Roll button that auto-applies the first legal move.
-- The Phase 2b layout module now exists in `godot/scripts/wahoo_layout.gd`; board drawing, marble nodes, destination highlighting, tap-to-move selection, movement animation, and win screen are still pending.
+- Current Godot UI is now board-first in `godot/scenes/Main.tscn` and `godot/scripts/main.gd`: responsive header, visual board surface, compact status/debug footer, and a Roll button that still auto-applies the first legal move.
+- The Phase 2b layout module now exists in `godot/scripts/wahoo_layout.gd`; static board geometry and marble nodes are drawn in `godot/scripts/wahoo_board_view.gd`; destination highlighting, tap-to-move selection, movement animation, and win screen are still pending.
 - Existing Godot rules code uses abstract locations (`BASE`, `TRACK`, `HOME`, `CENTER`) and is ready for a separate visual layout layer without changing rule behavior.
 
 **Recommended implementation order:**
 1. ✅ Add `godot/scripts/wahoo_layout.gd` to map every `Location` value to normalized board coordinates. Keep it independent from `wahoo_rules.gd`.
-2. Replace the text-first main scene with a visual board scene while preserving a compact status/debug label for roll and smoke-test output during development.
-3. Draw static board geometry: plus-shaped track, per-player base clusters, home rows, center hole, and track squares.
-4. Render marbles from `WahooState` using player colors and stable node names so state refreshes are deterministic.
+2. ✅ Replace the text-first main scene with a visual board scene while preserving a compact status/debug label for roll and smoke-test output during development.
+3. ✅ Draw static board geometry: plus-shaped track, per-player base clusters, home rows, center hole, and track squares.
+4. ✅ Render marbles from `WahooState` using player colors and stable node names so state refreshes are deterministic.
 5. On Roll, compute legal moves and highlight selectable marbles/destinations instead of automatically applying the first legal move.
 6. Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
 7. Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
@@ -201,8 +201,6 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
 
 **Remaining Phase 2b tasks:**
-- Draw the plus-shaped board, base clusters, home rows, center hole, and track squares
-- Render marbles with player colors
 - Highlight legal-move destinations after a roll
 - Tap-to-move interaction
 - Animate marble movement
@@ -293,7 +291,8 @@ Key files in the project:
 | `scripts/tune_profile_against_sprinter.py` | Random-plus-mutation tuning harness for AI weights | In repo |
 | `godot/project.godot` | Godot 4.6.3 project file | In repo |
 | `godot/scenes/Main.tscn` | Current Phase 2a bootstrap scene; to be replaced/expanded in Phase 2b | In repo |
-| `godot/scripts/main.gd` | Current text bootstrap controller with Roll button and smoke summary | In repo |
+| `godot/scripts/main.gd` | Current Godot scene controller with visual board surface, compact status/debug footer, Roll button, and smoke summary | In repo |
+| `godot/scripts/wahoo_board_view.gd` | Visual board surface for Phase 2b scene layout, using normalized coordinates from `wahoo_layout.gd` | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |
 | `godot/scripts/wahoo_rules.gd` | GDScript port of Python rules engine | In repo |
 | `godot/scripts/wahoo_rules_smoke.gd` | Godot parity smoke tests | In repo |

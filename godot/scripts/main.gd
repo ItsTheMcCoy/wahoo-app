@@ -4,8 +4,10 @@ const WahooState = preload("res://scripts/wahoo_state.gd")
 const WahooRules = preload("res://scripts/wahoo_rules.gd")
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 
-@onready var _status: RichTextLabel = $Panel/VBox/Status
-@onready var _roll_button: Button = $Panel/VBox/RollButton
+@onready var _turn_label: Label = $Root/Header/TurnLabel
+@onready var _board = $Root/BoardFrame/BoardView
+@onready var _status: RichTextLabel = $Root/Footer/Status
+@onready var _roll_button: Button = $Root/Footer/RollButton
 
 var _rng := RandomNumberGenerator.new()
 var _state: WahooState
@@ -16,6 +18,7 @@ func _ready() -> void:
     _state = WahooState.new_game()
     _roll_button.pressed.connect(_on_roll_pressed)
     _smoke_summary = _build_smoke_summary()
+    _board.set_state(_state)
     _render_status("Waiting for first roll")
 
 func _on_roll_pressed() -> void:
@@ -27,18 +30,15 @@ func _on_roll_pressed() -> void:
         WahooRules.apply_move(_state, legal[0])
         line += "\nApplied first legal move: %s" % String(legal[0]["kind"])
     _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+    _board.set_state(_state)
     _render_status(line)
 
 func _render_status(header: String) -> void:
+    _turn_label.text = "Player %d" % (_state.current_player + 1)
     var lines := [
         header,
         "",
         _smoke_summary,
-        "",
-        "Current phase goals:",
-        "- Continue porting Python rules behavior into Godot",
-        "- Expand Godot-side parity coverage from representative smoke tests",
-        "- Recreate more of tests/test_wahoo.py scenarios in Godot",
     ]
     _status.text = "\n".join(lines)
 

@@ -1,0 +1,210 @@
+class_name WahooBoardView
+extends Control
+
+const WahooLayout = preload("res://scripts/wahoo_layout.gd")
+const WahooState = preload("res://scripts/wahoo_state.gd")
+
+const BOARD_BG := Color(0.90, 0.86, 0.76)
+const BOARD_EDGE := Color(0.23, 0.22, 0.18)
+const TRACK_PATH := Color(0.67, 0.62, 0.51)
+const TRACK_CELL := Color(0.84, 0.80, 0.69)
+const TRACK_CELL_EDGE := Color(0.29, 0.27, 0.21)
+const BASE_PAD := Color(0.78, 0.73, 0.62)
+const CENTER_FILL := Color(0.43, 0.39, 0.31)
+const CENTER_EDGE := Color(0.18, 0.17, 0.14)
+const MARBLE_EDGE := Color(0.10, 0.09, 0.07)
+const MARBLE_HIGHLIGHT := Color(1.0, 1.0, 1.0, 0.48)
+const PLAYER_COLORS := [
+    Color(0.86, 0.20, 0.17),
+    Color(0.16, 0.60, 0.27),
+    Color(0.93, 0.75, 0.17),
+    Color(0.17, 0.34, 0.78),
+]
+
+var _state: WahooState = null
+var _board_rect := Rect2()
+var _cell_size := 0.0
+var _marble_nodes: Array = []
+
+func _ready() -> void:
+    _ensure_marble_nodes()
+    resized.connect(_on_resized)
+    _refresh_marble_nodes()
+
+func set_state(state: WahooState) -> void:
+    _state = state
+    _ensure_marble_nodes()
+    _refresh_marble_nodes()
+    queue_redraw()
+
+func _draw() -> void:
+    _board_rect = _square_board_rect()
+    _cell_size = _board_rect.size.x / float(WahooLayout.GRID_SIZE)
+
+    draw_rect(_board_rect, BOARD_BG, true)
+    draw_rect(_board_rect, BOARD_EDGE, false, 3.0)
+
+    _draw_player_areas()
+    _draw_track_path()
+    _draw_home_rows()
+    _draw_track_cells()
+    _draw_center()
+
+func _square_board_rect() -> Rect2:
+    var side: float = min(size.x, size.y)
+    var origin := Vector2((size.x - side) * 0.5, (size.y - side) * 0.5)
+    return Rect2(origin, Vector2(side, side))
+
+func _draw_player_areas() -> void:
+    for player in range(WahooState.NUM_PLAYERS):
+        var player_color: Color = PLAYER_COLORS[player]
+        var tint := Color(player_color.r, player_color.g, player_color.b, 0.16)
+
+        _draw_base_pad(player, tint)
+        _draw_base_cells(player, _lightened(player_color, 0.78))
+
+func _draw_base_pad(player: int, color: Color) -> void:
+    var coords := WahooLayout.base_cluster_grid_coords(player)
+    var min_coord: Vector2i = coords[0]
+    var max_coord: Vector2i = coords[0]
+    for coord in coords:
+        min_coord.x = mini(min_coord.x, coord.x)
+        min_coord.y = mini(min_coord.y, coord.y)
+        max_coord.x = maxi(max_coord.x, coord.x)
+        max_coord.y = maxi(max_coord.y, coord.y)
+
+    var top_left := _grid_to_cell_origin(min_coord) - Vector2(_cell_size * 0.32, _cell_size * 0.32)
+    var bottom_right := _grid_to_cell_origin(max_coord) + Vector2(_cell_size * 1.32, _cell_size * 1.32)
+    draw_rect(Rect2(top_left, bottom_right - top_left), color, true)
+    draw_rect(Rect2(top_left, bottom_right - top_left), BASE_PAD, false, max(1.0, _cell_size * 0.04))
+
+func _draw_base_cells(player: int, color: Color) -> void:
+    for coord in WahooLayout.base_cluster_grid_coords(player):
+        _draw_grid_square(coord, color, TRACK_CELL_EDGE, 0.70)
+
+func _draw_track_path() -> void:
+    var coords := WahooLayout.all_track_grid_coords()
+    var points := PackedVector2Array()
+    for coord in coords:
+        points.append(_grid_to_local(coord))
+    points.append(_grid_to_local(coords[0]))
+
+    draw_polyline(points, TRACK_PATH, max(8.0, _cell_size * 0.82), true)
+
+func _draw_home_rows() -> void:
+    for player in range(WahooState.NUM_PLAYERS):
+        var player_color: Color = PLAYER_COLORS[player]
+        var row_color := _lightened(player_color, 0.68)
+        var path_color := Color(player_color.r, player_color.g, player_color.b, 0.36)
+        var coords := WahooLayout.home_row_grid_coords(player)
+        var points := PackedVector2Array()
+
+        points.append(_grid_to_local(WahooLayout.track_grid_coord(WahooState.home_entry(player))))
+        for coord in coords:
+            points.append(_grid_to_local(coord))
+
+        draw_polyline(points, path_color, max(7.0, _cell_size * 0.56), true)
+        for coord in coords:
+            _draw_grid_square(coord, row_color, TRACK_CELL_EDGE, 0.66)
+
+func _draw_track_cells() -> void:
+    for coord in WahooLayout.all_track_grid_coords():
+        var fill := TRACK_CELL
+        for player in range(WahooState.NUM_PLAYERS):
+            if coord == WahooLayout.track_grid_coord(WahooState.base_exit(player)):
+                fill = _lightened(PLAYER_COLORS[player], 0.72)
+            elif coord == WahooLayout.track_grid_coord(WahooState.home_entry(player)):
+                fill = _lightened(PLAYER_COLORS[player], 0.82)
+        _draw_grid_square(coord, fill, TRACK_CELL_EDGE, 0.62)
+
+func _draw_center() -> void:
+    var center := _grid_to_local(WahooLayout.center_grid_coord())
+    var radius: float = max(8.0, _cell_size * 0.72)
+    draw_circle(center, radius, CENTER_FILL)
+    draw_arc(center, radius, 0.0, TAU, 40, CENTER_EDGE, max(2.0, _cell_size * 0.08), true)
+
+func _draw_grid_square(coord: Vector2i, fill: Color, edge: Color, scale: float) -> void:
+    var rect := _grid_cell_rect(coord, scale)
+    draw_rect(rect, fill, true)
+    draw_rect(rect, edge, false, max(1.0, _cell_size * 0.035))
+
+func _grid_to_local(coord: Vector2i) -> Vector2:
+    var normalized := WahooLayout.grid_to_normalized(coord)
+    return _board_rect.position + Vector2(
+        normalized.x * _board_rect.size.x,
+        normalized.y * _board_rect.size.y
+    )
+
+func _grid_to_cell_origin(coord: Vector2i) -> Vector2:
+    return _board_rect.position + Vector2(coord.x * _cell_size, coord.y * _cell_size)
+
+func _grid_cell_rect(coord: Vector2i, scale: float) -> Rect2:
+    var side: float = _cell_size * scale
+    var center := _grid_to_local(coord)
+    return Rect2(center - Vector2(side, side) * 0.5, Vector2(side, side))
+
+func _lightened(color: Color, amount: float) -> Color:
+    return color.lerp(Color.WHITE, amount)
+
+func _on_resized() -> void:
+    queue_redraw()
+    _refresh_marble_nodes()
+
+func _ensure_marble_nodes() -> void:
+    if _marble_nodes.size() == WahooState.NUM_PLAYERS:
+        return
+
+    _marble_nodes = []
+    for player in range(WahooState.NUM_PLAYERS):
+        var player_nodes: Array = []
+        for marble_id in range(WahooState.MARBLES_PER_PLAYER):
+            var node_name := "Marble_%d_%d" % [player, marble_id]
+            var token: Control = get_node_or_null(node_name)
+            if token == null:
+                token = MarbleToken.new()
+                token.name = node_name
+                token.mouse_filter = Control.MOUSE_FILTER_IGNORE
+                add_child(token)
+            token.set_meta("player", player)
+            token.set_meta("marble_id", marble_id)
+            token.set_color(PLAYER_COLORS[player])
+            player_nodes.append(token)
+        _marble_nodes.append(player_nodes)
+
+func _refresh_marble_nodes() -> void:
+    if _state == null or _marble_nodes.size() != WahooState.NUM_PLAYERS:
+        return
+
+    _board_rect = _square_board_rect()
+    _cell_size = _board_rect.size.x / float(WahooLayout.GRID_SIZE)
+    var token_side: float = max(14.0, _cell_size * 0.72)
+
+    for player in range(WahooState.NUM_PLAYERS):
+        for marble_id in range(WahooState.MARBLES_PER_PLAYER):
+            var token: Control = _marble_nodes[player][marble_id]
+            var loc: Array = _state.marbles[player][marble_id]
+            var normalized := WahooLayout.location_normalized(loc, player, marble_id)
+            var center := _board_rect.position + Vector2(
+                normalized.x * _board_rect.size.x,
+                normalized.y * _board_rect.size.y
+            )
+            token.size = Vector2(token_side, token_side)
+            token.position = center - token.size * 0.5
+            token.z_index = 10 + player
+            token.visible = true
+
+class MarbleToken:
+    extends Control
+
+    var _color := Color.WHITE
+
+    func set_color(color: Color) -> void:
+        _color = color
+        queue_redraw()
+
+    func _draw() -> void:
+        var radius: float = min(size.x, size.y) * 0.48
+        var center := size * 0.5
+        draw_circle(center, radius, _color)
+        draw_arc(center, radius, 0.0, TAU, 36, MARBLE_EDGE, max(1.5, radius * 0.13), true)
+        draw_circle(center - Vector2(radius * 0.28, radius * 0.30), radius * 0.23, MARBLE_HIGHLIGHT)

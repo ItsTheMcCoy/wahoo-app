@@ -5,7 +5,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 ## Current scope
 
 - Minimal project file and icon
-- Responsive main scene with a Roll button and status text (fills viewport; mobile-friendly font sizes)
+- Responsive board-first main scene with a Roll button and compact status/debug output
 - GDScript state model (`wahoo_state.gd`) — complete port of Python's `game_state.py`
 - GDScript rules engine (`wahoo_rules.gd`) — complete port of Python's `rules.py`
 - Startup parity smoke tests (`wahoo_rules_smoke.gd`) — 27 checks covering all major rule behaviours, all passing
@@ -29,7 +29,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 ## What this validates right now
 
 - Project opens and runs on desktop.
-- Main scene loads and UI responds to Roll clicks on desktop and mobile (responsive layout).
+- Main scene loads as a visual board surface and UI responds to Roll clicks on desktop and mobile (responsive layout).
 - 32 headless smoke tests pass: 27 rule parity checks plus 5 visual layout checks.
 - HTML5 export builds and loads correctly in desktop and mobile browsers.
 
@@ -55,19 +55,21 @@ Phase 2a is complete. Phase 2b is in progress and tracked in `documents/DEVELOPM
 
 Current Godot state:
 
-- `scenes/Main.tscn` is still a text bootstrap scene with a Roll button and status output.
-- `scripts/main.gd` currently rolls, finds legal moves, applies the first legal move automatically, advances the player, and re-renders text.
-- `scripts/wahoo_layout.gd` now maps rules locations to normalized visual board coordinates; drawing, marble rendering, tap-to-move selection, animation, and win screen are still pending.
+- `scenes/Main.tscn` is a board-first scene with a header, visual board surface, compact status/debug footer, and Roll button.
+- `scripts/main.gd` currently rolls, finds legal moves, applies the first legal move automatically, advances the player, refreshes the board surface, and updates compact status text.
+- `scripts/wahoo_layout.gd` now maps rules locations to normalized visual board coordinates; legal-move highlighting, tap-to-move selection, animation, and win screen are still pending.
+- `scripts/wahoo_board_view.gd` owns the board canvas and currently draws static board geometry plus marble nodes from `WahooState`.
 
 Recommended Phase 2b order:
 
 1. Done: add `scripts/wahoo_layout.gd` for abstract `Location` -> normalized board coordinate mapping.
-2. Create the visual board surface and draw static track/base/home/center geometry.
-3. Render marble nodes from `WahooState` using player colors.
-4. Change Roll behavior to highlight legal move choices instead of auto-applying the first move.
-5. Add tap/click move selection, then refresh from authoritative state.
-6. Add basic movement animation, current-player indicator, turn announcements, and win screen.
-7. Re-run headless smoke tests and Web export validation after interaction works.
+2. Done: replace the text-first scene with a board-first surface and compact status/debug footer.
+3. Draw static track/base/home/center geometry.
+4. Done: render marble nodes from `WahooState` using player colors.
+5. Change Roll behavior to highlight legal move choices instead of auto-applying the first move.
+6. Add tap/click move selection, then refresh from authoritative state.
+7. Add basic movement animation, current-player indicator, turn announcements, and win screen.
+8. Re-run headless smoke tests and Web export validation after interaction works.
 
 ## HTML5 export (Phase 2a)
 

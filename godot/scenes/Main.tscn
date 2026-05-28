@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://df5k61dj4w6by"]
+[gd_scene load_steps=3 format=3 uid="uid://df5k61dj4w6by"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_ukqg8"]
+[ext_resource type="Script" path="res://scripts/wahoo_board_view.gd" id="2_cw3fq"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -11,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ukqg8")
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Root" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,28 +23,50 @@ offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 12
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="Header" type="HBoxContainer" parent="Root"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="Panel/VBox"]
+[node name="Title" type="Label" parent="Root/Header"]
 layout_mode = 2
-text = "Wahoo Phase 2a Bootstrap"
-horizontal_alignment = 1
+size_flags_horizontal = 3
+text = "Wahoo"
 theme_override_font_sizes/font_size = 22
 
-[node name="Status" type="RichTextLabel" parent="Panel/VBox"]
+[node name="TurnLabel" type="Label" parent="Root/Header"]
+layout_mode = 2
+text = "Player 1"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="BoardFrame" type="PanelContainer" parent="Root"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="BoardView" type="Control" parent="Root/BoardFrame"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_cw3fq")
+
+[node name="Footer" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Status" type="RichTextLabel" parent="Root/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 72)
 bbcode_enabled = true
 fit_content = false
 scroll_active = true
-text = "Press Roll to validate the Godot project loop.\n\nRules port: in progress"
-theme_override_font_sizes/normal_font_size = 16
+text = "Ready"
+theme_override_font_sizes/normal_font_size = 14
 
-[node name="RollButton" type="Button" parent="Panel/VBox"]
+[node name="RollButton" type="Button" parent="Root/Footer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(140, 60)
 text = "Roll"
 theme_override_font_sizes/font_size = 18
