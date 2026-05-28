@@ -12,6 +12,7 @@ from wahoo.play import (
     maybe_auto_choose_move,
     choose_computer_move,
     format_move,
+    render_board,
     update_exit_base_cursor,
     build_prompt_moves,
     read_user_input,
@@ -195,6 +196,23 @@ def test_format_move_labels_center_exit_clearly():
     move = find_move(moves, "exit_center")
     text = format_move(move, 0, 1)
     assert "> exit center" in text, f"expected explicit center-exit label, got: {text}"
+
+
+def test_render_board_includes_inter_row_spacing_without_separator_gap():
+    print("test: board render adds vertical spacing between rows without separator-adjacent blanks")
+    state = GameState()
+    board = render_board(state)
+    lines = board.splitlines()
+
+    assert_eq(lines[0], "=" * 112, "top separator rendered")
+    assert_eq(lines[-1], "=" * 112, "bottom separator rendered")
+    assert lines[1] != "", "no blank line directly after top separator"
+    assert lines[-2] != "", "no blank line directly before bottom separator"
+
+    grid_height = 21
+    expected_line_count = 1 + (grid_height * 2 - 1) + 1
+    assert_eq(len(lines), expected_line_count, "rendered board line count includes inter-row spacing")
+    assert lines[2] == "", "blank spacer appears between adjacent board rows"
 
 
 def test_home_entry_no_exact():
@@ -799,6 +817,7 @@ def main():
         test_center_capture_on_entry,
         test_center_exit,
         test_format_move_labels_center_exit_clearly,
+        test_render_board_includes_inter_row_spacing_without_separator_gap,
         test_home_entry_no_exact,
         test_exact_landing_on_home_entry_stays_on_track,
         test_home_overshoot_illegal,

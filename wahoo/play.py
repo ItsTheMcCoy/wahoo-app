@@ -560,6 +560,10 @@ def render_board(state: GameState) -> str:
             colorize_marble_cell(cell, owner_tints[r][c], marble_owners[r][c])
             for c, cell in enumerate(row)
         ))
+        # Keep vertical spacing consistent with horizontal spacing while
+        # avoiding extra blank lines adjacent to separator boundaries.
+        if r < len(grid) - 1:
+            lines.append("")
 
     lines.append("=" * 112)
     return "\n".join(lines)

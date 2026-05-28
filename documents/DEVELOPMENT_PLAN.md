@@ -46,6 +46,10 @@ This section should be addressed before advancing any other in progress phases.
 7. ✅ In Python version.  Remove the extra lines between the board state and the line of ===.... This will allow more of the board to be displayed when player is presented
    - **Addressed:** Removed per-row blank spacer lines from the board renderer so the board is shown in a compact single-spaced view between separator lines.
 
+8. ✅ In the python version, the spacing between the vertical positions is less than the spacing between the horizontal postions.  Vertical positions should match current horizontal positions.
+   - **Addressed:** Added one spacer line between board rows in the Python renderer so vertical spacing matches horizontal spacing, while keeping no extra blank line adjacent to the `===` separator lines.
+
+
 ## Phase Status
 
 ### Phase 1 — Rules Engine (Python) — *In progress*
@@ -73,6 +77,7 @@ Core game logic and a console-mode game loop, no graphics.
 - Fixed 2 s AI delay after each AI move and after each AI roll in the starting phase when humans are present (not user-configurable)
 - Human seats now prompt for a player name during setup; labels show marble color plus human name/profile throughout gameplay
 - Board renderer spacing tightened by removing extra blank lines between rows to improve visible board area
+- Board renderer now includes inter-row spacer lines (with no separator-adjacent blank lines) so vertical board spacing matches horizontal spacing
 - Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context, Training mode only)
 - `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 
