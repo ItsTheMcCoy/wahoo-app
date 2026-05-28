@@ -185,8 +185,8 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 
 **Current project state reviewed:**
 - Phase 2a prerequisites are complete: Godot 4.6.3 project scaffold exists, `wahoo_state.gd` and `wahoo_rules.gd` are ported, 27 parity smoke checks pass at startup/headless, and Web export has been validated on desktop and mobile.
-- Current Godot UI is now board-first in `godot/scenes/Main.tscn` and `godot/scripts/main.gd`: responsive header, visual board surface, compact status/debug footer, and a Roll button that still auto-applies the first legal move.
-- The Phase 2b layout module now exists in `godot/scripts/wahoo_layout.gd`; static board geometry and marble nodes are drawn in `godot/scripts/wahoo_board_view.gd`; destination highlighting, tap-to-move selection, movement animation, and win screen are still pending.
+- Current Godot UI is now board-first in `godot/scenes/Main.tscn` and `godot/scripts/main.gd`: responsive header, visual board surface, compact status/debug footer, Roll button, tap-to-move selection, and win overlay.
+- The Phase 2b layout module now exists in `godot/scripts/wahoo_layout.gd`; static board geometry, marble nodes, destination highlighting, tap-to-move selection, and movement animation are drawn/handled in `godot/scripts/wahoo_board_view.gd`; turn UI and the win overlay are handled in `godot/scripts/main.gd`.
 - Existing Godot rules code uses abstract locations (`BASE`, `TRACK`, `HOME`, `CENTER`) and is ready for a separate visual layout layer without changing rule behavior.
 
 **Recommended implementation order:**
@@ -197,15 +197,15 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 5. ✅ On Roll, compute legal moves and highlight selectable marbles/destinations instead of automatically applying the first legal move.
 6. ✅ Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
 7. ✅ Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
-8. Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
+8. ✅ Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
 9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
 
 **Remaining Phase 2b tasks:**
 - ✅ Highlight legal-move destinations after a roll
 - ✅ Tap-to-move interaction
 - ✅ Animate marble movement
-- Roll button, current-player indicator, turn announcements
-- Win screen
+- ✅ Roll button, current-player indicator, turn announcements
+- ✅ Win screen
 
 ### Phase 3 — Single-Device AI (Godot) — *Not started*
 
