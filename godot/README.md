@@ -8,6 +8,7 @@ This folder contains the initial Godot 4 project scaffold for Phase 2a in `docum
 - Minimal main scene with a Roll button and status text
 - GDScript state model scaffold (`wahoo_state.gd`)
 - Rules interface scaffold (`wahoo_rules.gd`) ready for porting logic from Python
+- Startup rules smoke checks (`wahoo_rules_smoke.gd`) shown in the main status panel
 
 ## Open in Godot
 
@@ -20,6 +21,7 @@ This folder contains the initial Godot 4 project scaffold for Phase 2a in `docum
 
 - Project opens and runs on desktop.
 - Main scene loads and UI responds to Roll clicks.
+- Core translated rule behaviors are smoke-tested at startup and summarized in the UI.
 - Script wiring and state container are in place for the full rule-port step.
 
 ## Next implementation step

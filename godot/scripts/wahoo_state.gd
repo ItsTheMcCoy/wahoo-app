@@ -37,7 +37,7 @@ func clone() -> WahooState:
         copy.marbles.append(cloned_player)
     copy.current_player = current_player
     copy.pending_roll = pending_roll
-    copy.center_occupant = center_occupant
+    copy.center_occupant = center_occupant.duplicate(true) if center_occupant != null else null
     copy.next_base_exit_marble = next_base_exit_marble.duplicate(true)
     return copy
 
