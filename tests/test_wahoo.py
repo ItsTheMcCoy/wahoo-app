@@ -209,10 +209,31 @@ def test_render_board_includes_inter_row_spacing_without_separator_gap():
     assert lines[1] != "", "no blank line directly after top separator"
     assert lines[-2] != "", "no blank line directly before bottom separator"
 
-    grid_height = 21
-    expected_line_count = 1 + (grid_height * 2 - 1) + 1
+    board_rows = [line for line in lines if line and line != "=" * 112]
+    expected_line_count = 1 + (len(board_rows) * 2 - 1) + 1
     assert_eq(len(lines), expected_line_count, "rendered board line count includes inter-row spacing")
     assert lines[2] == "", "blank spacer appears between adjacent board rows"
+
+
+def test_render_board_feedback9_base_layout_adjustments():
+    print("test: feedback 9 base layout adjustments")
+    state = GameState()
+    board = render_board(state)
+    lines = board.splitlines()
+
+    board_rows = [line for line in lines if line and line != "=" * 112]
+    assert_eq(len(board_rows), 19, "trailing empty rows under yellow base are trimmed")
+
+    def row_tokens(row_line):
+        # Each board row has 21 fixed-width cells (4 chars each) separated by one space.
+        return [row_line[i * 5:i * 5 + 4].strip() for i in range(21)]
+
+    token_grid = [row_tokens(row) for row in board_rows]
+
+    assert_eq(token_grid[17][5], "C1", "yellow base moved up one row and right one column")
+    assert_eq(token_grid[12][15], "B1", "green base moved left by three columns")
+    assert_eq(token_grid[0][11], "A1", "red base remains unchanged")
+    assert_eq(token_grid[4][0], "D1", "blue base remains unchanged")
 
 
 def test_home_entry_no_exact():
@@ -818,6 +839,7 @@ def main():
         test_center_exit,
         test_format_move_labels_center_exit_clearly,
         test_render_board_includes_inter_row_spacing_without_separator_gap,
+        test_render_board_feedback9_base_layout_adjustments,
         test_home_entry_no_exact,
         test_exact_landing_on_home_entry_stays_on_track,
         test_home_overshoot_illegal,

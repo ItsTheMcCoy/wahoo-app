@@ -532,8 +532,8 @@ def render_board(state: GameState) -> str:
     # 2x2 base clusters outside the track, opposite each player's home row side.
     base_coords = {
         0: [(0, 11), (0, 12), (1, 11), (1, 12)],
-        1: [(12, 18), (12, 19), (13, 18), (13, 19)],
-        2: [(18, 4), (18, 5), (19, 4), (19, 5)],
+        1: [(12, 15), (12, 16), (13, 15), (13, 16)],
+        2: [(17, 5), (17, 6), (18, 5), (18, 6)],
         3: [(4, 0), (4, 1), (5, 0), (5, 1)],
     }
     for p in range(NUM_PLAYERS):
@@ -555,14 +555,19 @@ def render_board(state: GameState) -> str:
         marble_player=(None if co is None else co[0]),
     )
 
-    for r, row in enumerate(grid):
+    last_row = len(grid) - 1
+    while last_row >= 0 and all(cell_text.strip() == "" for cell_text in grid[last_row]):
+        last_row -= 1
+
+    for r in range(last_row + 1):
+        row = grid[r]
         lines.append(" ".join(
             colorize_marble_cell(cell, owner_tints[r][c], marble_owners[r][c])
             for c, cell in enumerate(row)
         ))
         # Keep vertical spacing consistent with horizontal spacing while
         # avoiding extra blank lines adjacent to separator boundaries.
-        if r < len(grid) - 1:
+        if r < last_row:
             lines.append("")
 
     lines.append("=" * 112)
