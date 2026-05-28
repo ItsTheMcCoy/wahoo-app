@@ -109,6 +109,8 @@ PROFILE_DISPLAY_ORDER = [
     "sprinter",    # 90.8%
 ]
 
+_DISPLAY_SETTINGS: dict | None = None
+
 
 def colorize(text: str, player: int) -> str:
     """Colorize text for a player when ANSI output is available."""
@@ -368,10 +370,48 @@ def run_replay(
         print("Please enter C to continue or E to exit replay.")
 
 
-def player_label(player: int, colored: bool = True) -> str:
+def set_display_settings(settings: dict | None) -> None:
+    """Set active display settings used by player label rendering."""
+    global _DISPLAY_SETTINGS
+    _DISPLAY_SETTINGS = settings
+
+
+def _human_name_for(settings: dict, player: int) -> str | None:
+    names = settings.get("human_names")
+    if not isinstance(names, list) or player >= len(names):
+        return None
+    value = names[player]
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
+def player_identity_label(player: int, settings: dict | None = None) -> str:
+    """Player display label including color and configured human/AI identity."""
+    active = _DISPLAY_SETTINGS if settings is None else settings
+    base_name = PLAYER_NAMES[player]
+    if not active:
+        return base_name
+
+    try:
+        player_type = player_type_for(active, player)
+    except Exception:
+        return base_name
+
+    if player_type == HUMAN_PLAYER_TYPE:
+        human_name = _human_name_for(active, player)
+        if human_name:
+            return f"{base_name} ({human_name})"
+        return base_name
+
+    return f"{base_name} [{player_type}]"
+
+
+def player_label(player: int, colored: bool = True, settings: dict | None = None) -> str:
     """Player display name as color text (with optional ANSI color)."""
-    name = PLAYER_NAMES[player]
-    return colorize(name, player) if colored else name
+    label = player_identity_label(player, settings=settings)
+    return colorize(label, player) if colored else label
 
 
 def marble_label(marble_id: int) -> str:
@@ -520,7 +560,6 @@ def render_board(state: GameState) -> str:
             colorize_marble_cell(cell, owner_tints[r][c], marble_owners[r][c])
             for c, cell in enumerate(row)
         ))
-        lines.append("")
 
     lines.append("=" * 112)
     return "\n".join(lines)
@@ -837,6 +876,19 @@ def prompt_controller_for_player(settings: dict, player: int) -> str:
         print("Please enter 1 (human), 2 (difficulty), or 3 (profile).")
 
 
+def prompt_human_name(settings: dict, player: int) -> str:
+    """Prompt for human player name and return fallback color name when blank."""
+    while True:
+        raw = read_user_input(
+            f"Enter name for {PLAYER_NAMES[player]} (blank = {PLAYER_NAMES[player]}): ",
+            settings,
+        )
+        cleaned = raw.strip()
+        if cleaned:
+            return cleaned
+        return PLAYER_NAMES[player]
+
+
 def configure_players(settings: dict) -> list:
     """Prompt for the controller assigned to each player seat."""
     print("\n=== Player Setup ===")
@@ -844,10 +896,15 @@ def configure_players(settings: dict) -> list:
     print("Type /auto anytime to toggle auto-roll mode.")
 
     players = []
+    human_names = [None] * NUM_PLAYERS
     for player in range(NUM_PLAYERS):
-        players.append(prompt_controller_for_player(settings, player))
+        controller = prompt_controller_for_player(settings, player)
+        players.append(controller)
+        if controller == HUMAN_PLAYER_TYPE:
+            human_names[player] = prompt_human_name(settings, player)
 
     settings["players"] = players
+    settings["human_names"] = human_names
     return players
 
 
@@ -864,11 +921,13 @@ def configure_computer_self_play(settings: dict) -> list:
             profile = prompt_difficulty_profile(settings, prompt_label="Self-play difficulty")
             players = [profile] * NUM_PLAYERS
             settings["players"] = players
+            settings["human_names"] = [None] * NUM_PLAYERS
             return players
         if response in ("2", "profile", "p"):
             profile = prompt_ai_profile(settings, prompt_label="Self-play profile")
             players = [profile] * NUM_PLAYERS
             settings["players"] = players
+            settings["human_names"] = [None] * NUM_PLAYERS
             return players
         if response in ("3", "mixed", "m"):
             return configure_players(settings)
@@ -1127,12 +1186,14 @@ def main():
     settings = {
         "auto_roll": False,
         "players": [HUMAN_PLAYER_TYPE] * NUM_PLAYERS,
+        "human_names": [None] * NUM_PLAYERS,
         "track_stats": True,
         "stats_csv_path": DEFAULT_STATS_CSV_PATH,
         "ai_delay": DEFAULT_AI_DELAY,
         "training_mode": False,
         "turn_number": 0,
     }
+    set_display_settings(settings)
     if args and args[0] == "replay":
         replay_path = args[1] if len(args) > 1 else DEFAULT_RECORDING_PATH
         replay_index = None
@@ -1148,6 +1209,8 @@ def main():
         recording, state = run_replay(replay_path, settings, replay_index=replay_index)
         if recording is None:
             return
+        settings["players"] = list(recording.get("players", settings["players"]))
+        settings["human_names"] = [None] * NUM_PLAYERS
         settings["_game_id"] = os.path.splitext(os.path.basename(replay_path))[0]
         detail_turns = [
             e.get("event", {}).get("turn_index")
@@ -1173,6 +1236,8 @@ def main():
             recording, state = run_replay(replay_path, settings, replay_index=replay_index)
             if recording is None:
                 return
+            settings["players"] = list(recording.get("players", settings["players"]))
+            settings["human_names"] = [None] * NUM_PLAYERS
             settings["_game_id"] = os.path.splitext(os.path.basename(replay_path))[0]
             detail_turns = [
                 e.get("event", {}).get("turn_index")

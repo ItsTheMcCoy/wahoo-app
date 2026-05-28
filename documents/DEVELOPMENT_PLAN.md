@@ -37,6 +37,15 @@ This section should be addressed before advancing any other in progress phases.
 4. ✅ I would like to figure out how to slow the game down while computer players are performing actions.  This will allow the human player to understand what is happening in real time.
    - **Addressed:** AI delay is a fixed 2 s pause after each AI move (and after each AI roll during the starting phase) when humans are present. No user prompt — delay is always on.
 
+5. ✅ When selecting human controlled. Prompt user to enter their name.
+   - **Addressed:** During per-seat controller setup, each human seat now prompts for a player name (blank keeps the color name default).
+
+6. ✅ During gameplay, anytime a player is referenced, both the profile name or human name should be displayed with marble color
+   - **Addressed:** Player labels now render as color + identity (for example, `Red (Alex)` for humans and `Blue [sprinter]` for AI profiles) across turn headers, move summaries, capture text, and win output.
+
+7. ✅ In Python version.  Remove the extra lines between the board state and the line of ===.... This will allow more of the board to be displayed when player is presented
+   - **Addressed:** Removed per-row blank spacer lines from the board renderer so the board is shown in a compact single-spaced view between separator lines.
+
 ## Phase Status
 
 ### Phase 1 — Rules Engine (Python) — *In progress*
@@ -62,6 +71,8 @@ Core game logic and a console-mode game loop, no graphics.
 - Turn numbers displayed in each turn header for easy game inspection
 - AI by difficulty / AI by profile menus fixed to always show sub-menus (were silently resolving as indices); AI profiles now display a one-line description and are listed easiest → hardest based on Stage 2.2 benchmark win rates (`PROFILE_DISPLAY_ORDER` in `play.py`)
 - Fixed 2 s AI delay after each AI move and after each AI roll in the starting phase when humans are present (not user-configurable)
+- Human seats now prompt for a player name during setup; labels show marble color plus human name/profile throughout gameplay
+- Board renderer spacing tightened by removing extra blank lines between rows to improve visible board area
 - Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context, Training mode only)
 - `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 

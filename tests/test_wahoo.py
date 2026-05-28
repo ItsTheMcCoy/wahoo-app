@@ -485,9 +485,10 @@ def test_legacy_computer_setting_maps_to_balanced_slots():
 def test_configure_players_accepts_human_and_profiles():
     print("test: player setup accepts mixed human and AI profiles")
     settings = {"auto_roll": False}
-    with patch("wahoo.play.input", side_effect=["", "assassin", "human", "random", ""]):
+    with patch("wahoo.play.input", side_effect=["", "Alex", "assassin", "human", "Sam", "random", ""]):
         players = configure_players(settings)
     assert_eq(players, ["human", "assassin", "human", "random"], "mixed player config stored")
+    assert_eq(settings["human_names"], ["Alex", None, "Sam", None], "human names captured for human seats")
 
 
 def test_take_turn_routes_ai_slot_through_profile():
