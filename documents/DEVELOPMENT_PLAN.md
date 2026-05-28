@@ -49,6 +49,13 @@ This section should be addressed before advancing any other in progress phases.
 8. ✅ In the python version, the spacing between the vertical positions is less than the spacing between the horizontal postions.  Vertical positions should match current horizontal positions.
    - **Addressed:** Added one spacer line between board rows in the Python renderer so vertical spacing matches horizontal spacing, while keeping no extra blank line adjacent to the `===` separator lines.
 
+9. ✅ In python version, we need to make some minor adjustments to layout.
+  - Yellow base should be moved up one row and right one column
+  - Green base should be moved to the left by 3 columns
+  - blank rows under yellow base should be removed.
+  - These changes should have any effect on the layout of the rest of the board.
+   - **Addressed:** Updated Python board base coordinates so Yellow is shifted up/right and Green shifted left; renderer now trims trailing fully-empty bottom rows (removing the blank rows under Yellow) without changing other base placements.
+
 
 ## Phase Status
 
@@ -78,6 +85,7 @@ Core game logic and a console-mode game loop, no graphics.
 - Human seats now prompt for a player name during setup; labels show marble color plus human name/profile throughout gameplay
 - Board renderer spacing tightened by removing extra blank lines between rows to improve visible board area
 - Board renderer now includes inter-row spacer lines (with no separator-adjacent blank lines) so vertical board spacing matches horizontal spacing
+- Python board base layout adjusted per feedback: Yellow base moved up/right, Green base moved left, and trailing blank rows under Yellow removed
 - Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context, Training mode only)
 - `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 
@@ -184,7 +192,7 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 
 **Remaining (Phase 2a):** *(all done)*
 
-### Phase 2b — Visual Board — *Complete*
+### Phase 2b — Visual Board — *In progress*
 
 Replace text output with a real graphical board. Hot-seat 4-player on one device.
 
@@ -203,17 +211,14 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 6. ✅ Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
 7. ✅ Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
 8. ✅ Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
-9. ✅ Re-run headless smoke checks and Web export validation after the visual board is interactive.
+9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
 
-**Done:**
+**Remaining Phase 2b tasks:**
 - ✅ Highlight legal-move destinations after a roll
 - ✅ Tap-to-move interaction
 - ✅ Animate marble movement
 - ✅ Roll button, current-player indicator, turn announcements
 - ✅ Win screen
-- ✅ Final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.
-
-**Remaining Phase 2b tasks:** *(all done)*
 
 ### Phase 3 — Single-Device AI (Godot) — *Not started*
 
@@ -298,7 +303,7 @@ Key files in the project:
 | `scripts/run_stage4_pairwise_confirmation.py` | Stage 4 pairwise confirmation benchmark runner | In repo |
 | `scripts/tune_profile_against_sprinter.py` | Random-plus-mutation tuning harness for AI weights | In repo |
 | `godot/project.godot` | Godot 4.6.3 project file | In repo |
-| `godot/scenes/Main.tscn` | Board-first Godot scene for the Phase 2b visual hot-seat game | In repo |
+| `godot/scenes/Main.tscn` | Current Phase 2a bootstrap scene; to be replaced/expanded in Phase 2b | In repo |
 | `godot/scripts/main.gd` | Current Godot scene controller with visual board surface, compact status/debug footer, Roll button, and smoke summary | In repo |
 | `godot/scripts/wahoo_board_view.gd` | Visual board surface for Phase 2b scene layout, using normalized coordinates from `wahoo_layout.gd` | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |
