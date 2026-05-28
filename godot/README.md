@@ -1,6 +1,6 @@
 # Godot Project (Phase 2a/2b)
 
-This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phase 2a is complete; Phase 2b has started with the visual board layout module.
+This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phase 2a and Phase 2b are complete; the next Godot phase is AI opponent integration.
 
 ## Current scope
 
@@ -49,9 +49,9 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`, not `godot`
 - If you create a `godot` alias or wrapper on your machine, `godot --headless --script res://scripts/run_smoke.gd` works the same way
 
-## Current phase: Phase 2b — Visual Board
+## Current phase: Phase 3 — Single-Device AI
 
-Phase 2a is complete. Phase 2b is in progress and tracked in `documents/DEVELOPMENT_PLAN.md` under **Phase 2b**:
+Phase 2a and Phase 2b are complete. Phase 3 is tracked in `documents/DEVELOPMENT_PLAN.md` under **Phase 3**.
 
 Current Godot state:
 
@@ -60,16 +60,16 @@ Current Godot state:
 - `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, legal-move highlighting, tap/click targets, and movement animation.
 - `scripts/wahoo_board_view.gd` owns the board canvas and currently draws static board geometry plus marble nodes from `WahooState`.
 
-Recommended Phase 2b order:
+Completed Phase 2b order:
 
 1. Done: add `scripts/wahoo_layout.gd` for abstract `Location` -> normalized board coordinate mapping.
 2. Done: replace the text-first scene with a board-first surface and compact status/debug footer.
-3. Draw static track/base/home/center geometry.
+3. Done: draw static track/base/home/center geometry.
 4. Done: render marble nodes from `WahooState` using player colors.
 5. Done: change Roll behavior to highlight legal move choices instead of auto-applying the first move.
 6. Done: add tap/click move selection, then refresh from authoritative state.
 7. Done: add basic movement animation, current-player indicator, turn announcements, and win screen.
-8. Re-run headless smoke tests and Web export validation after interaction works.
+8. Done: re-run headless smoke tests and Web export validation after interaction works.
 
 ## HTML5 export (Phase 2a)
 
@@ -93,3 +93,4 @@ Current status:
 - Desktop browser validation: complete (scene load + repeated Roll interaction verified).
 - Mobile browser validation: complete (Roll interaction and state updates verified over HTTPS).
 - Mobile text readability: fixed (responsive full-viewport layout, 22 px title, 16 px status, 60 px tap target for Roll).
+- Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.

@@ -184,7 +184,7 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 
 **Remaining (Phase 2a):** *(all done)*
 
-### Phase 2b — Visual Board — *In progress*
+### Phase 2b — Visual Board — *Complete*
 
 Replace text output with a real graphical board. Hot-seat 4-player on one device.
 
@@ -203,14 +203,17 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 6. ✅ Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
 7. ✅ Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
 8. ✅ Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
-9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
+9. ✅ Re-run headless smoke checks and Web export validation after the visual board is interactive.
 
-**Remaining Phase 2b tasks:**
+**Done:**
 - ✅ Highlight legal-move destinations after a roll
 - ✅ Tap-to-move interaction
 - ✅ Animate marble movement
 - ✅ Roll button, current-player indicator, turn announcements
 - ✅ Win screen
+- ✅ Final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.
+
+**Remaining Phase 2b tasks:** *(all done)*
 
 ### Phase 3 — Single-Device AI (Godot) — *Not started*
 
@@ -295,7 +298,7 @@ Key files in the project:
 | `scripts/run_stage4_pairwise_confirmation.py` | Stage 4 pairwise confirmation benchmark runner | In repo |
 | `scripts/tune_profile_against_sprinter.py` | Random-plus-mutation tuning harness for AI weights | In repo |
 | `godot/project.godot` | Godot 4.6.3 project file | In repo |
-| `godot/scenes/Main.tscn` | Current Phase 2a bootstrap scene; to be replaced/expanded in Phase 2b | In repo |
+| `godot/scenes/Main.tscn` | Board-first Godot scene for the Phase 2b visual hot-seat game | In repo |
 | `godot/scripts/main.gd` | Current Godot scene controller with visual board surface, compact status/debug footer, Roll button, and smoke summary | In repo |
 | `godot/scripts/wahoo_board_view.gd` | Visual board surface for Phase 2b scene layout, using normalized coordinates from `wahoo_layout.gd` | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |

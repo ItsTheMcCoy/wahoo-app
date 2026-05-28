@@ -1,6 +1,6 @@
 # Wahoo Text Game
 
-Console-based Python prototype plus Godot 4 browser-port scaffold for Wahoo. The current project phase is Phase 2b: building the visual board and hot-seat interaction layer on top of the validated rules engine.
+Console-based Python prototype plus Godot 4 browser-port scaffold for Wahoo. The Godot visual board phase is complete; the next Godot work is Phase 3, porting the validated Python AI opponents into GDScript.
 
 ## Current State
 
@@ -34,7 +34,7 @@ Implemented:
 
 Not implemented yet:
 
-- Godot visual board drawing and interaction layer beyond the Phase 2b layout module.
+- Godot AI opponent selection and move execution (Phase 3).
 - Stronger sprinter-beating AI candidate (requires a larger overnight tuning run).
 - Richer human-like AI profile (requires more recorded human-reasoning games).
 
@@ -42,11 +42,12 @@ Phase 2a complete:
 
 - Godot 4 bootstrap under `godot/`: GDScript rules port, 27 parity smoke tests (all passing), HTML5 export validated on desktop and mobile browsers, mobile-friendly layout.
 
-Phase 2b in progress:
+Phase 2b complete:
 
 - `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
-- Static board drawing, marble nodes, destination highlighting, tap-to-move interaction, movement animation, and win screen are still pending.
+- `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, legal-move destination highlighting, tap-to-move selection, movement animation, turn status, Roll button state, and a win overlay.
+- Phase 2b validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `79 passed`, Web export rebuilt successfully, and required Web artifacts verified.
 
 ## Requirements
 
@@ -271,9 +272,9 @@ You can still run the legacy rule/behavior test harness directly:
 python -m tests.test_wahoo
 ```
 
-## Godot Port (Phase 2a/2b)
+## Godot Port
 
-The repository includes a Godot project in `godot/`. Phase 2a is complete, and Phase 2b has started with the visual board layout module.
+The repository includes a Godot project in `godot/`. Phase 2a and Phase 2b are complete: the rules port, visual board, hot-seat interaction, animation, turn UI, win overlay, and Web export are in place.
 
 To open it:
 

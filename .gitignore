@@ -8,6 +8,7 @@ venv/
 .godot/
 .import/
 export.cfg
+godot/build/web/*.import
 
 # OS
 .DS_Store
