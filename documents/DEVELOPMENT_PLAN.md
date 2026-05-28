@@ -35,7 +35,7 @@ This section should be addressed before advancing any other in progress phases.
    - **Addressed:** Fixed a bug where typing "2" was silently resolved as difficulty index 2 (skipping the sub-menu). Menu options 1/2/3 are now checked before any index resolution. AI profile list now includes a one-line description per profile and is ordered easiest → hardest based on Stage 2.2 benchmark win rates (sprinter 90.8% … random ~0%).
 
 4. ✅ I would like to figure out how to slow the game down while computer players are performing actions.  This will allow the human player to understand what is happening in real time.
-   - **Addressed:** AI delay (configurable pause after each AI move) was already implemented. At game setup, when AI players are present, the user is prompted for a delay in seconds (default 1.5 s, enter 0 to disable).
+   - **Addressed:** AI delay is a fixed 2 s pause after each AI move (and after each AI roll during the starting phase) when humans are present. No user prompt — delay is always on.
 
 ## Phase Status
 
@@ -61,7 +61,7 @@ Core game logic and a console-mode game loop, no graphics.
 - Standard vs Training game mode selection on new game start; human reasoning prompts only appear in Training mode
 - Turn numbers displayed in each turn header for easy game inspection
 - AI by difficulty / AI by profile menus fixed to always show sub-menus (were silently resolving as indices); AI profiles now display a one-line description and are listed easiest → hardest based on Stage 2.2 benchmark win rates (`PROFILE_DISPLAY_ORDER` in `play.py`)
-- Configurable AI delay (default 1.5 s pause after each AI move when humans are present)
+- Fixed 2 s AI delay after each AI move and after each AI roll in the starting phase when humans are present (not user-configurable)
 - Optional human move reasoning capture for manual multi-option choices (stored as non-optimal context, Training mode only)
 - `wahoo/reasoning_export.py` JSONL exporter for human reasoning samples
 

@@ -64,7 +64,7 @@ DEFAULT_STATS_CSV_PATH = "wahoo_stats.csv"
 AUTO_TOGGLE_COMMANDS = {"/auto", "/a", "auto"}
 HUMAN_PLAYER_TYPE = "human"
 DEFAULT_AI_PROFILE = "balanced"
-DEFAULT_AI_DELAY = 1.5  # seconds to pause after each AI move when humans are in the game
+DEFAULT_AI_DELAY = 2.0  # seconds to pause after each AI move when humans are in the game
 
 DIFFICULTY_LEVELS = [
     ("beginner", ["swarm", "tortoise"], "tortoise"),
@@ -734,30 +734,7 @@ def _pause_for_ai_turn(settings: dict, player: int) -> None:
         return
     if HUMAN_PLAYER_TYPE not in settings.get("players", []):
         return
-    delay = settings.get("ai_delay", 0.0)
-    if delay > 0:
-        time.sleep(delay)
-
-
-def _prompt_ai_delay(settings: dict) -> None:
-    """Ask how long to pause after each AI turn. Press Enter to keep default."""
-    current = settings.get("ai_delay", DEFAULT_AI_DELAY)
-    while True:
-        raw = read_user_input(
-            f"Pause after each AI turn in seconds [{current}] (0 to disable): ",
-            settings,
-        ).strip()
-        if raw == "":
-            settings["ai_delay"] = current
-            return
-        try:
-            delay = float(raw)
-            if delay >= 0:
-                settings["ai_delay"] = delay
-                return
-        except ValueError:
-            pass
-        print("Please enter a number of seconds (0 to disable).")
+    time.sleep(settings.get("ai_delay", 0.0))
 
 
 def _resolve_profile_from_difficulty(response: str) -> str | None:
@@ -871,8 +848,6 @@ def configure_players(settings: dict) -> list:
         players.append(prompt_controller_for_player(settings, player))
 
     settings["players"] = players
-    if any(p != HUMAN_PLAYER_TYPE for p in players):
-        _prompt_ai_delay(settings)
     return players
 
 
@@ -995,6 +970,10 @@ def decide_starting_player(rng: random.Random, settings: dict) -> tuple[int, int
             tied_players = " and ".join(player_label(p) for p in leaders)
             print(f"  {tied_players} are tied with {top_roll}.")
         print("")
+
+        # Pause after an AI roll so human players can read the result.
+        if is_ai_slot(settings, player) and HUMAN_PLAYER_TYPE in normalize_player_settings(settings):
+            time.sleep(settings.get("ai_delay", DEFAULT_AI_DELAY))
 
     return top_player, top_roll
 
