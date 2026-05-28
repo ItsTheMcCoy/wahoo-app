@@ -13,8 +13,8 @@ var pending_roll: Variant = null
 var center_occupant: Variant = null
 var next_base_exit_marble: Array = []
 
-static func new_game() -> WahooState:
-    var state := WahooState.new()
+static func new_game():
+    var state = preload("res://scripts/wahoo_state.gd").new()
     state.marbles = []
     for _player in range(NUM_PLAYERS):
         var player_marbles: Array = []
@@ -27,8 +27,8 @@ static func new_game() -> WahooState:
     state.next_base_exit_marble = [0, 0, 0, 0]
     return state
 
-func clone() -> WahooState:
-    var copy := WahooState.new()
+func clone():
+    var copy = preload("res://scripts/wahoo_state.gd").new()
     copy.marbles = []
     for player_marbles in marbles:
         var cloned_player: Array = []

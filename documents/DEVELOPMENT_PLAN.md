@@ -121,17 +121,22 @@ Port the rules engine to Godot. No graphics yet — confirm the engine runs corr
 - Load the exported build in a desktop browser and a mobile browser; confirm input and layout are functional
 
 **Done:**
-- Installed Gdot 6.6.3
+- Installed Godot 4.6.3
 - Created initial Godot project scaffold under `godot/` with `project.godot`, `scenes/Main.tscn`, and bootstrap scripts in `scripts/`
 - Ported Python state and rules logic into `godot/scripts/wahoo_state.gd` and `godot/scripts/wahoo_rules.gd`
 - Added a minimal desktop-run scene with a Roll button and text output wired to legal move generation/application
 - Added startup rule smoke checks in `godot/scripts/wahoo_rules_smoke.gd` and surfaced pass/fail summary in the main scene
+- Expanded Godot parity smoke coverage with additional center-behavior scenarios from `tests/test_wahoo.py`
+- Expanded Godot parity smoke coverage with center-exit edge cases (capture-on-exit, own-destination blocking, own-center occupant blocking)
+- Added a repeatable headless parity runner via `Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd` (or `godot --headless --script res://scripts/run_smoke.gd` if a `godot` alias/wrapper is configured)
 - Added `godot/README.md` with setup and run steps for continuing Phase 2a work
+- Added `godot/export_presets.cfg` Web preset and verified export command wiring
+- Standardized the Godot project/tooling target on version 4.6.3
+- Adopted a VCS policy to commit source-adjacent Godot metadata sidecars (`*.uid`, `*.import`)
 
 **Remaining (Phase 2a):**
 - Continue converting `tests/test_wahoo.py` scenarios into Godot-side parity checks until rule behavior confidence is high
-- Add a runnable Godot-side parity test path (script or scene action) that does not rely on manual UI inspection
-- Configure HTML5 export and validate desktop/mobile browser behavior
+- Install matching Godot 4.6.3 export templates, then run Web export and validate desktop/mobile browser behavior
 
 ### Phase 2b — Visual Board — *Not started*
 

@@ -1,7 +1,9 @@
 class_name WahooRules
 extends RefCounted
 
-static func legal_moves(state: WahooState, player: int, roll: int) -> Array:
+const WahooState = preload("res://scripts/wahoo_state.gd")
+
+static func legal_moves(state, player: int, roll: int) -> Array:
     var moves: Array = []
     for marble_id in range(WahooState.MARBLES_PER_PLAYER):
         var loc: Array = state.marbles[player][marble_id]
@@ -15,10 +17,10 @@ static func legal_moves(state: WahooState, player: int, roll: int) -> Array:
             moves.append_array(_moves_from_center(state, player, marble_id, roll))
     return moves
 
-static func _moves_from_base(state: WahooState, player: int, marble_id: int, roll: int) -> Array:
+static func _moves_from_base(state, player: int, marble_id: int, roll: int) -> Array:
     if roll != 1 and roll != 6:
         return []
-    var dest_idx := WahooState.base_exit(player)
+    var dest_idx = WahooState.base_exit(player)
     var occupant: Variant = state.marble_at_track(dest_idx)
     if occupant != null and int(occupant[0]) == player:
         return []
@@ -29,9 +31,9 @@ static func _moves_from_base(state: WahooState, player: int, marble_id: int, rol
         "captures": occupant,
     }]
 
-static func _moves_from_track(state: WahooState, player: int, marble_id: int, roll: int, current_idx: int) -> Array:
+static func _moves_from_track(state, player: int, marble_id: int, roll: int, current_idx: int) -> Array:
     var moves: Array = []
-    var own_offset := WahooState.segment_offset(player, current_idx)
+    var own_offset = WahooState.segment_offset(player, current_idx)
 
     if own_offset <= 5 and roll == (6 - own_offset):
         if not _path_to_center_blocked_by_own_marble(state, player, current_idx):
@@ -50,24 +52,24 @@ static func _moves_from_track(state: WahooState, player: int, marble_id: int, ro
 
     return moves
 
-static func _path_to_center_blocked_by_own_marble(state: WahooState, player: int, current_idx: int) -> bool:
-    var own_offset := WahooState.segment_offset(player, current_idx)
+static func _path_to_center_blocked_by_own_marble(state, player: int, current_idx: int) -> bool:
+    var own_offset = WahooState.segment_offset(player, current_idx)
     for offset in range(own_offset + 1, 6):
-        var idx := posmod(WahooState.base_exit(player) + offset, WahooState.LOOP_SIZE)
+        var idx = posmod(WahooState.base_exit(player) + offset, WahooState.LOOP_SIZE)
         var occupant: Variant = state.marble_at_track(idx)
         if occupant != null and int(occupant[0]) == player:
             return true
     return false
 
-static func _walk_forward(state: WahooState, player: int, marble_id: int, start_idx: int, steps: int) -> Variant:
-    var own_home_entry := WahooState.home_entry(player)
-    var idx := start_idx
-    var remaining := steps
-    var entered_home := false
-    var home_slot := -1
+static func _walk_forward(state, player: int, marble_id: int, start_idx: int, steps: int) -> Variant:
+    var own_home_entry = WahooState.home_entry(player)
+    var idx = start_idx
+    var remaining = steps
+    var entered_home = false
+    var home_slot = -1
 
     while remaining > 0 and not entered_home:
-        var next_idx := posmod(idx + 1, WahooState.LOOP_SIZE)
+        var next_idx = posmod(idx + 1, WahooState.LOOP_SIZE)
 
         if idx == own_home_entry:
             entered_home = true
@@ -100,7 +102,7 @@ static func _walk_forward(state: WahooState, player: int, marble_id: int, start_
             }
 
     while remaining > 0:
-        var next_slot := home_slot + 1
+        var next_slot = home_slot + 1
         if next_slot > WahooState.HOME_SLOTS - 1:
             return null
         if state.marble_at_home(player, next_slot) != null:
@@ -115,8 +117,8 @@ static func _walk_forward(state: WahooState, player: int, marble_id: int, start_
         "captures": null,
     }
 
-static func _moves_from_home(state: WahooState, player: int, marble_id: int, roll: int, current_slot: int) -> Array:
-    var new_slot := current_slot + roll
+static func _moves_from_home(state, player: int, marble_id: int, roll: int, current_slot: int) -> Array:
+    var new_slot = current_slot + roll
     if new_slot > WahooState.HOME_SLOTS - 1:
         return []
     for slot in range(current_slot + 1, new_slot + 1):
@@ -129,10 +131,10 @@ static func _moves_from_home(state: WahooState, player: int, marble_id: int, rol
         "captures": null,
     }]
 
-static func _moves_from_center(state: WahooState, player: int, marble_id: int, roll: int) -> Array:
+static func _moves_from_center(state, player: int, marble_id: int, roll: int) -> Array:
     if roll != 1:
         return []
-    var dest_idx := WahooState.center_exit_dest(player)
+    var dest_idx = WahooState.center_exit_dest(player)
     var occupant: Variant = state.marble_at_track(dest_idx)
     if occupant != null and int(occupant[0]) == player:
         return []
@@ -143,8 +145,8 @@ static func _moves_from_center(state: WahooState, player: int, marble_id: int, r
         "captures": occupant,
     }]
 
-static func apply_move(state: WahooState, move: Dictionary) -> WahooState:
-    var player := state.current_player
+static func apply_move(state, move: Dictionary):
+    var player = state.current_player
     var marble_id: int = int(move["marble"])
 
     var captures: Variant = move.get("captures", null)

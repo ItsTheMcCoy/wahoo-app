@@ -271,9 +271,26 @@ The repository now includes a starter Godot project in `godot/`.
 
 To open it:
 
-1. Install Godot 4.x.
+1. Install Godot 4.6.3.
 2. In Godot Project Manager, import `godot/project.godot`.
 3. Run the project and verify the bootstrap scene loads.
+
+To run parity smoke checks headlessly from `godot/`:
+
+```powershell
+Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd
+```
+
+Windows PATH note:
+
+- Add the folder (not the file) to PATH: `C:\Users\macwe\OneDrive\Documents\Gdot4`
+- The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`
+- If you configure a local `godot` alias/wrapper, you can also use `godot --headless --script res://scripts/run_smoke.gd`
+
+Version control policy:
+
+- The Godot project is standardized on `4.6.3`.
+- Commit source-adjacent Godot metadata sidecar files (for example `*.uid` and `*.import`).
 
 See `godot/README.md` for current scope and next porting steps.
 
