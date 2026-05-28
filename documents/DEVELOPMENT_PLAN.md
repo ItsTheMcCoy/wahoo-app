@@ -194,14 +194,14 @@ Replace text output with a real graphical board. Hot-seat 4-player on one device
 2. ✅ Replace the text-first main scene with a visual board scene while preserving a compact status/debug label for roll and smoke-test output during development.
 3. ✅ Draw static board geometry: plus-shaped track, per-player base clusters, home rows, center hole, and track squares.
 4. ✅ Render marbles from `WahooState` using player colors and stable node names so state refreshes are deterministic.
-5. On Roll, compute legal moves and highlight selectable marbles/destinations instead of automatically applying the first legal move.
+5. ✅ On Roll, compute legal moves and highlight selectable marbles/destinations instead of automatically applying the first legal move.
 6. Add tap/click selection to apply the chosen legal move through `WahooRules.apply_move()`, then refresh the board.
 7. Add basic movement animation after correctness is working; keep the state update authoritative in rules code.
 8. Add current-player indicator, turn announcements, disabled/enabled Roll state, and a simple win screen.
 9. Re-run headless smoke checks and Web export validation after the visual board is interactive.
 
 **Remaining Phase 2b tasks:**
-- Highlight legal-move destinations after a roll
+- ✅ Highlight legal-move destinations after a roll
 - Tap-to-move interaction
 - Animate marble movement
 - Roll button, current-player indicator, turn announcements

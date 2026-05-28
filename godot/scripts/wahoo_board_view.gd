@@ -14,6 +14,9 @@ const CENTER_FILL := Color(0.43, 0.39, 0.31)
 const CENTER_EDGE := Color(0.18, 0.17, 0.14)
 const MARBLE_EDGE := Color(0.10, 0.09, 0.07)
 const MARBLE_HIGHLIGHT := Color(1.0, 1.0, 1.0, 0.48)
+const MOVE_SOURCE_RING := Color(1.0, 0.97, 0.55, 0.95)
+const MOVE_DEST_FILL := Color(1.0, 0.92, 0.18, 0.26)
+const MOVE_DEST_RING := Color(1.0, 0.78, 0.10, 0.95)
 const PLAYER_COLORS := [
     Color(0.86, 0.20, 0.17),
     Color(0.16, 0.60, 0.27),
@@ -25,6 +28,8 @@ var _state: WahooState = null
 var _board_rect := Rect2()
 var _cell_size := 0.0
 var _marble_nodes: Array = []
+var _legal_moves: Array = []
+var _legal_move_player := -1
 
 func _ready() -> void:
     _ensure_marble_nodes()
@@ -34,6 +39,18 @@ func _ready() -> void:
 func set_state(state: WahooState) -> void:
     _state = state
     _ensure_marble_nodes()
+    _refresh_marble_nodes()
+    queue_redraw()
+
+func set_legal_moves(moves: Array, player: int) -> void:
+    _legal_moves = moves.duplicate(true)
+    _legal_move_player = player
+    _refresh_marble_nodes()
+    queue_redraw()
+
+func clear_legal_moves() -> void:
+    _legal_moves = []
+    _legal_move_player = -1
     _refresh_marble_nodes()
     queue_redraw()
 
@@ -49,6 +66,7 @@ func _draw() -> void:
     _draw_home_rows()
     _draw_track_cells()
     _draw_center()
+    _draw_move_destinations()
 
 func _square_board_rect() -> Rect2:
     var side: float = min(size.x, size.y)
@@ -123,6 +141,24 @@ func _draw_center() -> void:
     draw_circle(center, radius, CENTER_FILL)
     draw_arc(center, radius, 0.0, TAU, 40, CENTER_EDGE, max(2.0, _cell_size * 0.08), true)
 
+func _draw_move_destinations() -> void:
+    if _legal_moves.is_empty() or _legal_move_player < 0:
+        return
+
+    var drawn := {}
+    for move in _legal_moves:
+        var dest: Array = move["dest"]
+        var coord := WahooLayout.location_grid_coord(dest, _legal_move_player, int(move["marble"]))
+        var key := "%d,%d" % [coord.x, coord.y]
+        if drawn.has(key):
+            continue
+        drawn[key] = true
+
+        var center := _grid_to_local(coord)
+        var radius: float = _cell_size * (0.58 if String(dest[0]) == "CENTER" else 0.46)
+        draw_circle(center, radius, MOVE_DEST_FILL)
+        draw_arc(center, radius, 0.0, TAU, 44, MOVE_DEST_RING, max(2.0, _cell_size * 0.08), true)
+
 func _draw_grid_square(coord: Vector2i, fill: Color, edge: Color, scale: float) -> void:
     var rect := _grid_cell_rect(coord, scale)
     draw_rect(rect, fill, true)
@@ -192,19 +228,37 @@ func _refresh_marble_nodes() -> void:
             token.position = center - token.size * 0.5
             token.z_index = 10 + player
             token.visible = true
+            token.set_selectable(_marble_has_legal_move(player, marble_id))
+
+func _marble_has_legal_move(player: int, marble_id: int) -> bool:
+    if player != _legal_move_player:
+        return false
+    for move in _legal_moves:
+        if int(move["marble"]) == marble_id:
+            return true
+    return false
 
 class MarbleToken:
     extends Control
 
     var _color := Color.WHITE
+    var _selectable := false
 
     func set_color(color: Color) -> void:
         _color = color
         queue_redraw()
 
+    func set_selectable(selectable: bool) -> void:
+        if _selectable == selectable:
+            return
+        _selectable = selectable
+        queue_redraw()
+
     func _draw() -> void:
         var radius: float = min(size.x, size.y) * 0.48
         var center := size * 0.5
+        if _selectable:
+            draw_arc(center, radius * 1.08, 0.0, TAU, 40, MOVE_SOURCE_RING, max(2.0, radius * 0.16), true)
         draw_circle(center, radius, _color)
         draw_arc(center, radius, 0.0, TAU, 36, MARBLE_EDGE, max(1.5, radius * 0.13), true)
         draw_circle(center - Vector2(radius * 0.28, radius * 0.30), radius * 0.23, MARBLE_HIGHLIGHT)

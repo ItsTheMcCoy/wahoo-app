@@ -12,6 +12,8 @@ const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 var _rng := RandomNumberGenerator.new()
 var _state: WahooState
 var _smoke_summary := ""
+var _pending_moves: Array = []
+var _pending_roll: Variant = null
 
 func _ready() -> void:
     _rng.randomize()
@@ -22,14 +24,23 @@ func _ready() -> void:
     _render_status("Waiting for first roll")
 
 func _on_roll_pressed() -> void:
+    _board.clear_legal_moves()
+    _pending_moves = []
+    _pending_roll = null
+
     var roll := _rng.randi_range(1, 6)
     var player := _state.current_player
     var legal := WahooRules.legal_moves(_state, player, roll)
     var line := "Player %d rolled %d\nLegal moves found: %d" % [player + 1, roll, legal.size()]
     if legal.size() > 0:
-        WahooRules.apply_move(_state, legal[0])
-        line += "\nApplied first legal move: %s" % String(legal[0]["kind"])
-    _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
+        _pending_moves = legal.duplicate(true)
+        _pending_roll = roll
+        _state.pending_roll = roll
+        _board.set_legal_moves(_pending_moves, player)
+        line += "\nChoose a highlighted marble/destination (tap-to-move next)"
+    else:
+        _state.pending_roll = null
+        _state.current_player = (_state.current_player + 1) % WahooState.NUM_PLAYERS
     _board.set_state(_state)
     _render_status(line)
 
