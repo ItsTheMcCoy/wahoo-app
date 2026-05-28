@@ -61,7 +61,7 @@ This section should be addressed before advancing any other in progress phases.
 
 ## Phase Status
 
-### Phase 1 — Rules Engine (Python) — *In progress*
+### Phase 1 — Rules Engine (Python) — *Complete*
 
 Core game logic and a console-mode game loop, no graphics.
 
