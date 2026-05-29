@@ -99,7 +99,7 @@ Phases 2a, 2b, 3a, 3b, 3c, 3e, and 3f are complete. The game is fully playable a
 
 Current Godot state:
 
-- `scenes/Main.tscn` is a two-column layout: the board fills the left column (`PanelContainer` with `EXPAND+FILL`); the right `SidePanel` (248 px min width) holds, top to bottom: `TurnLabel`, `DieFrame/DieLabel` (96 px Unicode die face), `Status` log, `RollButton`, `EndTurnButton`, and `GameMenuButton`.
+- `scenes/Main.tscn` is a two-column layout: the board fills the left column (`PanelContainer` with `EXPAND+FILL`); the right `SidePanel` (248 px min width) holds, top to bottom: `DieFrame/DieLabel` (96 px Unicode die face), `Status` log, `TurnLabel` (22 px, player name only, player-colored), `RollButton`, `EndTurnButton`, and `GameMenuButton`.
 - `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves. Die rolling shows Unicode faces (⚀–⚅) with a 14-frame cycle and a center-pivoted scale pop on settle.
 - `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, tap/click targets, and movement animation.
 - `scripts/wahoo_board_view.gd` draws the board canvas: static geometry, marble nodes, and the selected-marble ring. Destination circles and moveable-marble rings are intentionally absent (no move highlighting).

@@ -302,7 +302,7 @@ func _ai_take_turn() -> void:
 	await _execute_move(move, player, roll)
 
 func _render_status(header: String) -> void:
-	_turn_label.text = "Turn %d - %s" % [_turn_number, _player_label(_state.current_player)]
+	_turn_label.text = _player_label(_state.current_player)
 	_turn_label.self_modulate = PLAYER_COLORS[_state.current_player]
 	var lines := [header]
 	if _show_smoke_summary:

@@ -41,13 +41,6 @@ layout_mode = 2
 custom_minimum_size = Vector2(248, 0)
 theme_override_constants/separation = 10
 
-[node name="TurnLabel" type="Label" parent="Root/SidePanel"]
-layout_mode = 2
-text = "Player 1"
-horizontal_alignment = 1
-autowrap_mode = 2
-theme_override_font_sizes/font_size = 18
-
 [node name="DieFrame" type="PanelContainer" parent="Root/SidePanel"]
 layout_mode = 2
 
@@ -68,6 +61,13 @@ fit_content = false
 scroll_active = true
 text = "Ready"
 theme_override_font_sizes/normal_font_size = 14
+
+[node name="TurnLabel" type="Label" parent="Root/SidePanel"]
+layout_mode = 2
+text = "Player 1"
+horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 22
 
 [node name="RollButton" type="Button" parent="Root/SidePanel"]
 layout_mode = 2
