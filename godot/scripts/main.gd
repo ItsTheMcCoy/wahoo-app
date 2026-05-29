@@ -38,13 +38,13 @@ const PROFILE_LABELS := {
 	"sprinter":   "Sprinter",
 }
 
-@onready var _turn_label: Label = $Root/Header/TurnLabel
-@onready var _die_label: Label = $Root/Header/DieLabel
-@onready var _game_menu_button: MenuButton = $Root/Header/GameMenuButton
+@onready var _turn_label: Label = $Root/SidePanel/TurnLabel
+@onready var _die_label: Label = $Root/SidePanel/DieFrame/DieLabel
+@onready var _game_menu_button: MenuButton = $Root/SidePanel/GameMenuButton
 @onready var _board = $Root/BoardFrame/BoardView
-@onready var _status: RichTextLabel = $Root/Footer/Status
-@onready var _roll_button: Button = $Root/Footer/RollButton
-@onready var _end_turn_button: Button = $Root/Footer/EndTurnButton
+@onready var _status: RichTextLabel = $Root/SidePanel/Status
+@onready var _roll_button: Button = $Root/SidePanel/RollButton
+@onready var _end_turn_button: Button = $Root/SidePanel/EndTurnButton
 @onready var _win_overlay: ColorRect = $WinOverlay
 @onready var _win_title: Label = $WinOverlay/WinPanel/WinContent/WinTitle
 @onready var _win_subtitle: Label = $WinOverlay/WinPanel/WinContent/WinSubtitle
@@ -86,7 +86,7 @@ func _ready() -> void:
 	_start_button.pressed.connect(_on_start_pressed)
 	_smoke_summary = _build_smoke_summary()
 	_setup_game_menu()
-	_die_label.text = "-"
+	_die_label.text = "–"
 	_profiles = WahooAI.make_profiles()
 	_populate_dropdowns()
 	_wire_setup_inputs()
@@ -156,7 +156,7 @@ func _new_game() -> void:
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
-	_die_label.text = "-"
+	_die_label.text = "–"
 	_die_label.scale = Vector2.ONE
 	_set_roll_ready(false)
 	_roll_button.text = "Roll"
@@ -491,7 +491,7 @@ func _exit_to_setup() -> void:
 	_board.clear_legal_moves()
 	_set_roll_ready(false)
 	_roll_button.text = "Roll"
-	_die_label.text = "-"
+	_die_label.text = "–"
 	_refresh_setup_name_fields()
 	_opening_roll_pressed.emit()  # unblock any awaiting starting-roll coroutine
 
@@ -561,19 +561,21 @@ func _load_game() -> void:
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
-	_die_label.text = "-"
+	_die_label.text = "–"
 	_set_roll_ready(true)
 	_render_status("Saved game loaded")
 
 func _die_face(value: int) -> String:
-	return "[%d]" % clampi(value, 1, 6)
+	const FACES := ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
+	return FACES[clampi(value, 1, 6)]
 
 func _play_roll_visual(final_roll: int) -> void:
-	for _i in range(6):
+	_die_label.pivot_offset = _die_label.size * 0.5
+	for _i in range(14):
 		_die_label.text = _die_face(_rng.randi_range(1, 6))
-		await get_tree().create_timer(0.05).timeout
+		await get_tree().create_timer(0.04).timeout
 	_die_label.text = _die_face(final_roll)
 	var tween := create_tween()
-	tween.tween_property(_die_label, "scale", Vector2(1.22, 1.22), 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_die_label, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween.tween_property(_die_label, "scale", Vector2(1.30, 1.30), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_die_label, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	await tween.finished

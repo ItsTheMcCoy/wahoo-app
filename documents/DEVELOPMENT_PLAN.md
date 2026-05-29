@@ -284,11 +284,29 @@ Removed move-reveal highlights from the human turn flow to match the feel of a p
 - `set_selectable(false)` always in `_refresh_marble_nodes()` — no yellow source ring on moveable marbles
 - A marble still shows a selection ring when clicked (player feedback that it is picked up)
 - Click-to-move mechanic unchanged: clicks are still validated against legal moves, so only legal moves execute
-- Added `EndTurnButton` to `Root/Footer` in `Main.tscn` (disabled by default)
+- Added `EndTurnButton` to `Main.tscn` footer (disabled by default; later moved to `Root/SidePanel` in Phase 3f)
 - After a human executes a move (non-6 roll): Roll stays disabled, End Turn enables
 - After a human rolls with no legal moves (non-6): End Turn enables immediately
 - `_on_end_turn_pressed()` advances the player, increments the turn counter, and re-enables Roll
 - AI turns unchanged: auto-advance after each AI move; no End Turn step for AI
+
+---
+
+### Phase 3f — Layout Redesign: Board Left / Info Panel Right — *Complete*
+
+Restructured the main scene from a single vertical stack into a two-column layout: the board fills the left side and a dedicated right-side panel owns the turn indicator, die display, status log, and action buttons.
+
+**Motivation:** The original VBoxContainer layout put the board in the middle with a thin header and footer above/below it, leaving the die display as a small `[N]` label in the header. A side-by-side split gives the board maximum vertical space and provides a clear, dedicated zone for the die animation that players can focus on between moves.
+
+**Done:**
+- `Root` changed from `VBoxContainer` to `HBoxContainer` in `Main.tscn`; board now fills all available left space (`size_flags_horizontal = EXPAND+FILL`)
+- `Header` and `Footer` nodes removed; their content consolidated into `SidePanel` (VBoxContainer, 248 px min width) as the right column
+- `SidePanel` node order: `TurnLabel` → `DieFrame/DieLabel` → `Status` → `RollButton` → `EndTurnButton` → `GameMenuButton`
+- `DieFrame` (PanelContainer) wraps `DieLabel` and gives it a panel background; label is 96 px font with 152 px minimum height — the die face is the dominant visual element on the right side
+- `DieLabel` uses Unicode die characters (⚀ ⚁ ⚂ ⚃ ⚄ ⚅) instead of the old `[1]`–`[6]` text
+- Die rolling animation enhanced: 14 rapid face-cycle frames at 40 ms each (was 6 at 50 ms), larger settle pop (1.30× scale vs 1.22×), `pivot_offset` set to label center before the tween so the pop expands symmetrically
+- Idle die state changed from `-` to `–` (em dash)
+- `@onready` paths in `main.gd` updated to `$Root/SidePanel/...` and `$Root/SidePanel/DieFrame/DieLabel`
 
 ---
 

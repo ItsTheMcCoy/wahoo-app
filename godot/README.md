@@ -1,11 +1,11 @@
 # Godot Project (Phases 2a–3e Complete)
 
-This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phases 2a, 2b, 3a, 3b, 3c, and 3e are complete. The game is fully playable with human and AI opponents on a single device.
+This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phases 2a, 2b, 3a, 3b, 3c, 3e, and 3f are complete. The game is fully playable with human and AI opponents on a single device.
 
 ## Current scope
 
 - Minimal project file and icon
-- Responsive board-first main scene with Roll button, End Turn button, current-player indicator, compact status output, and win overlay
+- Two-column main scene: board fills the left, right-side panel holds turn indicator, large die display, status log, and action buttons (Roll, End Turn, Menu)
 - GDScript state model (`wahoo_state.gd`) — complete port of Python's `game_state.py`
 - GDScript rules engine (`wahoo_rules.gd`) — complete port of Python's `rules.py`
 - Startup parity smoke tests (`wahoo_rules_smoke.gd`) — 27 checks covering all major rule behaviours, all passing
@@ -95,12 +95,12 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 
 ## Current phase: Phase 4 — Internet Multiplayer (Not Started)
 
-Phases 2a, 2b, 3a, 3b, 3c, and 3e are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents. Phase 4 (WebRTC internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
+Phases 2a, 2b, 3a, 3b, 3c, 3e, and 3f are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents. Phase 4 (WebRTC internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
 
 Current Godot state:
 
-- `scenes/Main.tscn` is a board-first scene with a header, visual board surface, compact status footer, Roll button, and End Turn button.
-- `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves.
+- `scenes/Main.tscn` is a two-column layout: the board fills the left column (`PanelContainer` with `EXPAND+FILL`); the right `SidePanel` (248 px min width) holds, top to bottom: `TurnLabel`, `DieFrame/DieLabel` (96 px Unicode die face), `Status` log, `RollButton`, `EndTurnButton`, and `GameMenuButton`.
+- `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves. Die rolling shows Unicode faces (⚀–⚅) with a 14-frame cycle and a center-pivoted scale pop on settle.
 - `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, tap/click targets, and movement animation.
 - `scripts/wahoo_board_view.gd` draws the board canvas: static geometry, marble nodes, and the selected-marble ring. Destination circles and moveable-marble rings are intentionally absent (no move highlighting).
 - `scripts/wahoo_ai.gd` implements RandomPlayer and GreedyPlayer with 9 named profile weight dicts and a `make_profiles()` factory.
