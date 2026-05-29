@@ -38,8 +38,24 @@ script = ExtResource("2_cw3fq")
 
 [node name="SidePanel" type="VBoxContainer" parent="Root"]
 layout_mode = 2
-custom_minimum_size = Vector2(248, 0)
+custom_minimum_size = Vector2(280, 0)
 theme_override_constants/separation = 10
+
+[node name="GameMenuButton" type="MenuButton" parent="Root/SidePanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+text = "Menu"
+theme_override_font_sizes/font_size = 16
+
+[node name="Status" type="RichTextLabel" parent="Root/SidePanel"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 60)
+bbcode_enabled = true
+fit_content = false
+scroll_active = true
+text = "Ready"
+theme_override_font_sizes/normal_font_size = 14
 
 [node name="DieFrame" type="PanelContainer" parent="Root/SidePanel"]
 layout_mode = 2
@@ -52,41 +68,27 @@ horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_font_sizes/font_size = 96
 
-[node name="Status" type="RichTextLabel" parent="Root/SidePanel"]
-layout_mode = 2
-size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 60)
-bbcode_enabled = true
-fit_content = false
-scroll_active = true
-text = "Ready"
-theme_override_font_sizes/normal_font_size = 14
-
 [node name="TurnLabel" type="Label" parent="Root/SidePanel"]
 layout_mode = 2
 text = "Player 1"
 horizontal_alignment = 1
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
 
 [node name="RollButton" type="Button" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 72)
 text = "Roll"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 20
 
 [node name="EndTurnButton" type="Button" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 72)
 disabled = true
 text = "End Turn"
-theme_override_font_sizes/font_size = 18
-
-[node name="GameMenuButton" type="MenuButton" parent="Root/SidePanel"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
-text = "Menu"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 20
 
 [node name="WinOverlay" type="ColorRect" parent="."]
 visible = false

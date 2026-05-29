@@ -307,7 +307,8 @@ Restructured the main scene from a single vertical stack into a two-column layou
 - Die rolling animation enhanced: 14 rapid face-cycle frames at 40 ms each (was 6 at 50 ms), larger settle pop (1.30× scale vs 1.22×), `pivot_offset` set to label center before the tween so the pop expands symmetrically
 - Idle die state changed from `-` to `–` (em dash)
 - `@onready` paths in `main.gd` updated to `$Root/SidePanel/...` and `$Root/SidePanel/DieFrame/DieLabel`
-- `TurnLabel` repositioned to just above `RollButton` (was top of panel); font size 18 → 22 px; text simplified to player name only (e.g. "Red Player") — turn number removed from label, player color still applied via `self_modulate`
+- `TurnLabel` repositioned to just above `RollButton` (was top of panel); text simplified to player name only (e.g. "Red Player") — turn number removed from label, player color still applied via `self_modulate`
+- Further SidePanel polish: `GameMenuButton` moved to top; `Status` log below it; `DieFrame` → `TurnLabel` → action buttons at bottom; `TurnLabel` font 22 → 26 px with 2 px white outline (tinted by `self_modulate`) for bold appearance; `RollButton`/`EndTurnButton` height 56 → 72 px and font 18 → 20 px for larger mobile tap targets; `SidePanel` min width 248 → 280 px
 
 ---
 
