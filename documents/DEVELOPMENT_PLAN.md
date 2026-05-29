@@ -312,6 +312,20 @@ Restructured the main scene from a single vertical stack into a two-column layou
 
 ---
 
+### Phase 3g — Mobile Right-Panel Polish & Opening Phase UX — *Complete*
+
+Improved right-panel readability on small phone screens and redesigned the opening-roll phase to show clear, sequential per-player status messages.
+
+**Done:**
+- Mobile font and tap-target pass: `GameMenuButton` 40 → 52 px tall, 16 → 20 pt; `Status` 14 → 17 pt, min height 60 → 72 px; `TurnLabel` 26 → 30 pt; `RollButton`/`EndTurnButton` 72 → 80 px tall, 20 → 26 pt — all touch targets now comfortably exceed the 48 dp Android / 44 pt iOS minimums
+- `Status` repositioned to sit directly above the die frame: expanding `Spacer` Control inserted between `GameMenuButton` and `Status` so unused vertical space is absorbed above `Status` rather than inside it; `Status` no longer carries `size_flags_vertical = EXPAND`
+- Final `SidePanel` node order: `GameMenuButton` → `Spacer` → `Status` → `DieFrame/DieLabel` → `TurnLabel` → `RollButton` → `EndTurnButton`
+- Opening roll phase overhauled in `_run_starting_roll_phase()`: replaces the old growing-log style with sequential single messages — "Roll to see who goes first." → "[Name]'s turn." → "[Name] rolled a [n]." → "Highest roll so far: [n] by [Name]." — rotating through each contender before checking for ties
+- `TurnLabel` now updates to the rolling player's name and color during the opening phase; on a tie it shows "Tie!" in white; on completion it shows the winner's name in their color
+- `_new_game()` clears `TurnLabel` to blank/white before the opening phase begins (previously showed "Red Player" by default until first `_render_status()` call)
+
+---
+
 ### Phase 3d — Expectimax (Optional Stretch) — *Deferred*
 
 Port `ExpectimaxPlayer` to GDScript and expose it as an AI selection option.

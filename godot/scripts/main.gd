@@ -160,7 +160,9 @@ func _new_game() -> void:
 	_die_label.scale = Vector2.ONE
 	_set_roll_ready(false)
 	_roll_button.text = "Roll"
-	_render_status("Rolling to determine first player...")
+	_status.text = ""
+	_turn_label.text = ""
+	_turn_label.self_modulate = Color.WHITE
 	await _run_starting_roll_phase()
 
 func _on_roll_pressed() -> void:
@@ -341,25 +343,31 @@ func _on_end_turn_pressed() -> void:
 
 func _run_starting_roll_phase() -> void:
 	var contenders: Array = [0, 1, 2, 3]
-	var round := 1
+
+	_turn_label.text = ""
+	_turn_label.self_modulate = Color.WHITE
+	_status.text = "Roll to see who goes first."
+	await get_tree().create_timer(1.0).timeout
+
 	while contenders.size() > 1:
 		if not _starting_phase:
 			return
-		var round_header := "Opening roll — Round %d" % round
-		var rolled_results: Array[String] = []
-		var rolled_players: Array = []
+		var round_rolls: Array = []
 		var highest := 0
+		var highest_seat := -1
 
 		for player in contenders:
 			if not _starting_phase:
 				return
 			var seat := int(player)
-			var roll: int
+			var name := _seat_display_names[seat]
 
+			_turn_label.text = name
+			_turn_label.self_modulate = PLAYER_COLORS[seat]
+			_status.text = "%s's turn." % name
+
+			var roll: int
 			if _seat_types[seat] == "human":
-				var prompt_lines := [round_header] + rolled_results
-				prompt_lines.append("%s — press Roll to roll!" % _seat_roll_label(seat))
-				_status.text = "\n".join(prompt_lines)
 				_roll_button.text = "Roll"
 				_awaiting_human_starting_roll = true
 				_roll_button.disabled = false
@@ -376,34 +384,49 @@ func _run_starting_roll_phase() -> void:
 			await _play_roll_visual(roll)
 			if not _starting_phase:
 				return
-			rolled_players.append({"player": seat, "roll": roll})
-			highest = maxi(highest, roll)
-			rolled_results.append("%s rolled %d" % [_seat_roll_label(seat), roll])
-			_status.text = "\n".join([round_header] + rolled_results)
+
+			round_rolls.append({"player": seat, "roll": roll})
+			if roll > highest:
+				highest = roll
+				highest_seat = seat
+
+			_status.text = "%s rolled a %d." % [name, roll]
+			await get_tree().create_timer(0.5).timeout
+			if not _starting_phase:
+				return
+
+			_status.text = "Highest roll so far: %d by %s." % [highest, _seat_display_names[highest_seat]]
+			await get_tree().create_timer(0.65).timeout
+			if not _starting_phase:
+				return
 
 		var tied: Array = []
-		for item in rolled_players:
+		for item in round_rolls:
 			if int(item["roll"]) == highest:
 				tied.append(int(item["player"]))
 
-		var final_lines := [round_header] + rolled_results
-		final_lines.append("Highest roll: %d" % highest)
 		if tied.size() > 1:
-			final_lines.append("Tie! Tied players will reroll...")
-		_status.text = "\n".join(final_lines)
-		await get_tree().create_timer(0.65).timeout
-		if not _starting_phase:
-			return
+			var parts := PackedStringArray()
+			for p in tied:
+				parts.append(_seat_display_names[int(p)])
+			_turn_label.text = "Tie!"
+			_turn_label.self_modulate = Color.WHITE
+			_status.text = "Tie between %s!\nThey'll roll again." % ", ".join(parts)
+			await get_tree().create_timer(1.0).timeout
+			if not _starting_phase:
+				return
 
 		contenders = tied
-		round += 1
 
 	if not _starting_phase:
 		return
 	var winner := int(contenders[0])
 	_state.current_player = winner
 	_starting_phase = false
-	_render_status("%s won the opening roll and goes first.\nPress Roll to start." % _seat_roll_label(winner))
+	var winner_name := _seat_display_names[winner]
+	_turn_label.text = winner_name
+	_turn_label.self_modulate = PLAYER_COLORS[winner]
+	_status.text = "%s goes first!\nPress Roll to start." % winner_name
 	_set_roll_ready(true)
 
 func _seat_roll_label(player: int) -> String:

@@ -43,19 +43,22 @@ theme_override_constants/separation = 10
 
 [node name="GameMenuButton" type="MenuButton" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 52)
 text = "Menu"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 20
+
+[node name="Spacer" type="Control" parent="Root/SidePanel"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Status" type="RichTextLabel" parent="Root/SidePanel"]
 layout_mode = 2
-size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 72)
 bbcode_enabled = true
 fit_content = false
 scroll_active = true
 text = "Ready"
-theme_override_font_sizes/normal_font_size = 14
+theme_override_font_sizes/normal_font_size = 17
 
 [node name="DieFrame" type="PanelContainer" parent="Root/SidePanel"]
 layout_mode = 2
@@ -73,22 +76,22 @@ layout_mode = 2
 text = "Player 1"
 horizontal_alignment = 1
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 30
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 2
 
 [node name="RollButton" type="Button" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 80)
 text = "Roll"
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 
 [node name="EndTurnButton" type="Button" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 80)
 disabled = true
 text = "End Turn"
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 
 [node name="WinOverlay" type="ColorRect" parent="."]
 visible = false
