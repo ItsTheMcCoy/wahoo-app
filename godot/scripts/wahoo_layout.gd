@@ -30,10 +30,10 @@ const HOME_COORDS := [
 ]
 
 const BASE_COORDS := [
-    [Vector2i(11, 0), Vector2i(12, 0), Vector2i(11, 1), Vector2i(12, 1)],
-    [Vector2i(18, 12), Vector2i(19, 12), Vector2i(18, 13), Vector2i(19, 13)],
-    [Vector2i(4, 18), Vector2i(5, 18), Vector2i(4, 19), Vector2i(5, 19)],
-    [Vector2i(0, 4), Vector2i(1, 4), Vector2i(0, 5), Vector2i(1, 5)],
+    [Vector2i(11, 2), Vector2i(12, 2), Vector2i(13, 2), Vector2i(14, 2)],
+    [Vector2i(15, 12), Vector2i(15, 13), Vector2i(15, 14), Vector2i(15, 15)],
+    [Vector2i(5, 16), Vector2i(4, 16), Vector2i(3, 16), Vector2i(2, 16)],
+    [Vector2i(1, 6), Vector2i(1, 5), Vector2i(1, 4), Vector2i(1, 3)],
 ]
 
 const CENTER_COORD := Vector2i(8, 9)

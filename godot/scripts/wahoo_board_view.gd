@@ -6,19 +6,25 @@ const WahooState = preload("res://scripts/wahoo_state.gd")
 
 signal move_selected(move: Dictionary)
 
-const BOARD_BG := Color(0.90, 0.86, 0.76)
+const BOARD_BG := Color(0.92, 0.88, 0.78)
+const BOARD_BG_INNER := Color(0.95, 0.92, 0.84, 0.70)
 const BOARD_EDGE := Color(0.23, 0.22, 0.18)
-const TRACK_PATH := Color(0.67, 0.62, 0.51)
-const TRACK_CELL := Color(0.84, 0.80, 0.69)
+const TRACK_PATH := Color(0.62, 0.56, 0.45)
+const TRACK_CELL := Color(0.86, 0.82, 0.71)
 const TRACK_CELL_EDGE := Color(0.29, 0.27, 0.21)
-const BASE_PAD := Color(0.78, 0.73, 0.62)
 const CENTER_FILL := Color(0.43, 0.39, 0.31)
 const CENTER_EDGE := Color(0.18, 0.17, 0.14)
 const MARBLE_EDGE := Color(0.10, 0.09, 0.07)
 const MARBLE_HIGHLIGHT := Color(1.0, 1.0, 1.0, 0.48)
 const MOVE_SOURCE_RING := Color(1.0, 0.97, 0.55, 0.95)
-const MOVE_DEST_FILL := Color(1.0, 0.92, 0.18, 0.26)
-const MOVE_DEST_RING := Color(1.0, 0.78, 0.10, 0.95)
+const MOVE_DEST_RING := Color(1.0, 0.78, 0.10, 1.0)
+const MOVE_DEST_FILL_ALPHA := 0.42
+const MOVE_DEST_RING_ALPHA := 0.98
+const TURN_FOCUS_RING_ALPHA := 0.55
+const BOARD_SCALE := 0.97
+const POSITION_SPOT_RADIUS_RATIO := 0.37
+const MARBLE_SIZE_RATIO := 0.71
+const BOARD_EDGE_PADDING_UNITS := 0.75
 const MOVE_ANIMATION_SECONDS := 0.36
 const CAPTURE_ANIMATION_SECONDS := 0.30
 const PLAYER_COLORS := [
@@ -36,6 +42,7 @@ var _legal_moves: Array = []
 var _legal_move_player := -1
 var _selected_marble := -1
 var _animation_in_progress := false
+var _seat_labels: Array = ["Red", "Green", "Yellow", "Blue"]
 
 func _ready() -> void:
     _ensure_marble_nodes()
@@ -60,6 +67,12 @@ func clear_legal_moves() -> void:
     _legal_move_player = -1
     _selected_marble = -1
     _refresh_marble_nodes()
+    queue_redraw()
+
+func set_seat_labels(labels: Array) -> void:
+    if labels.size() < WahooState.NUM_PLAYERS:
+        return
+    _seat_labels = labels.duplicate(true)
     queue_redraw()
 
 func animate_move(move: Dictionary, player: int) -> void:
@@ -112,32 +125,67 @@ func _gui_input(event: InputEvent) -> void:
 
 func _draw() -> void:
     _board_rect = _square_board_rect()
-    _cell_size = _board_rect.size.x / float(WahooLayout.GRID_SIZE)
+    _cell_size = _compute_cell_size(_board_rect)
 
     draw_rect(_board_rect, BOARD_BG, true)
+    var inner := Rect2(
+        _board_rect.position + Vector2(_cell_size * 0.45, _cell_size * 0.45),
+        _board_rect.size - Vector2(_cell_size * 0.9, _cell_size * 0.9)
+    )
+    draw_rect(inner, BOARD_BG_INNER, true)
     draw_rect(_board_rect, BOARD_EDGE, false, 3.0)
 
     _draw_player_areas()
+    _draw_current_player_focus()
     _draw_track_path()
     _draw_home_rows()
     _draw_track_cells()
     _draw_center()
-    _draw_move_destinations()
+    _draw_seat_labels()
 
 func _square_board_rect() -> Rect2:
-    var side: float = min(size.x, size.y)
+    var side: float = min(size.x, size.y) * BOARD_SCALE
     var origin := Vector2((size.x - side) * 0.5, (size.y - side) * 0.5)
     return Rect2(origin, Vector2(side, side))
 
+func _compute_cell_size(board_rect: Rect2) -> float:
+    var max_distance: float = _max_grid_distance_from_center()
+    var half_span := max_distance + BOARD_EDGE_PADDING_UNITS
+    return board_rect.size.x / max(1.0, half_span * 2.0)
+
+func _max_grid_distance_from_center() -> float:
+    var center_coord: Vector2i = WahooLayout.center_grid_coord()
+    var max_distance := 0.0
+    for coord in _all_board_coords():
+        var dx := absf(float(coord.x - center_coord.x))
+        var dy := absf(float(coord.y - center_coord.y))
+        max_distance = maxf(max_distance, maxf(dx, dy))
+    return max_distance
+
+func _all_board_coords() -> Array:
+    var coords := WahooLayout.all_track_grid_coords()
+    coords.append(WahooLayout.center_grid_coord())
+    for player in range(WahooState.NUM_PLAYERS):
+        coords.append_array(WahooLayout.home_row_grid_coords(player))
+        coords.append_array(WahooLayout.base_cluster_grid_coords(player))
+    return coords
+
 func _draw_player_areas() -> void:
     for player in range(WahooState.NUM_PLAYERS):
-        var player_color: Color = PLAYER_COLORS[player]
-        var tint := Color(player_color.r, player_color.g, player_color.b, 0.16)
+        _draw_base_cells(player, _base_spot_color(player))
 
-        _draw_base_pad(player, tint)
-        _draw_base_cells(player, _lightened(player_color, 0.78))
+func _draw_current_player_focus() -> void:
+    if _state == null:
+        return
+    var player := _state.current_player
+    var ring_color: Color = PLAYER_COLORS[player]
+    ring_color.a = TURN_FOCUS_RING_ALPHA
+    for coord in WahooLayout.base_cluster_grid_coords(player):
+        var center := _grid_to_local(coord)
+        var radius := _position_spot_radius() * 1.16
+        draw_arc(center, radius, 0.0, TAU, 36, ring_color, max(2.0, _cell_size * 0.08), true)
 
-func _draw_base_pad(player: int, color: Color) -> void:
+func _base_cluster_bounds(player: int) -> Rect2:
     var coords := WahooLayout.base_cluster_grid_coords(player)
     var min_coord: Vector2i = coords[0]
     var max_coord: Vector2i = coords[0]
@@ -149,12 +197,11 @@ func _draw_base_pad(player: int, color: Color) -> void:
 
     var top_left := _grid_to_cell_origin(min_coord) - Vector2(_cell_size * 0.32, _cell_size * 0.32)
     var bottom_right := _grid_to_cell_origin(max_coord) + Vector2(_cell_size * 1.32, _cell_size * 1.32)
-    draw_rect(Rect2(top_left, bottom_right - top_left), color, true)
-    draw_rect(Rect2(top_left, bottom_right - top_left), BASE_PAD, false, max(1.0, _cell_size * 0.04))
+    return Rect2(top_left, bottom_right - top_left)
 
 func _draw_base_cells(player: int, color: Color) -> void:
     for coord in WahooLayout.base_cluster_grid_coords(player):
-        _draw_grid_square(coord, color, TRACK_CELL_EDGE, 0.70)
+        _draw_grid_spot(coord, color, TRACK_CELL_EDGE)
 
 func _draw_track_path() -> void:
     var coords := WahooLayout.all_track_grid_coords()
@@ -167,19 +214,10 @@ func _draw_track_path() -> void:
 
 func _draw_home_rows() -> void:
     for player in range(WahooState.NUM_PLAYERS):
-        var player_color: Color = PLAYER_COLORS[player]
-        var row_color := _lightened(player_color, 0.68)
-        var path_color := Color(player_color.r, player_color.g, player_color.b, 0.36)
+        var row_color := _base_spot_color(player)
         var coords := WahooLayout.home_row_grid_coords(player)
-        var points := PackedVector2Array()
-
-        points.append(_grid_to_local(WahooLayout.track_grid_coord(WahooState.home_entry(player))))
         for coord in coords:
-            points.append(_grid_to_local(coord))
-
-        draw_polyline(points, path_color, max(7.0, _cell_size * 0.56), true)
-        for coord in coords:
-            _draw_grid_square(coord, row_color, TRACK_CELL_EDGE, 0.66)
+            _draw_grid_spot(coord, row_color, TRACK_CELL_EDGE)
 
 func _draw_track_cells() -> void:
     for coord in WahooLayout.all_track_grid_coords():
@@ -187,53 +225,80 @@ func _draw_track_cells() -> void:
         for player in range(WahooState.NUM_PLAYERS):
             if coord == WahooLayout.track_grid_coord(WahooState.base_exit(player)):
                 fill = _lightened(PLAYER_COLORS[player], 0.72)
-            elif coord == WahooLayout.track_grid_coord(WahooState.home_entry(player)):
-                fill = _lightened(PLAYER_COLORS[player], 0.82)
-        _draw_grid_square(coord, fill, TRACK_CELL_EDGE, 0.62)
+        _draw_grid_spot(coord, fill, TRACK_CELL_EDGE)
 
 func _draw_center() -> void:
     var center := _grid_to_local(WahooLayout.center_grid_coord())
-    var radius: float = max(8.0, _cell_size * 0.72)
+    var radius: float = _position_spot_radius()
     draw_circle(center, radius, CENTER_FILL)
     draw_arc(center, radius, 0.0, TAU, 40, CENTER_EDGE, max(2.0, _cell_size * 0.08), true)
 
-func _draw_move_destinations() -> void:
-    if _legal_moves.is_empty() or _legal_move_player < 0:
+func _draw_grid_spot(coord: Vector2i, fill: Color, edge: Color) -> void:
+    var center := _grid_to_local(coord)
+    var radius: float = _position_spot_radius()
+    draw_circle(center, radius, fill)
+    draw_arc(center, radius, 0.0, TAU, 32, edge, max(1.0, _cell_size * 0.06), true)
+
+func _position_spot_radius() -> float:
+    return max(7.0, _cell_size * POSITION_SPOT_RADIUS_RATIO)
+
+func _base_spot_color(player: int) -> Color:
+    return PLAYER_COLORS[player].lerp(BOARD_BG, 0.52)
+
+func _draw_seat_labels() -> void:
+    var font: Font = ThemeDB.fallback_font
+    if font == null:
         return
-
-    var drawn := {}
-    for move in _visible_legal_moves():
-        var dest: Array = move["dest"]
-        var coord := WahooLayout.location_grid_coord(dest, _legal_move_player, int(move["marble"]))
-        var key := "%d,%d" % [coord.x, coord.y]
-        if drawn.has(key):
+    var font_size := int(max(12.0, _cell_size * 0.52))
+    var font_height: float = font.get_height(font_size)
+    for player in range(WahooState.NUM_PLAYERS):
+        var label := String(_seat_labels[player]).strip_edges()
+        if label.is_empty():
             continue
-        drawn[key] = true
+        var color: Color = PLAYER_COLORS[player].darkened(0.28)
+        color.a = 0.95
+        var anchor := _seat_label_anchor(player)
+        if player == 1 or player == 3:
+            var angle := PI * 0.5 if player == 1 else -PI * 0.5
+            _draw_centered_rotated_text(font, font_size, font_height, label, anchor, angle, color)
+        else:
+            _draw_centered_text(font, font_size, font_height, label, anchor, color)
 
-        var center := _grid_to_local(coord)
-        var radius: float = _cell_size * (0.58 if String(dest[0]) == "CENTER" else 0.46)
-        draw_circle(center, radius, MOVE_DEST_FILL)
-        draw_arc(center, radius, 0.0, TAU, 44, MOVE_DEST_RING, max(2.0, _cell_size * 0.08), true)
+func _seat_label_anchor(player: int) -> Vector2:
+    var bounds := _base_cluster_bounds(player)
+    var padding := _cell_size * 0.30
+    match player:
+        0:
+            return Vector2(bounds.get_center().x, bounds.end.y + padding)
+        1:
+            return Vector2(bounds.position.x - padding, bounds.get_center().y)
+        2:
+            return Vector2(bounds.get_center().x, bounds.position.y - padding)
+        3:
+            return Vector2(bounds.end.x + padding, bounds.get_center().y)
+    return bounds.get_center()
 
-func _draw_grid_square(coord: Vector2i, fill: Color, edge: Color, scale: float) -> void:
-    var rect := _grid_cell_rect(coord, scale)
-    draw_rect(rect, fill, true)
-    draw_rect(rect, edge, false, max(1.0, _cell_size * 0.035))
+func _draw_centered_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, color: Color) -> void:
+    var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+    var draw_pos := anchor + Vector2(-text_size.x * 0.5, font_height * 0.38)
+    draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+
+func _draw_centered_rotated_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, angle: float, color: Color) -> void:
+    var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+    draw_set_transform(anchor, angle, Vector2.ONE)
+    draw_string(font, Vector2(-text_size.x * 0.5, font_height * 0.38), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+    draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _grid_to_local(coord: Vector2i) -> Vector2:
-    var normalized := WahooLayout.grid_to_normalized(coord)
-    return _board_rect.position + Vector2(
-        normalized.x * _board_rect.size.x,
-        normalized.y * _board_rect.size.y
+    var center_coord: Vector2i = WahooLayout.center_grid_coord()
+    var delta := Vector2(
+        float(coord.x - center_coord.x),
+        float(coord.y - center_coord.y)
     )
+    return _board_rect.get_center() + delta * _cell_size
 
 func _grid_to_cell_origin(coord: Vector2i) -> Vector2:
-    return _board_rect.position + Vector2(coord.x * _cell_size, coord.y * _cell_size)
-
-func _grid_cell_rect(coord: Vector2i, scale: float) -> Rect2:
-    var side: float = _cell_size * scale
-    var center := _grid_to_local(coord)
-    return Rect2(center - Vector2(side, side) * 0.5, Vector2(side, side))
+    return _grid_to_local(coord) - Vector2(_cell_size, _cell_size) * 0.5
 
 func _lightened(color: Color, amount: float) -> Color:
     return color.lerp(Color.WHITE, amount)
@@ -268,8 +333,8 @@ func _refresh_marble_nodes() -> void:
         return
 
     _board_rect = _square_board_rect()
-    _cell_size = _board_rect.size.x / float(WahooLayout.GRID_SIZE)
-    var token_side: float = max(14.0, _cell_size * 0.72)
+    _cell_size = _compute_cell_size(_board_rect)
+    var token_side: float = max(12.0, _cell_size * MARBLE_SIZE_RATIO)
 
     for player in range(WahooState.NUM_PLAYERS):
         for marble_id in range(WahooState.MARBLES_PER_PLAYER):
@@ -279,19 +344,16 @@ func _refresh_marble_nodes() -> void:
             token.position = _token_position_for_location(loc, player, marble_id)
             token.z_index = 10 + player
             token.visible = true
-            token.set_selectable(_marble_has_legal_move(player, marble_id))
+            token.set_selectable(false)
             token.set_selected(player == _legal_move_player and marble_id == _selected_marble)
 
 func _token_position_for_location(loc: Array, player: int, marble_id: int) -> Vector2:
-    var normalized := WahooLayout.location_normalized(loc, player, marble_id)
-    var center := _board_rect.position + Vector2(
-        normalized.x * _board_rect.size.x,
-        normalized.y * _board_rect.size.y
-    )
+    var coord := WahooLayout.location_grid_coord(loc, player, marble_id)
+    var center := _grid_to_local(coord)
     return center - _token_size() * 0.5
 
 func _token_size() -> Vector2:
-    var token_side: float = max(14.0, _cell_size * 0.72)
+    var token_side: float = max(12.0, _cell_size * MARBLE_SIZE_RATIO)
     return Vector2(token_side, token_side)
 
 func _marble_has_legal_move(player: int, marble_id: int) -> bool:

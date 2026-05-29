@@ -1,16 +1,20 @@
-# Godot Project (Phase 2a/2b)
+# Godot Project (Phases 2a–3e Complete)
 
-This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phase 2a and Phase 2b are complete; the next Godot phase is AI opponent integration.
+This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phases 2a, 2b, 3a, 3b, 3c, and 3e are complete. The game is fully playable with human and AI opponents on a single device.
 
 ## Current scope
 
 - Minimal project file and icon
-- Responsive board-first main scene with a Roll button, current-player indicator, compact status/debug output, and win overlay
+- Responsive board-first main scene with Roll button, End Turn button, current-player indicator, compact status output, and win overlay
 - GDScript state model (`wahoo_state.gd`) — complete port of Python's `game_state.py`
 - GDScript rules engine (`wahoo_rules.gd`) — complete port of Python's `rules.py`
 - Startup parity smoke tests (`wahoo_rules_smoke.gd`) — 27 checks covering all major rule behaviours, all passing
 - Visual board layout mapping (`wahoo_layout.gd`) — normalized coordinates for track, base, home, and center locations
 - Layout smoke tests (`wahoo_layout_smoke.gd`) — 5 checks covering board topology and normalized coordinate bounds
+- GDScript AI engine (`wahoo_ai.gd`) — port of Python `ai.py`: helpers, 10 features, RandomPlayer, GreedyPlayer, 9 profile weight dicts, `make_profiles()`
+- AI load/scenario smoke tests (`wahoo_ai_smoke.gd`) — 18 checks (12 AI load + 6 scenario probes matching Python `test_ai.py`)
+- Per-seat profile dropdowns in setup: Human or any of 10 named AI profiles
+- Auto-played AI turns with pre-move pause; human turns use an End Turn button to advance
 - HTML5 export configured and validated on desktop and mobile browsers
 
 ## Open in Godot
@@ -19,6 +23,46 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 2. In Godot Project Manager, click **Import**.
 3. Select `godot/project.godot`.
 4. Run the project.
+
+## Packaged launch commands
+
+Run these commands from the repository root:
+
+```powershell
+cd "C:\Users\macwe\OneDrive\Documents\Claude\Projects\Wahoo-app"
+```
+
+Launch the playable Godot game:
+
+```powershell
+.\Launch-Godot-Wahoo.bat
+```
+
+Open the Godot editor:
+
+```powershell
+.\Launch-Godot-Wahoo.bat editor
+```
+
+Run only the Godot smoke checks:
+
+```powershell
+.\Launch-Godot-Wahoo.bat smoke
+```
+
+Rebuild the Web export:
+
+```powershell
+.\Launch-Godot-Wahoo.bat export
+```
+
+Rebuild and serve the Web export locally:
+
+```powershell
+.\Launch-Godot-Wahoo.bat web 8000
+```
+
+Then open `http://localhost:8000` in a browser.
 
 ## Version and VCS policy
 
@@ -30,7 +74,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 
 - Project opens and runs on desktop.
 - Main scene loads as a visual board surface and UI responds to Roll clicks and tap-to-move choices on desktop and mobile (responsive layout).
-- 32 headless smoke tests pass: 27 rule parity checks plus 5 visual layout checks.
+- 50 headless smoke tests pass: 27 rule parity checks, 5 visual layout checks, 12 AI load checks, and 6 AI scenario probes.
 - HTML5 export builds and loads correctly in desktop and mobile browsers.
 
 ## Run smoke tests headlessly
@@ -49,27 +93,17 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`, not `godot`
 - If you create a `godot` alias or wrapper on your machine, `godot --headless --script res://scripts/run_smoke.gd` works the same way
 
-## Current phase: Phase 3 — Single-Device AI
+## Current phase: Phase 4 — Internet Multiplayer (Not Started)
 
-Phase 2a and Phase 2b are complete. Phase 3 is tracked in `documents/DEVELOPMENT_PLAN.md` under **Phase 3**.
+Phases 2a, 2b, 3a, 3b, 3c, and 3e are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents. Phase 4 (WebRTC internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
 
 Current Godot state:
 
-- `scenes/Main.tscn` is a board-first scene with a header, visual board surface, compact status/debug footer, and Roll button.
-- `scripts/main.gd` currently rolls, finds legal moves, waits for a highlighted tap/click move choice, animates the selected move, advances the player, refreshes the board surface, and updates compact status text.
-- `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, legal-move highlighting, tap/click targets, and movement animation.
-- `scripts/wahoo_board_view.gd` owns the board canvas and currently draws static board geometry plus marble nodes from `WahooState`.
-
-Completed Phase 2b order:
-
-1. Done: add `scripts/wahoo_layout.gd` for abstract `Location` -> normalized board coordinate mapping.
-2. Done: replace the text-first scene with a board-first surface and compact status/debug footer.
-3. Done: draw static track/base/home/center geometry.
-4. Done: render marble nodes from `WahooState` using player colors.
-5. Done: change Roll behavior to highlight legal move choices instead of auto-applying the first move.
-6. Done: add tap/click move selection, then refresh from authoritative state.
-7. Done: add basic movement animation, current-player indicator, turn announcements, and win screen.
-8. Done: re-run headless smoke tests and Web export validation after interaction works.
+- `scenes/Main.tscn` is a board-first scene with a header, visual board surface, compact status footer, Roll button, and End Turn button.
+- `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves.
+- `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, tap/click targets, and movement animation.
+- `scripts/wahoo_board_view.gd` draws the board canvas: static geometry, marble nodes, and the selected-marble ring. Destination circles and moveable-marble rings are intentionally absent (no move highlighting).
+- `scripts/wahoo_ai.gd` implements RandomPlayer and GreedyPlayer with 9 named profile weight dicts and a `make_profiles()` factory.
 
 ## HTML5 export (Phase 2a)
 

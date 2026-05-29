@@ -13,6 +13,7 @@ static func run() -> Dictionary:
         _test_track_has_56_unique_coordinates,
         _test_key_rule_locations_match_layout,
         _test_home_and_base_clusters_have_expected_sizes,
+        _test_base_clusters_are_consistently_placed_from_exits,
         _test_location_lookup_needs_owner_for_owned_areas,
         _test_all_normalized_coordinates_are_in_unit_square,
     ]:
@@ -88,6 +89,33 @@ static func _test_home_and_base_clusters_have_expected_sizes() -> Dictionary:
             return _fail(name, "player %d home row size mismatch" % player)
         if WahooLayout.base_cluster_grid_coords(player).size() != WahooState.MARBLES_PER_PLAYER:
             return _fail(name, "player %d base cluster size mismatch" % player)
+    return _ok(name)
+
+static func _test_base_clusters_are_consistently_placed_from_exits() -> Dictionary:
+    var name := "layout base positions form perpendicular lines from base exits"
+    for player in range(WahooState.NUM_PLAYERS):
+        var exit_coord := WahooLayout.track_grid_coord(WahooState.base_exit(player))
+        var base_coords := WahooLayout.base_cluster_grid_coords(player)
+        if base_coords.size() != WahooState.MARBLES_PER_PLAYER:
+            return _fail(name, "player %d base size mismatch" % player)
+
+        var opening_next: Vector2i = WahooLayout.track_grid_coord(WahooState.base_exit(player) + 1)
+        var track_dir: Vector2i = opening_next - exit_coord
+        var first_offset: Vector2i = base_coords[0] - exit_coord
+        var line_step := Vector2i(signi(first_offset.x), signi(first_offset.y))
+
+        if abs(first_offset.x) + abs(first_offset.y) != 1:
+            return _fail(name, "player %d first base spot should be 1 cell from base exit" % player)
+
+        # Perpendicular means dot(track_dir, first_offset) == 0.
+        var dot_value := track_dir.x * first_offset.x + track_dir.y * first_offset.y
+        if dot_value != 0:
+            return _fail(name, "player %d base line is not perpendicular to opening track" % player)
+
+        for i in range(1, base_coords.size()):
+            var step: Vector2i = base_coords[i] - base_coords[i - 1]
+            if step != line_step:
+                return _fail(name, "player %d base line step mismatch at index %d" % [player, i])
     return _ok(name)
 
 static func _test_location_lookup_needs_owner_for_owned_areas() -> Dictionary:

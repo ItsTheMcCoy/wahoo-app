@@ -256,19 +256,43 @@ Port all 6 scenario probes from `tests/test_ai.py` to GDScript and run them head
 
 ---
 
-### Phase 3c — Game Loop AI Integration — *Not started*
+### Phase 3c — Game Loop AI Integration — *Complete*
 
 Wire AI players into the Godot game so AI seats auto-play their turns, and add per-seat AI selection to the game setup.
 
-**Files to modify:**
-- `godot/scenes/Main.tscn` — add a pre-game setup screen with four seat rows, each with a dropdown: Human / Random / [profile names]
-- `godot/scripts/main.gd` — store a per-seat player type array; after Roll completes, if the current seat is AI call `WahooAI.choose_move()` automatically instead of waiting for tap input; add a short visual pause (`await get_tree().create_timer(1.5).timeout`) before executing AI moves; disable Roll button and marble tap targets during AI turns
+**Done:**
+- Setup overlay with per-seat profile dropdowns (Human / Random / 10 named AI profiles in easiest→hardest order)
+- Per-seat AI type stored; after Roll, AI seats auto-play using `WahooAI.choose_move()`
+- 0.8 s pre-roll pause + 1.5 s pre-move pause for AI turns when humans are present
+- Roll button and board tap targets disabled during AI animation
+- Save/load game state to `user://wahoo_save.json` with seat configuration preserved
+- Opening roll phase: all seats roll to determine first player; human seats prompt for Roll button press
+- Game menu with Save, Load, Restart, Exit to Setup, Quit options
 
 **Verification:** Launch game, configure one seat as Sprinter AI — AI seat rolls and moves automatically each turn without requiring tap input.
 
 ---
 
-### Phase 3d — Expectimax (Optional Stretch) — *Not started*
+### Phase 3e — Human Turn UX: End Turn Gate — *Complete*
+
+Removed move-reveal highlights from the human turn flow to match the feel of a physical board game, and replaced auto-advance with an explicit "End Turn" button.
+
+**Motivation:** In real Wahoo, players can miss captures or fail to spot a finishing move. The visual highlights (yellow rings on moveable marbles and colored destination circles) eliminated that possibility. Removing them restores the natural imperfection of tabletop play.
+
+**Done:**
+- Removed `_draw_move_destinations()` from `wahoo_board_view.gd` — no destination circles drawn
+- `set_selectable(false)` always in `_refresh_marble_nodes()` — no yellow source ring on moveable marbles
+- A marble still shows a selection ring when clicked (player feedback that it is picked up)
+- Click-to-move mechanic unchanged: clicks are still validated against legal moves, so only legal moves execute
+- Added `EndTurnButton` to `Root/Footer` in `Main.tscn` (disabled by default)
+- After a human executes a move (non-6 roll): Roll stays disabled, End Turn enables
+- After a human rolls with no legal moves (non-6): End Turn enables immediately
+- `_on_end_turn_pressed()` advances the player, increments the turn counter, and re-enables Roll
+- AI turns unchanged: auto-advance after each AI move; no End Turn step for AI
+
+---
+
+### Phase 3d — Expectimax (Optional Stretch) — *Deferred*
 
 Port `ExpectimaxPlayer` to GDScript and expose it as an AI selection option.
 
