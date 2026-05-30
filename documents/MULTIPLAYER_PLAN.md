@@ -12,6 +12,7 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | In-game chat | Included in v1 |
 | Room persistence | In-memory only; rooms lost on server restart (acceptable for v1) |
 | Domain status | `wahulo.com` purchased via Cloudflare Registrar |
+| Static hosting status | Exploring Netlify fallback; Cloudflare Pages blocked by current wasm size limit |
 
 ---
 
@@ -59,7 +60,7 @@ The relay server holds the authoritative game state and relays moves and chat to
 [Browser: Spectator 2]       ─┘                  - State broadcast
                                                   - Chat relay
 
-[Static Files: Cloudflare Pages]
+[Static Files: Netlify (current fallback path)]
   - index.html, index.pck, index.wasm
   - Served to all browsers at wahulo.com
 ```
@@ -68,10 +69,10 @@ The relay server holds the authoritative game state and relays moves and chat to
 
 | Component | Technology | Hosting |
 |-----------|-----------|---------|
-| Game client | Godot 4 HTML5 export (existing) | Cloudflare Pages free tier |
+| Game client | Godot 4 HTML5 export (existing) | Netlify free tier (current fallback) |
 | Relay server | Node.js + `ws` WebSocket library | Render free tier |
 | Custom domain | `wahulo.com` (already purchased) | Cloudflare Registrar |
-| HTTPS / WSS | Automatic via Cloudflare Pages + Render custom domain | Free |
+| HTTPS / WSS | Automatic via Netlify + Render custom domain | Free |
 
 ---
 

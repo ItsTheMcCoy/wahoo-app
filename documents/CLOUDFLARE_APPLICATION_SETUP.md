@@ -8,6 +8,7 @@ This guide is written for your current state:
 - Pages creation path confirmed via `Create application` -> `Looking to deploy pages? Get started`
 - GitHub repository to connect: `ItsTheMcCoy/wahoo-app`
 - Relay server planned on Render: `relay.wahulo.com`
+- Current blocker: Cloudflare Pages rejects `godot/build/web/index.wasm` (~36 MiB) because Pages supports files up to 25 MiB.
 
 ## 1. Confirm Account And Zone Health
 
@@ -150,6 +151,24 @@ Run these checks in order:
 1. Keep deployment source of truth as `main` branch.
 2. Do not manually repoint Pages DNS records away and back unless necessary; this can temporarily deactivate domains.
 3. Record each infra change (DNS, SSL mode, custom domains, Render endpoint) in `documents/DEVELOPMENT_PLAN.md`.
+
+## 11. Netlify Fallback (Current Practical Path)
+
+Because the current Godot `index.wasm` exceeds Cloudflare Pages per-file limits, use Netlify for the static client while keeping Cloudflare for domain and DNS.
+
+Steps:
+1. In Netlify, create/import site from GitHub repo `ItsTheMcCoy/wahoo-app`.
+2. Build command: leave blank.
+3. Publish directory: `godot/build/web`.
+4. Deploy and verify the Netlify URL loads.
+5. In Cloudflare DNS, point `wahulo.com`/`www` to Netlify targets per Netlify domain instructions.
+6. Keep relay DNS as `relay.wahulo.com` -> Render host.
+
+Verification:
+1. `https://wahulo.com` loads the game.
+2. `https://www.wahulo.com` loads or redirects as expected.
+3. `https://relay.wahulo.com` responds.
+4. In-game WebSocket traffic succeeds to `wss://relay.wahulo.com`.
 
 ## Official References Used (Latest UI-Oriented Docs)
 

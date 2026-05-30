@@ -6,7 +6,7 @@ Current state of the project and the path forward. Updated as phases complete.
 
 Work is intentionally paused here and will resume on a later day.
 
-Deployment status update (May 30, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository.
+Deployment status update (May 30, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is currently blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit), so Netlify is being explored for static hosting while keeping Cloudflare for domain/DNS.
 
 ## Project Goal
 
@@ -19,7 +19,7 @@ Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race)
 - **Primary target platform:** Web/HTML5 (playable in any browser, shareable by URL — no install required)
 - **Multiplayer transport:** WebSocket relay server (Node.js + `ws`); server-authoritative game state
 - **Server hosting:** Render free tier for the relay server (current plan; custom domain managed in Cloudflare DNS)
-- **Client hosting:** Cloudflare Pages (static HTML5 export)
+- **Client hosting:** Netlify (active fallback exploration due to Cloudflare Pages file-size limit)
 - **iOS/Android native builds:** Out of scope — browser covers all mobile devices without an Apple Developer account or per-platform distribution
 
 ## User Feedback
@@ -93,7 +93,7 @@ Summary of sub-phases:
 - **4a:** Node.js WebSocket relay server — room management, move validation, Render deployment
 - **4b:** Godot home screen, lobby scene (host + guest views), AI seat configuration in lobby
 - **4c:** Online game flow — server-driven turns, AI seats via host client, disconnect/reconnect handling
-- **4d:** Domain and DNS in Cloudflare, static hosting on Cloudflare Pages, relay server on Render with custom subdomain, HTTPS/WSS
+- **4d:** Domain and DNS in Cloudflare, static hosting on Netlify (current fallback path), relay server on Render with custom subdomain, HTTPS/WSS
 - **4e:** Polish — deep link joining, spectator mode, in-game chat (all optional)
 
 ### Phase 5 — Decide Next Direction — *Not started*
