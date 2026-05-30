@@ -141,6 +141,7 @@ func _draw() -> void:
     _draw_home_rows()
     _draw_track_cells()
     _draw_center()
+    _draw_legal_destinations()
     _draw_seat_labels()
 
 func _square_board_rect() -> Rect2:
@@ -232,6 +233,18 @@ func _draw_center() -> void:
     var radius: float = _position_spot_radius()
     draw_circle(center, radius, CENTER_FILL)
     draw_arc(center, radius, 0.0, TAU, 40, CENTER_EDGE, max(2.0, _cell_size * 0.08), true)
+
+func _draw_legal_destinations() -> void:
+    if _selected_marble < 0:
+        return
+    for move in _visible_legal_moves():
+        var dest: Array = move["dest"]
+        var coord := WahooLayout.location_grid_coord(dest, _legal_move_player, int(move["marble"]))
+        var center := _grid_to_local(coord)
+        var radius: float = _position_spot_radius() * 1.16
+        var ring := MOVE_DEST_RING
+        ring.a = MOVE_DEST_RING_ALPHA
+        draw_arc(center, radius, 0.0, TAU, 40, ring, max(2.5, _cell_size * 0.10), true)
 
 func _draw_grid_spot(coord: Vector2i, fill: Color, edge: Color) -> void:
     var center := _grid_to_local(coord)
@@ -344,7 +357,7 @@ func _refresh_marble_nodes() -> void:
             token.position = _token_position_for_location(loc, player, marble_id)
             token.z_index = 10 + player
             token.visible = true
-            token.set_selectable(false)
+            token.set_selectable(_marble_has_legal_move(player, marble_id))
             token.set_selected(player == _legal_move_player and marble_id == _selected_marble)
 
 func _token_position_for_location(loc: Array, player: int, marble_id: int) -> Vector2:
@@ -375,25 +388,32 @@ func _visible_legal_moves() -> Array:
     return moves
 
 func _handle_pointer_press(local_position: Vector2) -> void:
-    var dest_move: Variant = _move_at_destination(local_position)
-    if dest_move != null:
-        move_selected.emit(dest_move)
-        return
+    # Phase 2: if a marble is already selected, check for a destination click
+    if _selected_marble >= 0:
+        var dest_move: Variant = _move_at_destination(local_position)
+        if dest_move != null:
+            move_selected.emit(dest_move)
+            return
 
+    # Phase 1: click on a marble to select it (or execute if only one move)
     var marble_id := _marble_at_position(local_position)
-    if marble_id < 0:
-        return
+    if marble_id >= 0:
+        var marble_moves: Array = _moves_for_marble(marble_id)
+        if not marble_moves.is_empty():
+            if marble_moves.size() == 1:
+                move_selected.emit(marble_moves[0])
+                return
+            # Toggle or switch selection
+            _selected_marble = marble_id if _selected_marble != marble_id else -1
+            _refresh_marble_nodes()
+            queue_redraw()
+            return
 
-    var marble_moves: Array = _moves_for_marble(marble_id)
-    if marble_moves.is_empty():
-        return
-    if marble_moves.size() == 1:
-        move_selected.emit(marble_moves[0])
-        return
-
-    _selected_marble = marble_id
-    _refresh_marble_nodes()
-    queue_redraw()
+    # Clicked empty space — deselect
+    if _selected_marble >= 0:
+        _selected_marble = -1
+        _refresh_marble_nodes()
+        queue_redraw()
 
 func _move_at_destination(local_position: Vector2) -> Variant:
     for move in _visible_legal_moves():
@@ -414,11 +434,8 @@ func _marble_at_position(local_position: Vector2) -> int:
     for move in _legal_moves:
         var marble_id := int(move["marble"])
         var loc: Array = _state.marbles[_legal_move_player][marble_id]
-        var center := _board_rect.position + WahooLayout.location_normalized(
-            loc,
-            _legal_move_player,
-            marble_id
-        ) * _board_rect.size
+        var coord := WahooLayout.location_grid_coord(loc, _legal_move_player, marble_id)
+        var center := _grid_to_local(coord)
         var distance := local_position.distance_to(center)
         if distance < best_distance:
             best_distance = distance

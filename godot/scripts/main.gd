@@ -343,10 +343,12 @@ func _on_end_turn_pressed() -> void:
 
 func _run_starting_roll_phase() -> void:
 	var contenders: Array = [0, 1, 2, 3]
+	var status_lines: PackedStringArray = []
 
 	_turn_label.text = ""
 	_turn_label.self_modulate = Color.WHITE
-	_status.text = "Roll to see who goes first."
+	status_lines.append("Roll to see who goes first.")
+	_status.text = "\n".join(status_lines)
 	await get_tree().create_timer(1.0).timeout
 
 	while contenders.size() > 1:
@@ -360,11 +362,10 @@ func _run_starting_roll_phase() -> void:
 			if not _starting_phase:
 				return
 			var seat := int(player)
-			var name := _seat_display_names[seat]
+			var name: String = _seat_display_names[seat]
 
 			_turn_label.text = name
 			_turn_label.self_modulate = PLAYER_COLORS[seat]
-			_status.text = "%s's turn." % name
 
 			var roll: int
 			if _seat_types[seat] == "human":
@@ -390,13 +391,9 @@ func _run_starting_roll_phase() -> void:
 				highest = roll
 				highest_seat = seat
 
-			_status.text = "%s rolled a %d." % [name, roll]
+			status_lines.append("%s rolled %d." % [name, roll])
+			_status.text = "\n".join(status_lines)
 			await get_tree().create_timer(0.5).timeout
-			if not _starting_phase:
-				return
-
-			_status.text = "Highest roll so far: %d by %s." % [highest, _seat_display_names[highest_seat]]
-			await get_tree().create_timer(0.65).timeout
 			if not _starting_phase:
 				return
 
@@ -411,7 +408,8 @@ func _run_starting_roll_phase() -> void:
 				parts.append(_seat_display_names[int(p)])
 			_turn_label.text = "Tie!"
 			_turn_label.self_modulate = Color.WHITE
-			_status.text = "Tie between %s!\nThey'll roll again." % ", ".join(parts)
+			status_lines.append("Tie at %d — %s roll again." % [highest, ", ".join(parts)])
+			_status.text = "\n".join(status_lines)
 			await get_tree().create_timer(1.0).timeout
 			if not _starting_phase:
 				return
@@ -423,10 +421,11 @@ func _run_starting_roll_phase() -> void:
 	var winner := int(contenders[0])
 	_state.current_player = winner
 	_starting_phase = false
-	var winner_name := _seat_display_names[winner]
+	var winner_name: String = _seat_display_names[winner]
 	_turn_label.text = winner_name
 	_turn_label.self_modulate = PLAYER_COLORS[winner]
-	_status.text = "%s goes first!\nPress Roll to start." % winner_name
+	status_lines.append("%s goes first! Press Roll to start." % winner_name)
+	_status.text = "\n".join(status_lines)
 	_set_roll_ready(true)
 
 func _seat_roll_label(player: int) -> String:
