@@ -277,7 +277,7 @@ func _draw_board_surface() -> void:
     for i in range(grain_rows):
         var t := float(i) / float(grain_rows - 1)
         var y := lerpf(_board_rect.position.y, _board_rect.end.y, t)
-        var sway := sinf(t * TAU * 2.4) * _cell_size * 0.22
+        var sway: float = sin(t * TAU * 2.4) * _cell_size * 0.22
         var line_from := Vector2(_board_rect.position.x, y + sway)
         var line_to := Vector2(_board_rect.end.x, y - sway * 0.55)
         var grain_color := BOARD_GRAIN_DARK if i % 2 == 0 else BOARD_GRAIN_LIGHT
@@ -334,7 +334,7 @@ func _draw_impact_pulse() -> void:
         _style_float("impact_radius_max_ratio", 0.86),
         _impact_progress
     )
-    var thickness := max(2.0, _cell_size * 0.10 * (1.0 - _impact_progress * 0.55))
+    var thickness: float = max(2.0, _cell_size * 0.10 * (1.0 - _impact_progress * 0.55))
     draw_arc(_impact_center, radius, 0.0, TAU, 36, ring, thickness, true)
 
 func _set_impact_progress(progress: float) -> void:
@@ -422,7 +422,7 @@ func _draw_track_path() -> void:
         points.append(_grid_to_local(coord))
     points.append(_grid_to_local(coords[0]))
 
-    var base_width := max(8.0, _cell_size * 0.82)
+    var base_width: float = max(8.0, _cell_size * 0.82)
     draw_polyline(points, LANE_SHADOW, base_width * 1.30, true)
     draw_polyline(points, TRACK_PATH_DARK, base_width, true)
     draw_polyline(points, TRACK_PATH_LIGHT, base_width * 0.62, true)

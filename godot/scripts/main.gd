@@ -213,11 +213,64 @@ func _apply_visual_theme() -> void:
 		button.add_theme_color_override("font_disabled_color", Color(0.67, 0.62, 0.57))
 
 	for opt in _seat_options():
-		opt.add_theme_stylebox_override("normal", button_style_normal)
-		opt.add_theme_stylebox_override("hover", button_style_hover)
-		opt.add_theme_stylebox_override("pressed", button_style_pressed)
-		opt.add_theme_stylebox_override("disabled", button_style_disabled)
-		opt.add_theme_color_override("font_color", Color(0.97, 0.93, 0.86))
+		var opt_style_normal := StyleBoxFlat.new()
+		opt_style_normal.bg_color = Color(0.92, 0.87, 0.78, 0.98)
+		opt_style_normal.border_color = Color(0.34, 0.25, 0.17, 0.96)
+		opt_style_normal.border_width_left = 1
+		opt_style_normal.border_width_top = 1
+		opt_style_normal.border_width_right = 1
+		opt_style_normal.border_width_bottom = 1
+		opt_style_normal.corner_radius_top_left = 6
+		opt_style_normal.corner_radius_top_right = 6
+		opt_style_normal.corner_radius_bottom_left = 6
+		opt_style_normal.corner_radius_bottom_right = 6
+		opt_style_normal.content_margin_left = 8
+		opt_style_normal.content_margin_right = 8
+
+		var opt_style_hover := opt_style_normal.duplicate()
+		opt_style_hover.bg_color = Color(0.96, 0.91, 0.82, 0.98)
+
+		var opt_style_pressed := opt_style_normal.duplicate()
+		opt_style_pressed.bg_color = Color(0.84, 0.78, 0.68, 0.98)
+
+		var opt_style_disabled := opt_style_normal.duplicate()
+		opt_style_disabled.bg_color = Color(0.76, 0.72, 0.66, 0.70)
+		opt_style_disabled.border_color = Color(0.45, 0.38, 0.31, 0.74)
+
+		opt.add_theme_stylebox_override("normal", opt_style_normal)
+		opt.add_theme_stylebox_override("hover", opt_style_hover)
+		opt.add_theme_stylebox_override("pressed", opt_style_pressed)
+		opt.add_theme_stylebox_override("disabled", opt_style_disabled)
+		opt.add_theme_color_override("font_color", Color(0.10, 0.08, 0.06))
+		opt.add_theme_color_override("font_hover_color", Color(0.10, 0.08, 0.06))
+		opt.add_theme_color_override("font_pressed_color", Color(0.10, 0.08, 0.06))
+		opt.add_theme_color_override("font_disabled_color", Color(0.34, 0.31, 0.28))
+		opt.add_theme_color_override("font_focus_color", Color(0.10, 0.08, 0.06))
+		opt.modulate = Color.WHITE
+		var opt_popup: PopupMenu = opt.get_popup()
+		var popup_panel := StyleBoxFlat.new()
+		popup_panel.bg_color = Color(0.94, 0.89, 0.80, 0.99)
+		popup_panel.border_color = Color(0.39, 0.30, 0.21, 0.98)
+		popup_panel.border_width_left = 1
+		popup_panel.border_width_top = 1
+		popup_panel.border_width_right = 1
+		popup_panel.border_width_bottom = 1
+		popup_panel.corner_radius_top_left = 8
+		popup_panel.corner_radius_top_right = 8
+		popup_panel.corner_radius_bottom_left = 8
+		popup_panel.corner_radius_bottom_right = 8
+		opt_popup.add_theme_stylebox_override("panel", popup_panel)
+		opt_popup.add_theme_color_override("font_color", Color(0.10, 0.08, 0.06))
+		opt_popup.add_theme_color_override("font_hover_color", Color(0.10, 0.08, 0.06))
+		opt_popup.add_theme_color_override("font_disabled_color", Color(0.36, 0.32, 0.28))
+		opt_popup.add_theme_color_override("font_separator_color", Color(0.46, 0.37, 0.29))
+		var popup_hover := StyleBoxFlat.new()
+		popup_hover.bg_color = Color(0.78, 0.68, 0.54, 0.95)
+		popup_hover.corner_radius_top_left = 4
+		popup_hover.corner_radius_top_right = 4
+		popup_hover.corner_radius_bottom_left = 4
+		popup_hover.corner_radius_bottom_right = 4
+		opt_popup.add_theme_stylebox_override("hover", popup_hover)
 
 	for field in _seat_name_fields():
 		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
@@ -230,7 +283,10 @@ func _populate_dropdowns() -> void:
 	for opt in opts:
 		opt.clear()
 		for key in PROFILE_ORDER:
-			opt.add_item(PROFILE_LABELS.get(key, key))
+			opt.add_item(PROFILE_LABELS.get(key, key), -1)
+		if opt.item_count > 0:
+			opt.select(0)
+			opt.text = PROFILE_LABELS.get(PROFILE_ORDER[0], PROFILE_ORDER[0])
 
 func _wire_setup_inputs() -> void:
 	var opts := [_seat_option_0, _seat_option_1, _seat_option_2, _seat_option_3]
@@ -250,7 +306,12 @@ func _refresh_setup_name_fields() -> void:
 	var opts := _seat_options()
 	var fields := _seat_name_fields()
 	for i in range(WahooState.NUM_PLAYERS):
-		var profile_key: String = PROFILE_ORDER[opts[i].selected]
+		var selected_idx: int = int(opts[i].selected)
+		if selected_idx < 0 or selected_idx >= PROFILE_ORDER.size():
+			selected_idx = 0
+			if opts[i].item_count > 0:
+				opts[i].select(selected_idx)
+		var profile_key: String = PROFILE_ORDER[selected_idx]
 		var field: LineEdit = fields[i]
 		field.visible = profile_key == "human"
 		field.placeholder_text = "%s name" % PLAYER_NAMES[i]
@@ -261,7 +322,10 @@ func _on_start_pressed() -> void:
 	var opts := _seat_options()
 	var fields := _seat_name_fields()
 	for i in range(4):
-		_seat_types[i] = PROFILE_ORDER[opts[i].selected]
+		var selected_idx: int = int(opts[i].selected)
+		if selected_idx < 0 or selected_idx >= PROFILE_ORDER.size():
+			selected_idx = 0
+		_seat_types[i] = PROFILE_ORDER[selected_idx]
 		if _seat_types[i] == "human":
 			var entered := String(fields[i].text).strip_edges()
 			_seat_display_names[i] = entered if not entered.is_empty() else PLAYER_NAMES[i]
