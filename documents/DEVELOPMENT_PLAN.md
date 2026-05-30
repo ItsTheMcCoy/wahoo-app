@@ -53,7 +53,7 @@ GDScript port of rules engine, 27 parity smoke tests, HTML5 export validated on 
 
 ### Phase 2b — Visual Board — *Complete*
 
-Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, lift-and-place movement animation (style presets: subtle/arcade/cinematic), dynamic marble shadow, landing impact pulse, current-player indicator, turn announcements, win screen. Validated: 32/32 Godot smoke checks pass, 80 Python tests pass, Web export working.
+Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, lift-and-place movement animation (style presets: subtle/arcade/cinematic), dynamic marble shadow, landing impact pulse, current-player indicator, turn announcements, and win screen. Visual polish passes added warm tabletop realism: layered wood board surface, external board/marble textures, cavity/ambient depth cues, lane shadowing, and improved side-panel readability/contrast. Validated: 32/32 Godot smoke checks pass, 80 Python tests pass, Web export working.
 
 ### Phase 3a — GDScript AI Engine — *Complete*
 
@@ -141,6 +141,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `documents/AI_TESTING_PLAN.md` | End-to-end benchmark protocol: baseline, robustness, pairwise confirmation, final ranking | In repo |
 | `documents/AI_BENCHMARK_RESULTS.md` | Current AI benchmark results and profile rankings | In repo |
 | `documents/AI_SPRINTER_BEATING_TRAINING_PLAN.md` | Training/tuning plan for a sprinter-beating profile | In repo |
+| `documents/GRAPHICS_UPGRADE_PLAN.md` | Visual upgrade plan and implementation status for realism polish passes | In repo |
 | `documents/STAT_TRACKING_PLAN.md` | Per-game/player/turn stat tracking design | In repo |
 | `documents/wahoo_strategy_metric_tracking_agent_spec.md` | Metric tracking plan spec | In repo |
 | `documents/DEVELOPMENT_PLAN.md` | This document — phase summary and cross-cutting concerns | In repo |

@@ -19,6 +19,8 @@ const TRACK_PATH_LIGHT := Color(0.73, 0.61, 0.46)
 const TRACK_CELL := Color(0.88, 0.80, 0.67)
 const TRACK_CELL_EDGE := Color(0.25, 0.20, 0.15)
 const SPOT_CAVITY := Color(0.20, 0.15, 0.11, 0.24)
+const AMBIENT_OCCLUSION := Color(0.07, 0.05, 0.03, 0.12)
+const LANE_SHADOW := Color(0.09, 0.06, 0.04, 0.16)
 const CENTER_FILL := Color(0.32, 0.24, 0.17)
 const CENTER_EDGE := Color(0.12, 0.09, 0.07)
 const MARBLE_EDGE := Color(0.10, 0.09, 0.07)
@@ -254,6 +256,7 @@ func _draw() -> void:
     _cell_size = _compute_cell_size(_board_rect)
 
     _draw_board_surface()
+    _draw_ambient_occlusion()
 
     _draw_player_areas()
     _draw_current_player_focus()
@@ -303,6 +306,23 @@ func _draw_board_surface() -> void:
     draw_rect(bottom_band, BOARD_VIGNETTE, true)
     draw_rect(left_band, BOARD_VIGNETTE, true)
     draw_rect(right_band, BOARD_VIGNETTE, true)
+
+func _draw_ambient_occlusion() -> void:
+    var lane_radius := _position_spot_radius() * 1.20
+    for coord in WahooLayout.all_track_grid_coords():
+        var center := _grid_to_local(coord)
+        draw_circle(center + Vector2(0.0, lane_radius * 0.11), lane_radius, AMBIENT_OCCLUSION)
+
+    for player in range(WahooState.NUM_PLAYERS):
+        for home_coord in WahooLayout.home_row_grid_coords(player):
+            var home_center := _grid_to_local(home_coord)
+            draw_circle(home_center + Vector2(0.0, lane_radius * 0.09), lane_radius * 0.96, AMBIENT_OCCLUSION)
+        for base_coord in WahooLayout.base_cluster_grid_coords(player):
+            var base_center := _grid_to_local(base_coord)
+            draw_circle(base_center + Vector2(0.0, lane_radius * 0.09), lane_radius * 0.96, AMBIENT_OCCLUSION)
+
+    var center := _grid_to_local(WahooLayout.center_grid_coord())
+    draw_circle(center + Vector2(0.0, lane_radius * 0.12), lane_radius * 1.24, AMBIENT_OCCLUSION)
 
 func _draw_impact_pulse() -> void:
     if not _impact_active:
@@ -403,6 +423,7 @@ func _draw_track_path() -> void:
     points.append(_grid_to_local(coords[0]))
 
     var base_width := max(8.0, _cell_size * 0.82)
+    draw_polyline(points, LANE_SHADOW, base_width * 1.30, true)
     draw_polyline(points, TRACK_PATH_DARK, base_width, true)
     draw_polyline(points, TRACK_PATH_LIGHT, base_width * 0.62, true)
 
@@ -495,12 +516,16 @@ func _seat_label_anchor(player: int) -> Vector2:
 
 func _draw_centered_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, color: Color) -> void:
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+    var shadow_pos := anchor + Vector2(-text_size.x * 0.5 + _cell_size * 0.05, font_height * 0.38 + _cell_size * 0.06)
+    var shadow_color := Color(0.06, 0.05, 0.04, 0.52)
+    draw_string(font, shadow_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, shadow_color)
     var draw_pos := anchor + Vector2(-text_size.x * 0.5, font_height * 0.38)
     draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 func _draw_centered_rotated_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, angle: float, color: Color) -> void:
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
     draw_set_transform(anchor, angle, Vector2.ONE)
+    draw_string(font, Vector2(-text_size.x * 0.5 + _cell_size * 0.05, font_height * 0.38 + _cell_size * 0.06), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.06, 0.05, 0.04, 0.52))
     draw_string(font, Vector2(-text_size.x * 0.5, font_height * 0.38), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
     draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

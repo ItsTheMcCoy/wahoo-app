@@ -72,15 +72,23 @@ Style Name: Warm Tabletop Realism
 - Keep current cinematic move timing.
 - Preserve impact pulse and improve perceived weight via shading.
 
-## First-Pass Scope (implemented now)
+## First-Pass Scope (implemented)
 
 1. Layered board surface rendering.
 2. Enhanced track/cell depth cues.
 3. Upgraded marble shading.
 4. Right-side panel color/theme polish.
 
-## Out of Scope for First Pass
+## Second-Pass Scope (implemented)
 
-1. External texture asset pipeline.
-2. Full lighting/shader graph system.
-3. Particle systems or advanced post-processing.
+1. External texture asset pipeline added via SVG board/marble materials in `godot/assets/textures/`.
+2. Richer board material details: fine grain overlays, edge tone, and broad wood streak variation.
+3. Ambient depth pass in board renderer (track/home/base/center AO-style shading).
+4. Stronger lane depth via shadow underlay beneath the path polyline.
+5. Typography/readability pass for side panel labels and die/status text.
+
+## Out of Scope After Second Pass
+
+1. Full lighting/shader graph system.
+2. Particle systems or advanced post-processing.
+3. Hand-painted or photo-derived final production texture set.

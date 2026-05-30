@@ -16,6 +16,8 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 - Per-seat profile dropdowns in setup: Human or any of 10 named AI profiles
 - Auto-played AI turns with pre-move pause; human turns use an End Turn button to advance
 - Board move polish in `wahoo_board_view.gd`: lift-and-place marble motion, dynamic marble shadow, and destination impact pulse with style presets (`subtle`, `arcade`, `cinematic`)
+- Realism polish in `wahoo_board_view.gd`: layered wood board surface, external SVG board/marble textures, lane shadow underlay, and ambient depth pass for track/home/base/center pockets
+- UI readability polish in `main.gd`: stronger status/turn/die contrast and outline settings matched to the warm tabletop theme
 - HTML5 export configured and validated on desktop and mobile browsers
 
 ## Open in Godot
