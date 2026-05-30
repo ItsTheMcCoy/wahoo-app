@@ -313,10 +313,14 @@ func _refresh_setup_name_fields() -> void:
 				opts[i].select(selected_idx)
 		var profile_key: String = PROFILE_ORDER[selected_idx]
 		var field: LineEdit = fields[i]
-		field.visible = profile_key == "human"
-		field.placeholder_text = "%s name" % PLAYER_NAMES[i]
-		if field.text.is_empty():
-			field.text = PLAYER_NAMES[i]
+		if profile_key == "human":
+			field.visible = true
+			field.placeholder_text = "Enter Name"
+			if field.text == PLAYER_NAMES[i]:
+				field.text = ""
+		else:
+			field.visible = false
+			field.text = ""
 
 func _on_start_pressed() -> void:
 	var opts := _seat_options()
@@ -328,6 +332,8 @@ func _on_start_pressed() -> void:
 		_seat_types[i] = PROFILE_ORDER[selected_idx]
 		if _seat_types[i] == "human":
 			var entered := String(fields[i].text).strip_edges()
+			if entered == "Enter Name":
+				entered = ""
 			_seat_display_names[i] = entered if not entered.is_empty() else PLAYER_NAMES[i]
 		else:
 			_seat_display_names[i] = PROFILE_LABELS.get(_seat_types[i], _seat_types[i])

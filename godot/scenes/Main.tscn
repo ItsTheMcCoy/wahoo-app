@@ -156,117 +156,125 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -195.0
-offset_right = 220.0
-offset_bottom = 195.0
+offset_left = -260.0
+offset_top = -205.0
+offset_right = 260.0
+offset_bottom = 205.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SetupContent" type="VBoxContainer" parent="SetupOverlay/SetupPanel"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 
 [node name="SetupTitle" type="Label" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
 text = "Game Setup"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 26
 
 [node name="Seat0Row" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 56)
+theme_override_constants/separation = 16
 
 [node name="Seat0Label" type="Label" parent="SetupOverlay/SetupPanel/SetupContent/Seat0Row"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(32, 0)
 self_modulate = Color(0.86, 0.20, 0.17, 1)
-text = "Red"
-theme_override_font_sizes/font_size = 16
+text = "●"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 30
 
 [node name="Seat0Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupContent/Seat0Row"]
 layout_mode = 2
-custom_minimum_size = Vector2(185, 0)
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(220, 44)
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat0Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupContent/Seat0Row"]
 visible = false
 layout_mode = 2
-custom_minimum_size = Vector2(140, 0)
-placeholder_text = "Player name"
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(170, 44)
+placeholder_text = "Enter Name"
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat1Row" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 56)
+theme_override_constants/separation = 16
 
 [node name="Seat1Label" type="Label" parent="SetupOverlay/SetupPanel/SetupContent/Seat1Row"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(32, 0)
 self_modulate = Color(0.16, 0.60, 0.27, 1)
-text = "Green"
-theme_override_font_sizes/font_size = 16
+text = "●"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 30
 
 [node name="Seat1Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupContent/Seat1Row"]
 layout_mode = 2
-custom_minimum_size = Vector2(185, 0)
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(220, 44)
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat1Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupContent/Seat1Row"]
 visible = false
 layout_mode = 2
-custom_minimum_size = Vector2(140, 0)
-placeholder_text = "Player name"
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(170, 44)
+placeholder_text = "Enter Name"
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat2Row" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 56)
+theme_override_constants/separation = 16
 
 [node name="Seat2Label" type="Label" parent="SetupOverlay/SetupPanel/SetupContent/Seat2Row"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(32, 0)
 self_modulate = Color(0.93, 0.75, 0.17, 1)
-text = "Yellow"
-theme_override_font_sizes/font_size = 16
+text = "●"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 30
 
 [node name="Seat2Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupContent/Seat2Row"]
 layout_mode = 2
-custom_minimum_size = Vector2(185, 0)
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(220, 44)
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat2Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupContent/Seat2Row"]
 visible = false
 layout_mode = 2
-custom_minimum_size = Vector2(140, 0)
-placeholder_text = "Player name"
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(170, 44)
+placeholder_text = "Enter Name"
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat3Row" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 56)
+theme_override_constants/separation = 16
 
 [node name="Seat3Label" type="Label" parent="SetupOverlay/SetupPanel/SetupContent/Seat3Row"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(32, 0)
 self_modulate = Color(0.17, 0.34, 0.78, 1)
-text = "Blue"
-theme_override_font_sizes/font_size = 16
+text = "●"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 30
 
 [node name="Seat3Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupContent/Seat3Row"]
 layout_mode = 2
-custom_minimum_size = Vector2(185, 0)
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(220, 44)
+theme_override_font_sizes/font_size = 16
 
 [node name="Seat3Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupContent/Seat3Row"]
 visible = false
 layout_mode = 2
-custom_minimum_size = Vector2(140, 0)
-placeholder_text = "Player name"
-theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2(170, 44)
+placeholder_text = "Enter Name"
+theme_override_font_sizes/font_size = 16
 
 [node name="StartButton" type="Button" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-custom_minimum_size = Vector2(220, 50)
+custom_minimum_size = Vector2(280, 60)
 text = "Start Game"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 20
