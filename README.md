@@ -1,6 +1,6 @@
-# Wahoo Text Game
+# Wahulo: Marble Mayham
 
-Console-based Python prototype plus Godot 4 browser port for Wahoo. Single-device hot-seat play with configurable AI seats is complete; the next major phase is internet multiplayer.
+Console-based Python prototype plus Godot 4 browser port for Wahulo (a Wahoo-style marble race). Single-device hot-seat play with configurable AI seats is complete; the next major phase is internet multiplayer.
 
 ## Current State
 

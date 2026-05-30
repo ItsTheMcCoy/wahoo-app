@@ -60,7 +60,7 @@ The relay server holds the authoritative game state and relays moves and chat to
 
 [Static Files: Netlify]
   - index.html, index.pck, index.wasm
-  - Served to all browsers at wahoogame.com
+  - Served to all browsers at wahulo.com
 ```
 
 ### Tech Stack
@@ -69,7 +69,7 @@ The relay server holds the authoritative game state and relays moves and chat to
 |-----------|-----------|---------|
 | Game client | Godot 4 HTML5 export (existing) | Netlify free tier |
 | Relay server | Node.js + `ws` WebSocket library | Render free tier |
-| Custom domain | `wahoogame.com` or similar | Cloudflare Registrar |
+| Custom domain | `wahulo.com` | Cloudflare Registrar |
 | HTTPS / WSS | Automatic via Netlify + Render custom domain | Free |
 
 ---
@@ -86,7 +86,7 @@ Safe alphabet: `BCDFGHJKMNPQRSTVWXYZ23456789` (28 characters)
 
 **Expiry:** Rooms are active while a game is in the lobby or in progress. The server purges rooms 30 minutes after a game ends, or after 2 hours of inactivity in the waiting lobby.
 
-**Deep link sharing:** `wahoogame.com/join/J7WKBC` auto-populates the join code field when a guest navigates to it. This means the host can share a single link in a group chat — guests don't have to manually type the code. Implemented via `JavaScriptBridge.eval()` in Godot to read the URL on load.
+**Deep link sharing:** `wahulo.com/join/J7WKBC` auto-populates the join code field when a guest navigates to it. This means the host can share a single link in a group chat — guests don't have to manually type the code. Implemented via `JavaScriptBridge.eval()` in Godot to read the URL on load.
 
 ---
 
@@ -260,7 +260,7 @@ Clicking "Play Solo" opens the existing seat-configuration overlay unchanged. Th
 ┌────────────────────────────────────────┐
 │  Game Code:  J7WKBC                    │
 │  [Copy Code]  [Copy Link]              │
-│  wahoogame.com/join/J7WKBC             │
+│  wahulo.com/join/J7WKBC                │
 │                                        │
 │  Seat 1: Alex            (You — Host)  │
 │  Seat 2: Jordan                        │
@@ -299,7 +299,7 @@ Clicking "Play Solo" opens the existing seat-configuration overlay unchanged. Th
 4. If no seats are available (room full or game started) → server redirects them as a spectator; transitions to Lobby or Game (Spectator view) with a message "No open seats — joining as a spectator"
 5. On hard error (room not found, etc.): show error message
 
-**Via deep link `wahoogame.com/join/J7WKBC`:**
+**Via deep link `wahulo.com/join/J7WKBC`:**
 1. Godot reads URL path via `JavaScriptBridge.eval("window.location.pathname")`
 2. If path matches `/join/<code>`, skip the code field; only prompt for name
 3. Same join logic as above
@@ -440,11 +440,11 @@ The full `WahooState` is included in every `state_update`. For a 4-player marble
 Before purchasing, search availability at [porkbun.com](https://porkbun.com) or [cloudflare.com/products/registrar](https://cloudflare.com/products/registrar). Do not buy until you find one that's available and you like it.
 
 Candidates (short, memorable, mobile-friendly):
-- `wahoogame.com` — direct; check availability first
-- `playwahoo.com` — verb-first, clear intent
-- `wahooboard.com` — references the board game
-- `wahoo.gg` — `.gg` is the standard gamer TLD; widely recognized; often available when `.com` is not
-- `wahoo-game.com` — fallback if bare `wahoogame.com` is taken
+- `wahulo.com` — planned primary domain
+- `playwahulo.com` — verb-first fallback
+- `wahuloboard.com` — board-game naming fallback
+- `wahulo.gg` — gamer TLD fallback
+- `wahulo-game.com` — hyphen fallback if bare `wahulo.com` is taken
 
 The `.gg` TLD costs roughly the same as `.com` and signals "this is a game" without extra explanation.
 
@@ -475,7 +475,7 @@ Sign up at Cloudflare or Porkbun. Use an email address you check regularly — d
 
 #### Step 3: Search and Purchase
 
-1. Use the search bar to check your preferred name (e.g., `wahoogame.com`)
+1. Use the search bar to check your preferred name (e.g., `wahulo.com`)
 2. If taken, try alternatives from the list above
 3. Add to cart
 4. **Before confirming, verify:**
@@ -513,7 +513,7 @@ The Godot HTML5 export is a set of static files served from `godot/build/web/`. 
 5. Test: open that URL and confirm the game loads
 
 **Connect your custom domain to Netlify:**
-1. Netlify: Site configuration → Domain management → "Add a domain" → type `wahoogame.com`
+1. Netlify: Site configuration → Domain management → "Add a domain" → type `wahulo.com`
 2. Netlify shows DNS records to add:
    ```
    CNAME  www  →  wahoo-abc123.netlify.app
@@ -522,7 +522,7 @@ The Godot HTML5 export is a set of static files served from `godot/build/web/`. 
 3. Add those records in your DNS dashboard
 4. Wait up to 30 minutes (usually faster on Cloudflare)
 5. Netlify automatically provisions HTTPS via Let's Encrypt
-6. Navigate to `https://wahoogame.com` — game loads over HTTPS
+6. Navigate to `https://wahulo.com` — game loads over HTTPS
 
 #### Step 6: Set Up the Relay Server on Render
 
@@ -537,24 +537,24 @@ The Godot HTML5 export is a set of static files served from `godot/build/web/`. 
    ```
    CNAME  relay  →  wahoo-relay.onrender.com
    ```
-2. In Render: your service → Settings → Custom Domains → add `relay.wahoogame.com`
+2. In Render: your service → Settings → Custom Domains → add `relay.wahulo.com`
 3. Render automatically provisions HTTPS for the custom domain
-4. Update the WebSocket URL constant in the Godot client to `wss://relay.wahoogame.com`
+4. Update the WebSocket URL constant in the Godot client to `wss://relay.wahulo.com`
 
 #### Step 7: Configure the Godot Client's Server URL
 
 In `godot/scripts/main.gd` (or a new `godot/scripts/network.gd`):
 
 ```gdscript
-const RELAY_URL = "wss://relay.wahoogame.com"
+const RELAY_URL = "wss://relay.wahulo.com"
 # During local development, use: "ws://localhost:8080"
 ```
 
 #### Step 8: Verify the Full Stack
 
-1. Open `https://wahoogame.com` on a computer → game loads
+1. Open `https://wahulo.com` on a computer → game loads
 2. Click "Host Game" → connects to relay, shows a 6-character game code
-3. On a phone, navigate to `https://wahoogame.com/join/<code>` → joins lobby as a player
+3. On a phone, navigate to `https://wahulo.com/join/<code>` → joins lobby as a player
 4. On a second phone, navigate to the same link → joins as spectator (seat taken)
 5. Host starts game; all three clients see the opening roll
 6. Players take turns; spectator sees all state updates and can chat
@@ -577,8 +577,8 @@ const RELAY_URL = "wss://relay.wahoogame.com"
 
 Lower-priority items that are not required for v1 launch but worth building soon after:
 
-**URL-based join deep link:** `wahoogame.com/join/J7WKBC` auto-populates the join code when a guest navigates to the URL. Implemented via `JavaScriptBridge.eval("window.location.pathname")` in Godot. Low effort, high shareability value.
+**URL-based join deep link:** `wahulo.com/join/J7WKBC` auto-populates the join code when a guest navigates to the URL. Implemented via `JavaScriptBridge.eval("window.location.pathname")` in Godot. Low effort, high shareability value.
 
 **Game recap page:** After a game ends, show a summary screen (winner, total turns, captures per player). Optional: store briefly on the server for a shareable URL.
 
-**Spectator join mid-game:** If a spectator navigates to `wahoogame.com/join/<code>` while a game is already in progress, the server sends the current full state immediately so they can catch up. The lobby handles the in-progress case by routing them directly to the Game scene (Spectator view).
+**Spectator join mid-game:** If a spectator navigates to `wahulo.com/join/<code>` while a game is already in progress, the server sends the current full state immediately so they can catch up. The lobby handles the in-progress case by routing them directly to the Game scene (Spectator view).

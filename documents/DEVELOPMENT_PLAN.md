@@ -1,4 +1,4 @@
-# Wahoo App — Development Plan
+# Wahulo: Marble Mayham — Development Plan
 
 Current state of the project and the path forward. Updated as phases complete.
 
@@ -8,7 +8,7 @@ Work is intentionally paused here and will resume on a later day.
 
 ## Project Goal
 
-Build a browser-based game implementing the Wahoo board game, playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Online multiplayer, learn-as-you-go hobby project.
+Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Planned public domain: wahulo.com. Online multiplayer, learn-as-you-go hobby project.
 
 ## Tech Stack
 
@@ -28,7 +28,7 @@ This section tracks feedback to address before advancing any in-progress phases.
 2. ✅ Turn numbers in each turn header.
 3. ✅ AI difficulty / profile menus now show sub-menus with descriptions; profiles listed easiest → hardest.
 4. ✅ Fixed 2s AI delay after each AI move and roll when humans are present.
-5. ✅ Human seats prompt for a player name during setup.
+5. ✅ Human seats prompt for a player name during setup (max 12 characters).
 6. ✅ Player labels show color + name/profile throughout gameplay.
 7. ✅ Board renderer spacing tightened; no extra blank lines between rows.
 8. ✅ Inter-row spacer lines added so vertical spacing matches horizontal.
