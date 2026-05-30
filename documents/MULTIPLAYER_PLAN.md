@@ -1,4 +1,4 @@
-# Wahoo Multiplayer & Hosting Plan
+# Wahulo Multiplayer & Hosting Plan
 
 This document covers the full plan for taking Wahoo from a local hot-seat game to a publicly hosted web game playable online with friends. It spans backend architecture, Godot client changes, room/lobby design, deployment, and domain setup including a step-by-step domain purchase guide.
 
@@ -11,6 +11,7 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Spectator mode | Included in v1 |
 | In-game chat | Included in v1 |
 | Room persistence | In-memory only; rooms lost on server restart (acceptable for v1) |
+| Domain status | `wahulo.com` purchased via Cloudflare Registrar |
 
 ---
 
@@ -58,7 +59,7 @@ The relay server holds the authoritative game state and relays moves and chat to
 [Browser: Spectator 2]       ─┘                  - State broadcast
                                                   - Chat relay
 
-[Static Files: Netlify]
+[Static Files: Cloudflare Pages]
   - index.html, index.pck, index.wasm
   - Served to all browsers at wahulo.com
 ```
@@ -67,10 +68,10 @@ The relay server holds the authoritative game state and relays moves and chat to
 
 | Component | Technology | Hosting |
 |-----------|-----------|---------|
-| Game client | Godot 4 HTML5 export (existing) | Netlify free tier |
+| Game client | Godot 4 HTML5 export (existing) | Cloudflare Pages free tier |
 | Relay server | Node.js + `ws` WebSocket library | Render free tier |
-| Custom domain | `wahulo.com` | Cloudflare Registrar |
-| HTTPS / WSS | Automatic via Netlify + Render custom domain | Free |
+| Custom domain | `wahulo.com` (already purchased) | Cloudflare Registrar |
+| HTTPS / WSS | Automatic via Cloudflare Pages + Render custom domain | Free |
 
 ---
 
@@ -433,11 +434,13 @@ The full `WahooState` is included in every `state_update`. For a 4-player marble
 
 ---
 
-## Phase 4d — Domain Purchase & Public Deployment
+## Phase 4d — Domain & Public Deployment
+
+Status update (May 30, 2026): `wahulo.com` has already been purchased through Cloudflare. A Cloudflare application has also been created and linked to the `wahoo-app` GitHub repository.
 
 ### Domain Name Suggestions
 
-Before purchasing, search availability at [porkbun.com](https://porkbun.com) or [cloudflare.com/products/registrar](https://cloudflare.com/products/registrar). Do not buy until you find one that's available and you like it.
+If you buy additional domains later, search availability at [porkbun.com](https://porkbun.com) or [cloudflare.com/products/registrar](https://cloudflare.com/products/registrar).
 
 Candidates (short, memorable, mobile-friendly):
 - `wahulo.com` — planned primary domain
@@ -495,33 +498,29 @@ DNS record types you'll use:
 | Record Type | What it does |
 |-------------|-------------|
 | `A` | Points domain to an IP address |
-| `CNAME` | Points domain to another domain name (e.g., your Netlify URL) |
+| `CNAME` | Points domain to another domain name (e.g., your Cloudflare Pages URL) |
 | `TXT` | Ownership verification — various services ask you to add one |
 
 Changes to DNS records can take 1–60 minutes to propagate globally. Cloudflare's is usually under 5 minutes.
 
-#### Step 5: Set Up Static Hosting for the Game Client (Netlify)
+#### Step 5: Set Up Static Hosting for the Game Client (Cloudflare Pages)
 
-The Godot HTML5 export is a set of static files served from `godot/build/web/`. Netlify hosts these for free and auto-deploys on every GitHub push.
+The Godot HTML5 export is a set of static files served from `godot/build/web/`. Cloudflare Pages hosts these for free and auto-deploys on every GitHub push.
 
-1. Sign up at netlify.com (free)
-2. "Add new site" → "Import from Git" → connect GitHub → select `wahoo-app` repo
+1. Sign in to Cloudflare and open Pages
+2. If needed, create a new Pages project; otherwise open the existing project already linked to `wahoo-app`
 3. Build settings:
    - Build command: *(leave blank — exported files are already committed)*
    - Publish directory: `godot/build/web`
-4. Click Deploy. Netlify gives a URL like `wahoo-abc123.netlify.app`
+4. Click Deploy. Pages gives a URL like `wahoo-app.pages.dev`
 5. Test: open that URL and confirm the game loads
 
-**Connect your custom domain to Netlify:**
-1. Netlify: Site configuration → Domain management → "Add a domain" → type `wahulo.com`
-2. Netlify shows DNS records to add:
-   ```
-   CNAME  www  →  wahoo-abc123.netlify.app
-   A      @    →  75.2.60.5   (Netlify's load balancer IP)
-   ```
-3. Add those records in your DNS dashboard
-4. Wait up to 30 minutes (usually faster on Cloudflare)
-5. Netlify automatically provisions HTTPS via Let's Encrypt
+**Connect your custom domain to Cloudflare Pages:**
+1. In Pages project settings, add custom domains `wahulo.com` and `www.wahulo.com`
+2. Cloudflare auto-creates/updates the required DNS records inside your zone
+3. Ensure `www` CNAME points to your Pages hostname
+4. Wait up to 30 minutes for global DNS and certificate propagation
+5. Cloudflare automatically provisions HTTPS
 6. Navigate to `https://wahulo.com` — game loads over HTTPS
 
 #### Step 6: Set Up the Relay Server on Render
@@ -565,7 +564,7 @@ const RELAY_URL = "wss://relay.wahulo.com"
 |------|------|-------|
 | `.com` domain | ~$10/year | Cloudflare Registrar or Porkbun |
 | `.gg` domain | ~$10/year | Often available when `.com` is not |
-| Game client hosting | Free | Netlify free tier: 100 GB bandwidth/month |
+| Game client hosting | Free | Cloudflare Pages free tier |
 | Relay server | Free | Render free tier (sleeps after 15 min inactivity) |
 | Relay server (no sleep) | $7/month | Render Starter — eliminates 30s cold-start |
 | **Total (free tier)** | **~$10/year** | Just the domain |

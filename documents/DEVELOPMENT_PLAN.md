@@ -6,9 +6,11 @@ Current state of the project and the path forward. Updated as phases complete.
 
 Work is intentionally paused here and will resume on a later day.
 
+Deployment status update (May 30, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository.
+
 ## Project Goal
 
-Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Planned public domain: wahulo.com. Online multiplayer, learn-as-you-go hobby project.
+Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Public domain: wahulo.com (purchased via Cloudflare). Online multiplayer, learn-as-you-go hobby project.
 
 ## Tech Stack
 
@@ -16,8 +18,8 @@ Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race)
 - **Rules engine prototype:** Python (Phases 1–1b)
 - **Primary target platform:** Web/HTML5 (playable in any browser, shareable by URL — no install required)
 - **Multiplayer transport:** WebSocket relay server (Node.js + `ws`); server-authoritative game state
-- **Server hosting:** Render free tier (sufficient for small friend groups; $7/month Starter to eliminate cold-start delays)
-- **Client hosting:** Netlify free tier (static HTML5 export)
+- **Server hosting:** Render free tier for the relay server (current plan; custom domain managed in Cloudflare DNS)
+- **Client hosting:** Cloudflare Pages (static HTML5 export)
 - **iOS/Android native builds:** Out of scope — browser covers all mobile devices without an Apple Developer account or per-platform distribution
 
 ## User Feedback
@@ -91,7 +93,7 @@ Summary of sub-phases:
 - **4a:** Node.js WebSocket relay server — room management, move validation, Render deployment
 - **4b:** Godot home screen, lobby scene (host + guest views), AI seat configuration in lobby
 - **4c:** Online game flow — server-driven turns, AI seats via host client, disconnect/reconnect handling
-- **4d:** Domain purchase, static hosting on Netlify, relay server on Render with custom subdomain, HTTPS/WSS
+- **4d:** Domain and DNS in Cloudflare, static hosting on Cloudflare Pages, relay server on Render with custom subdomain, HTTPS/WSS
 - **4e:** Polish — deep link joining, spectator mode, in-game chat (all optional)
 
 ### Phase 5 — Decide Next Direction — *Not started*
