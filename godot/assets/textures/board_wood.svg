@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a6847"/>
+      <stop offset="100%" stop-color="#6e5036"/>
+    </linearGradient>
+    <pattern id="grain" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M0,12 C16,2 48,20 64,10" fill="none" stroke="#4a341f" stroke-opacity="0.26" stroke-width="2"/>
+      <path d="M0,28 C18,38 46,18 64,30" fill="none" stroke="#d6bc9b" stroke-opacity="0.18" stroke-width="2"/>
+      <path d="M0,46 C24,34 42,58 64,44" fill="none" stroke="#4a341f" stroke-opacity="0.20" stroke-width="2"/>
+      <path d="M0,60 C24,68 44,52 64,62" fill="none" stroke="#d6bc9b" stroke-opacity="0.16" stroke-width="2"/>
+    </pattern>
+    <radialGradient id="centerGlow" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#c8a279" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#2f2014" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#base)"/>
+  <rect width="1024" height="1024" fill="url(#grain)"/>
+  <rect width="1024" height="1024" fill="url(#centerGlow)"/>
+</svg>

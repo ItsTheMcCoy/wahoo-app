@@ -41,6 +41,9 @@ const PROFILE_LABELS := {
 @onready var _turn_label: Label = $Root/SidePanel/TurnLabel
 @onready var _die_label: Label = $Root/SidePanel/DieFrame/DieLabel
 @onready var _game_menu_button: MenuButton = $Root/SidePanel/GameMenuButton
+@onready var _board_frame: PanelContainer = $Root/BoardFrame
+@onready var _side_panel: VBoxContainer = $Root/SidePanel
+@onready var _die_frame: PanelContainer = $Root/SidePanel/DieFrame
 @onready var _board = $Root/BoardFrame/BoardView
 @onready var _status: RichTextLabel = $Root/SidePanel/Status
 @onready var _roll_button: Button = $Root/SidePanel/RollButton
@@ -88,11 +91,131 @@ func _ready() -> void:
 	_setup_game_menu()
 	_die_label.text = "–"
 	_profiles = WahooAI.make_profiles()
+	_apply_visual_theme()
 	_populate_dropdowns()
 	_wire_setup_inputs()
 	_refresh_setup_name_fields()
 	_setup_overlay.visible = true
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
+
+func _apply_visual_theme() -> void:
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.17, 0.13, 0.10, 0.94)
+	panel_style.border_color = Color(0.46, 0.34, 0.24, 0.95)
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.corner_radius_top_left = 14
+	panel_style.corner_radius_top_right = 14
+	panel_style.corner_radius_bottom_left = 14
+	panel_style.corner_radius_bottom_right = 14
+	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.24)
+	panel_style.shadow_size = 6
+	panel_style.content_margin_left = 12
+	panel_style.content_margin_top = 12
+	panel_style.content_margin_right = 12
+	panel_style.content_margin_bottom = 12
+
+	var die_style := panel_style.duplicate()
+	die_style.bg_color = Color(0.25, 0.18, 0.12, 0.96)
+	die_style.border_color = Color(0.70, 0.54, 0.38, 0.98)
+
+	var board_style := panel_style.duplicate()
+	board_style.bg_color = Color(0.10, 0.08, 0.06, 0.90)
+	board_style.border_color = Color(0.42, 0.30, 0.20, 0.98)
+
+	_board_frame.add_theme_stylebox_override("panel", board_style)
+	_die_frame.add_theme_stylebox_override("panel", die_style)
+	var win_panel := $WinOverlay/WinPanel as PanelContainer
+	if win_panel != null:
+		win_panel.add_theme_stylebox_override("panel", panel_style)
+	var setup_panel := $SetupOverlay/SetupPanel as PanelContainer
+	if setup_panel != null:
+		setup_panel.add_theme_stylebox_override("panel", panel_style)
+
+	var status_style := StyleBoxFlat.new()
+	status_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)
+	status_style.border_color = Color(0.43, 0.32, 0.23, 0.88)
+	status_style.border_width_left = 1
+	status_style.border_width_top = 1
+	status_style.border_width_right = 1
+	status_style.border_width_bottom = 1
+	status_style.corner_radius_top_left = 10
+	status_style.corner_radius_top_right = 10
+	status_style.corner_radius_bottom_left = 10
+	status_style.corner_radius_bottom_right = 10
+	status_style.content_margin_left = 10
+	status_style.content_margin_top = 8
+	status_style.content_margin_right = 10
+	status_style.content_margin_bottom = 8
+	_status.add_theme_stylebox_override("normal", status_style)
+	_status.add_theme_color_override("default_color", Color(0.97, 0.92, 0.84))
+
+	_turn_label.add_theme_color_override("font_color", Color(0.98, 0.95, 0.88))
+	_turn_label.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.05, 0.92))
+
+	var menu_popup := _game_menu_button.get_popup()
+	menu_popup.add_theme_color_override("font_color", Color(0.95, 0.90, 0.82))
+	menu_popup.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.88))
+	menu_popup.add_theme_color_override("font_disabled_color", Color(0.63, 0.58, 0.52))
+	menu_popup.add_theme_color_override("font_separator_color", Color(0.58, 0.45, 0.33))
+
+	var button_style_normal := StyleBoxFlat.new()
+	button_style_normal.bg_color = Color(0.30, 0.22, 0.15, 0.98)
+	button_style_normal.border_color = Color(0.73, 0.56, 0.39, 0.98)
+	button_style_normal.border_width_left = 2
+	button_style_normal.border_width_top = 2
+	button_style_normal.border_width_right = 2
+	button_style_normal.border_width_bottom = 2
+	button_style_normal.corner_radius_top_left = 10
+	button_style_normal.corner_radius_top_right = 10
+	button_style_normal.corner_radius_bottom_left = 10
+	button_style_normal.corner_radius_bottom_right = 10
+	button_style_normal.content_margin_left = 12
+	button_style_normal.content_margin_top = 8
+	button_style_normal.content_margin_right = 12
+	button_style_normal.content_margin_bottom = 8
+
+	var button_style_hover := button_style_normal.duplicate()
+	button_style_hover.bg_color = Color(0.38, 0.28, 0.19, 0.98)
+
+	var button_style_pressed := button_style_normal.duplicate()
+	button_style_pressed.bg_color = Color(0.22, 0.16, 0.11, 0.98)
+
+	var button_style_disabled := button_style_normal.duplicate()
+	button_style_disabled.bg_color = Color(0.19, 0.15, 0.12, 0.74)
+	button_style_disabled.border_color = Color(0.41, 0.34, 0.28, 0.74)
+
+	var action_buttons: Array = [
+		_roll_button,
+		_end_turn_button,
+		_new_game_button,
+		_start_button,
+		_game_menu_button,
+	]
+	for button in action_buttons:
+		button.add_theme_stylebox_override("normal", button_style_normal)
+		button.add_theme_stylebox_override("hover", button_style_hover)
+		button.add_theme_stylebox_override("pressed", button_style_pressed)
+		button.add_theme_stylebox_override("disabled", button_style_disabled)
+		button.add_theme_color_override("font_color", Color(0.97, 0.93, 0.86))
+		button.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.90))
+		button.add_theme_color_override("font_pressed_color", Color(0.97, 0.93, 0.86))
+		button.add_theme_color_override("font_disabled_color", Color(0.67, 0.62, 0.57))
+
+	for opt in _seat_options():
+		opt.add_theme_stylebox_override("normal", button_style_normal)
+		opt.add_theme_stylebox_override("hover", button_style_hover)
+		opt.add_theme_stylebox_override("pressed", button_style_pressed)
+		opt.add_theme_stylebox_override("disabled", button_style_disabled)
+		opt.add_theme_color_override("font_color", Color(0.97, 0.93, 0.86))
+
+	for field in _seat_name_fields():
+		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
+		field.add_theme_color_override("font_placeholder_color", Color(0.74, 0.69, 0.62))
+
+	_side_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.98)
 
 func _populate_dropdowns() -> void:
 	var opts := [_seat_option_0, _seat_option_1, _seat_option_2, _seat_option_3]

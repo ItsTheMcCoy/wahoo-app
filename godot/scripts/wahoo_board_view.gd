@@ -3,17 +3,24 @@ extends Control
 
 const WahooLayout = preload("res://scripts/wahoo_layout.gd")
 const WahooState = preload("res://scripts/wahoo_state.gd")
+const BOARD_TEXTURE_PATH := "res://assets/textures/board_wood.svg"
+const MARBLE_TEXTURE_PATH := "res://assets/textures/marble_gloss.svg"
 
 signal move_selected(move: Dictionary)
 
-const BOARD_BG := Color(0.92, 0.88, 0.78)
-const BOARD_BG_INNER := Color(0.95, 0.92, 0.84, 0.70)
-const BOARD_EDGE := Color(0.23, 0.22, 0.18)
-const TRACK_PATH := Color(0.62, 0.56, 0.45)
-const TRACK_CELL := Color(0.86, 0.82, 0.71)
-const TRACK_CELL_EDGE := Color(0.29, 0.27, 0.21)
-const CENTER_FILL := Color(0.43, 0.39, 0.31)
-const CENTER_EDGE := Color(0.18, 0.17, 0.14)
+const BOARD_BG := Color(0.57, 0.44, 0.30)
+const BOARD_BG_INNER := Color(0.77, 0.66, 0.51, 0.80)
+const BOARD_EDGE := Color(0.14, 0.11, 0.08)
+const BOARD_GRAIN_DARK := Color(0.33, 0.24, 0.16, 0.20)
+const BOARD_GRAIN_LIGHT := Color(0.86, 0.74, 0.59, 0.12)
+const BOARD_VIGNETTE := Color(0.08, 0.06, 0.04, 0.23)
+const TRACK_PATH_DARK := Color(0.34, 0.26, 0.17)
+const TRACK_PATH_LIGHT := Color(0.73, 0.61, 0.46)
+const TRACK_CELL := Color(0.88, 0.80, 0.67)
+const TRACK_CELL_EDGE := Color(0.25, 0.20, 0.15)
+const SPOT_CAVITY := Color(0.20, 0.15, 0.11, 0.24)
+const CENTER_FILL := Color(0.32, 0.24, 0.17)
+const CENTER_EDGE := Color(0.12, 0.09, 0.07)
 const MARBLE_EDGE := Color(0.10, 0.09, 0.07)
 const MARBLE_HIGHLIGHT := Color(1.0, 1.0, 1.0, 0.48)
 const MOVE_SOURCE_RING := Color(1.0, 0.97, 0.55, 0.95)
@@ -88,12 +95,21 @@ var _impact_progress := 1.0
 var _impact_center := Vector2.ZERO
 var _impact_tween: Tween = null
 var _animation_style: Dictionary = {}
+var _board_texture: Texture2D = null
+var _marble_texture: Texture2D = null
 
 func _ready() -> void:
+    _load_visual_assets()
     _ensure_marble_nodes()
     set_animation_style(DEFAULT_ANIMATION_STYLE)
     resized.connect(_on_resized)
     _refresh_marble_nodes()
+
+func _load_visual_assets() -> void:
+    if ResourceLoader.exists(BOARD_TEXTURE_PATH):
+        _board_texture = load(BOARD_TEXTURE_PATH)
+    if ResourceLoader.exists(MARBLE_TEXTURE_PATH):
+        _marble_texture = load(MARBLE_TEXTURE_PATH)
 
 func set_animation_style(style_name: String) -> void:
     var key := style_name.to_lower()
@@ -237,13 +253,7 @@ func _draw() -> void:
     _board_rect = _square_board_rect()
     _cell_size = _compute_cell_size(_board_rect)
 
-    draw_rect(_board_rect, BOARD_BG, true)
-    var inner := Rect2(
-        _board_rect.position + Vector2(_cell_size * 0.45, _cell_size * 0.45),
-        _board_rect.size - Vector2(_cell_size * 0.9, _cell_size * 0.9)
-    )
-    draw_rect(inner, BOARD_BG_INNER, true)
-    draw_rect(_board_rect, BOARD_EDGE, false, 3.0)
+    _draw_board_surface()
 
     _draw_player_areas()
     _draw_current_player_focus()
@@ -254,6 +264,45 @@ func _draw() -> void:
     _draw_impact_pulse()
     _draw_legal_destinations()
     _draw_seat_labels()
+
+func _draw_board_surface() -> void:
+    draw_rect(_board_rect, BOARD_BG, true)
+    if _board_texture != null:
+        draw_texture_rect(_board_texture, _board_rect, true, Color(1.0, 1.0, 1.0, 0.72))
+
+    var grain_rows := 28
+    for i in range(grain_rows):
+        var t := float(i) / float(grain_rows - 1)
+        var y := lerpf(_board_rect.position.y, _board_rect.end.y, t)
+        var sway := sinf(t * TAU * 2.4) * _cell_size * 0.22
+        var line_from := Vector2(_board_rect.position.x, y + sway)
+        var line_to := Vector2(_board_rect.end.x, y - sway * 0.55)
+        var grain_color := BOARD_GRAIN_DARK if i % 2 == 0 else BOARD_GRAIN_LIGHT
+        draw_line(line_from, line_to, grain_color, max(1.0, _cell_size * 0.05), true)
+
+    var inner := Rect2(
+        _board_rect.position + Vector2(_cell_size * 0.48, _cell_size * 0.48),
+        _board_rect.size - Vector2(_cell_size * 0.96, _cell_size * 0.96)
+    )
+    draw_rect(inner, BOARD_BG_INNER, true)
+
+    var bevel_light := BOARD_BG_INNER.lerp(Color.WHITE, 0.24)
+    bevel_light.a = 0.62
+    var bevel_dark := BOARD_EDGE
+    bevel_dark.a = 0.84
+    draw_rect(inner.grow(_cell_size * 0.08), bevel_light, false, max(2.0, _cell_size * 0.07))
+    draw_rect(_board_rect, BOARD_EDGE, false, max(3.0, _cell_size * 0.10))
+    draw_rect(_board_rect.grow(-_cell_size * 0.10), bevel_dark, false, max(1.0, _cell_size * 0.04))
+
+    var vignette_inset := _cell_size * 0.82
+    var top_band := Rect2(_board_rect.position, Vector2(_board_rect.size.x, vignette_inset))
+    var bottom_band := Rect2(Vector2(_board_rect.position.x, _board_rect.end.y - vignette_inset), Vector2(_board_rect.size.x, vignette_inset))
+    var left_band := Rect2(Vector2(_board_rect.position.x, _board_rect.position.y + vignette_inset), Vector2(vignette_inset, _board_rect.size.y - vignette_inset * 2.0))
+    var right_band := Rect2(Vector2(_board_rect.end.x - vignette_inset, _board_rect.position.y + vignette_inset), Vector2(vignette_inset, _board_rect.size.y - vignette_inset * 2.0))
+    draw_rect(top_band, BOARD_VIGNETTE, true)
+    draw_rect(bottom_band, BOARD_VIGNETTE, true)
+    draw_rect(left_band, BOARD_VIGNETTE, true)
+    draw_rect(right_band, BOARD_VIGNETTE, true)
 
 func _draw_impact_pulse() -> void:
     if not _impact_active:
@@ -353,7 +402,9 @@ func _draw_track_path() -> void:
         points.append(_grid_to_local(coord))
     points.append(_grid_to_local(coords[0]))
 
-    draw_polyline(points, TRACK_PATH, max(8.0, _cell_size * 0.82), true)
+    var base_width := max(8.0, _cell_size * 0.82)
+    draw_polyline(points, TRACK_PATH_DARK, base_width, true)
+    draw_polyline(points, TRACK_PATH_LIGHT, base_width * 0.62, true)
 
 func _draw_home_rows() -> void:
     for player in range(WahooState.NUM_PLAYERS):
@@ -373,7 +424,11 @@ func _draw_track_cells() -> void:
 func _draw_center() -> void:
     var center := _grid_to_local(WahooLayout.center_grid_coord())
     var radius: float = _position_spot_radius()
+    draw_circle(center + Vector2(0.0, radius * 0.16), radius * 1.02, SPOT_CAVITY)
     draw_circle(center, radius, CENTER_FILL)
+    var glow := CENTER_FILL.lerp(Color.WHITE, 0.30)
+    glow.a = 0.34
+    draw_circle(center - Vector2(radius * 0.20, radius * 0.24), radius * 0.42, glow)
     draw_arc(center, radius, 0.0, TAU, 40, CENTER_EDGE, max(2.0, _cell_size * 0.08), true)
 
 func _draw_legal_destinations() -> void:
@@ -391,7 +446,12 @@ func _draw_legal_destinations() -> void:
 func _draw_grid_spot(coord: Vector2i, fill: Color, edge: Color) -> void:
     var center := _grid_to_local(coord)
     var radius: float = _position_spot_radius()
+    draw_circle(center + Vector2(0.0, radius * 0.16), radius * 0.98, SPOT_CAVITY)
     draw_circle(center, radius, fill)
+    var highlight := fill.lerp(Color.WHITE, 0.26)
+    highlight.a = 0.46
+    draw_circle(center - Vector2(radius * 0.22, radius * 0.28), radius * 0.38, highlight)
+    draw_arc(center, radius * 0.72, 0.0, TAU, 24, fill.darkened(0.24), max(1.0, radius * 0.08), true)
     draw_arc(center, radius, 0.0, TAU, 32, edge, max(1.0, _cell_size * 0.06), true)
 
 func _position_spot_radius() -> float:
@@ -480,6 +540,7 @@ func _ensure_marble_nodes() -> void:
             token.set_meta("player", player)
             token.set_meta("marble_id", marble_id)
             token.set_color(PLAYER_COLORS[player])
+            token.set_marble_texture(_marble_texture)
             player_nodes.append(token)
         _marble_nodes.append(player_nodes)
 
@@ -604,6 +665,7 @@ class MarbleToken:
     extends Control
 
     var _color := Color.WHITE
+    var _marble_texture: Texture2D = null
     var _selectable := false
     var _selected := false
     var _shadow_offset := Vector2(0.0, 6.0)
@@ -614,6 +676,10 @@ class MarbleToken:
 
     func set_color(color: Color) -> void:
         _color = color
+        queue_redraw()
+
+    func set_marble_texture(texture: Texture2D) -> void:
+        _marble_texture = texture
         queue_redraw()
 
     func set_selectable(selectable: bool) -> void:
@@ -650,6 +716,26 @@ class MarbleToken:
             draw_arc(center, radius * 1.08, 0.0, TAU, 40, MOVE_SOURCE_RING, max(2.0, radius * 0.16), true)
         if _selected:
             draw_arc(center, radius * 1.22, 0.0, TAU, 44, MOVE_DEST_RING, max(2.0, radius * 0.13), true)
-        draw_circle(center, radius, _color)
+        var base_color := _color.darkened(0.30)
+        var mid_color := _color.darkened(0.08)
+        var top_color := _color.lerp(Color.WHITE, 0.24)
+        var sparkle := MARBLE_HIGHLIGHT
+        sparkle.a = 0.65
+
+        if _marble_texture != null:
+            draw_texture_rect(_marble_texture, Rect2(Vector2.ZERO, size), false, _color)
+            var gloss := Color.WHITE
+            gloss.a = 0.12
+            draw_texture_rect(_marble_texture, Rect2(Vector2.ZERO, size), false, gloss)
+            var lower_shade := Color(0.0, 0.0, 0.0, 0.16)
+            draw_circle(center + Vector2(0.0, radius * 0.16), radius * 0.76, lower_shade)
+        else:
+            draw_circle(center, radius, base_color)
+            draw_circle(center + Vector2(0.0, radius * 0.08), radius * 0.88, mid_color)
+            draw_circle(center - Vector2(radius * 0.16, radius * 0.24), radius * 0.68, top_color)
         draw_arc(center, radius, 0.0, TAU, 36, MARBLE_EDGE, max(1.5, radius * 0.13), true)
-        draw_circle(center - Vector2(radius * 0.28, radius * 0.30), radius * 0.23, MARBLE_HIGHLIGHT)
+
+        var rim_light := _color.lerp(Color.WHITE, 0.50)
+        rim_light.a = 0.35
+        draw_arc(center - Vector2(radius * 0.08, radius * 0.10), radius * 0.78, PI * 1.08, PI * 1.92, 24, rim_light, max(1.0, radius * 0.08), true)
+        draw_circle(center - Vector2(radius * 0.30, radius * 0.34), radius * 0.25, sparkle)
