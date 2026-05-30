@@ -25,8 +25,48 @@ const BOARD_SCALE := 0.97
 const POSITION_SPOT_RADIUS_RATIO := 0.37
 const MARBLE_SIZE_RATIO := 0.71
 const BOARD_EDGE_PADDING_UNITS := 0.75
-const MOVE_ANIMATION_SECONDS := 0.36
-const CAPTURE_ANIMATION_SECONDS := 0.30
+const ANIMATION_STYLE_PRESETS := {
+    "subtle": {
+        "move_seconds": 0.28,
+        "capture_seconds": 0.24,
+        "lift_ratio": 0.38,
+        "scale_lift": 1.08,
+        "up_phase_ratio": 0.46,
+        "shadow_alpha_ground": 0.20,
+        "shadow_alpha_lifted": 0.11,
+        "impact_pulse_seconds": 0.14,
+        "impact_radius_min_ratio": 0.28,
+        "impact_radius_max_ratio": 0.66,
+        "impact_alpha": 0.28,
+    },
+    "arcade": {
+        "move_seconds": 0.31,
+        "capture_seconds": 0.26,
+        "lift_ratio": 0.48,
+        "scale_lift": 1.11,
+        "up_phase_ratio": 0.43,
+        "shadow_alpha_ground": 0.22,
+        "shadow_alpha_lifted": 0.10,
+        "impact_pulse_seconds": 0.16,
+        "impact_radius_min_ratio": 0.34,
+        "impact_radius_max_ratio": 0.78,
+        "impact_alpha": 0.36,
+    },
+    "cinematic": {
+        "move_seconds": 0.36,
+        "capture_seconds": 0.30,
+        "lift_ratio": 0.62,
+        "scale_lift": 1.16,
+        "up_phase_ratio": 0.42,
+        "shadow_alpha_ground": 0.24,
+        "shadow_alpha_lifted": 0.10,
+        "impact_pulse_seconds": 0.18,
+        "impact_radius_min_ratio": 0.36,
+        "impact_radius_max_ratio": 0.86,
+        "impact_alpha": 0.42,
+    },
+}
+const DEFAULT_ANIMATION_STYLE := "cinematic"
 const PLAYER_COLORS := [
     Color(0.86, 0.20, 0.17),
     Color(0.16, 0.60, 0.27),
@@ -43,11 +83,40 @@ var _legal_move_player := -1
 var _selected_marble := -1
 var _animation_in_progress := false
 var _seat_labels: Array = ["Red", "Green", "Yellow", "Blue"]
+var _impact_active := false
+var _impact_progress := 1.0
+var _impact_center := Vector2.ZERO
+var _impact_tween: Tween = null
+var _animation_style: Dictionary = {}
 
 func _ready() -> void:
     _ensure_marble_nodes()
+    set_animation_style(DEFAULT_ANIMATION_STYLE)
     resized.connect(_on_resized)
     _refresh_marble_nodes()
+
+func set_animation_style(style_name: String) -> void:
+    var key := style_name.to_lower()
+    if not ANIMATION_STYLE_PRESETS.has(key):
+        key = DEFAULT_ANIMATION_STYLE
+    _animation_style = ANIMATION_STYLE_PRESETS[key].duplicate(true)
+    _refresh_shadow_style()
+    queue_redraw()
+
+func _style_float(key: String, fallback: float) -> float:
+    if _animation_style.has(key):
+        return float(_animation_style[key])
+    return fallback
+
+func _refresh_shadow_style() -> void:
+    if _marble_nodes.size() != WahooState.NUM_PLAYERS:
+        return
+    var ground_alpha := _style_float("shadow_alpha_ground", 0.24)
+    var lifted_alpha := _style_float("shadow_alpha_lifted", 0.10)
+    for player in range(WahooState.NUM_PLAYERS):
+        for marble_id in range(WahooState.MARBLES_PER_PLAYER):
+            var token: Control = _marble_nodes[player][marble_id]
+            token.set_shadow_profile(ground_alpha, lifted_alpha)
 
 func set_state(state: WahooState) -> void:
     _state = state
@@ -84,9 +153,12 @@ func animate_move(move: Dictionary, player: int) -> void:
 
     var marble_id := int(move["marble"])
     var moving_token: Control = _marble_nodes[player][marble_id]
+    var moving_start := moving_token.position
     var moving_dest := _token_position_for_location(move["dest"], player, marble_id)
     var original_moving_z := moving_token.z_index
     moving_token.z_index = 100
+    moving_token.pivot_offset = moving_token.size * 0.5
+    moving_token.set_shadow_lift(0.0)
 
     var captured_token: Control = null
     var original_captured_z := 0
@@ -97,18 +169,56 @@ func animate_move(move: Dictionary, player: int) -> void:
         captured_token = _marble_nodes[cap_player][cap_marble]
         original_captured_z = captured_token.z_index
         captured_token.z_index = 90
+        captured_token.pivot_offset = captured_token.size * 0.5
 
-    var tween := create_tween()
-    tween.set_parallel(true)
-    tween.tween_property(moving_token, "position", moving_dest, MOVE_ANIMATION_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+    var move_seconds := _style_float("move_seconds", 0.36)
+    var capture_seconds := _style_float("capture_seconds", 0.30)
+    var up_phase_ratio := _style_float("up_phase_ratio", 0.42)
+    var lift_ratio := _style_float("lift_ratio", 0.62)
+    var scale_lift := _style_float("scale_lift", 1.16)
+
+    var up_seconds := move_seconds * up_phase_ratio
+    var down_seconds := move_seconds - up_seconds
+    var lift_height := clampf(_cell_size * lift_ratio, 12.0, 42.0)
+    var apex := moving_start.lerp(moving_dest, 0.45) + Vector2(0.0, -lift_height)
+
+    var moving_tween := create_tween()
+    moving_tween.set_parallel(true)
+    moving_tween.tween_property(moving_token, "position", apex, up_seconds).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    moving_tween.tween_property(moving_token, "scale", Vector2.ONE * scale_lift, up_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+    moving_tween.tween_method(Callable(moving_token, "set_shadow_lift"), 0.0, 1.0, up_seconds)
+    moving_tween.set_parallel(false)
+    moving_tween.set_parallel(true)
+    moving_tween.tween_property(moving_token, "position", moving_dest, down_seconds).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_IN)
+    moving_tween.tween_property(moving_token, "scale", Vector2.ONE, down_seconds).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+    moving_tween.tween_method(Callable(moving_token, "set_shadow_lift"), 1.0, 0.0, down_seconds)
+
+    var capture_tween: Tween = null
     if captured_token != null:
         var captured_home := _token_position_for_location(WahooState.loc_base(), int(captures[0]), int(captures[1]))
-        tween.tween_property(captured_token, "position", captured_home, CAPTURE_ANIMATION_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+        capture_tween = create_tween()
+        capture_tween.set_parallel(true)
+        capture_tween.tween_property(captured_token, "position", captured_home, capture_seconds).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+        capture_tween.tween_property(captured_token, "scale", Vector2.ONE * 0.85, capture_seconds * 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+        capture_tween.set_parallel(false)
+        capture_tween.tween_property(captured_token, "scale", Vector2.ONE, capture_seconds * 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
-    await tween.finished
+    await moving_tween.finished
+    if capture_tween != null:
+        await capture_tween.finished
+
+    moving_token.position = moving_dest
+    moving_token.scale = Vector2.ONE
+    moving_token.set_shadow_lift(0.0)
     moving_token.z_index = original_moving_z
     if captured_token != null:
+        var captured_home_pos := _token_position_for_location(WahooState.loc_base(), int(captures[0]), int(captures[1]))
+        captured_token.position = captured_home_pos
+        captured_token.scale = Vector2.ONE
+        captured_token.set_shadow_lift(0.0)
         captured_token.z_index = original_captured_z
+
+    _start_impact_pulse(moving_dest + _token_size() * 0.5)
     _animation_in_progress = false
 
 func _gui_input(event: InputEvent) -> void:
@@ -141,8 +251,40 @@ func _draw() -> void:
     _draw_home_rows()
     _draw_track_cells()
     _draw_center()
+    _draw_impact_pulse()
     _draw_legal_destinations()
     _draw_seat_labels()
+
+func _draw_impact_pulse() -> void:
+    if not _impact_active:
+        return
+    var ring := MOVE_DEST_RING
+    ring.a = _style_float("impact_alpha", 0.42) * (1.0 - _impact_progress)
+    var radius := _cell_size * lerpf(
+        _style_float("impact_radius_min_ratio", 0.36),
+        _style_float("impact_radius_max_ratio", 0.86),
+        _impact_progress
+    )
+    var thickness := max(2.0, _cell_size * 0.10 * (1.0 - _impact_progress * 0.55))
+    draw_arc(_impact_center, radius, 0.0, TAU, 36, ring, thickness, true)
+
+func _set_impact_progress(progress: float) -> void:
+    _impact_progress = clampf(progress, 0.0, 1.0)
+    queue_redraw()
+
+func _start_impact_pulse(center: Vector2) -> void:
+    _impact_center = center
+    _impact_active = true
+    _set_impact_progress(0.0)
+    if _impact_tween != null and _impact_tween.is_valid():
+        _impact_tween.kill()
+    _impact_tween = create_tween()
+    _impact_tween.tween_method(Callable(self, "_set_impact_progress"), 0.0, 1.0, _style_float("impact_pulse_seconds", 0.18))
+    _impact_tween.finished.connect(func() -> void:
+        _impact_active = false
+        _impact_progress = 1.0
+        queue_redraw()
+    )
 
 func _square_board_rect() -> Rect2:
     var side: float = min(size.x, size.y) * BOARD_SCALE
@@ -354,7 +496,14 @@ func _refresh_marble_nodes() -> void:
             var token: Control = _marble_nodes[player][marble_id]
             var loc: Array = _state.marbles[player][marble_id]
             token.size = Vector2(token_side, token_side)
+            token.pivot_offset = token.size * 0.5
             token.position = _token_position_for_location(loc, player, marble_id)
+            token.scale = Vector2.ONE
+            token.set_shadow_profile(
+                _style_float("shadow_alpha_ground", 0.24),
+                _style_float("shadow_alpha_lifted", 0.10)
+            )
+            token.set_shadow_lift(0.0)
             token.z_index = 10 + player
             token.visible = true
             token.set_selectable(_marble_has_legal_move(player, marble_id))
@@ -457,6 +606,11 @@ class MarbleToken:
     var _color := Color.WHITE
     var _selectable := false
     var _selected := false
+    var _shadow_offset := Vector2(0.0, 6.0)
+    var _shadow_scale := 0.95
+    var _shadow_alpha := 0.24
+    var _shadow_alpha_ground := 0.24
+    var _shadow_alpha_lifted := 0.10
 
     func set_color(color: Color) -> void:
         _color = color
@@ -474,9 +628,24 @@ class MarbleToken:
         _selected = selected
         queue_redraw()
 
+    func set_shadow_profile(ground_alpha: float, lifted_alpha: float) -> void:
+        _shadow_alpha_ground = ground_alpha
+        _shadow_alpha_lifted = lifted_alpha
+        _shadow_alpha = _shadow_alpha_ground
+        queue_redraw()
+
+    func set_shadow_lift(lift_ratio: float) -> void:
+        var t := clampf(lift_ratio, 0.0, 1.0)
+        _shadow_alpha = lerpf(_shadow_alpha_ground, _shadow_alpha_lifted, t)
+        _shadow_scale = lerpf(0.95, 0.72, t)
+        _shadow_offset = Vector2(0.0, lerpf(size.y * 0.16, size.y * 0.32, t))
+        queue_redraw()
+
     func _draw() -> void:
         var radius: float = min(size.x, size.y) * 0.48
         var center := size * 0.5
+        var shadow_color := Color(0.03, 0.03, 0.03, _shadow_alpha)
+        draw_circle(center + _shadow_offset, radius * 0.84 * _shadow_scale, shadow_color)
         if _selectable:
             draw_arc(center, radius * 1.08, 0.0, TAU, 40, MOVE_SOURCE_RING, max(2.0, radius * 0.16), true)
         if _selected:

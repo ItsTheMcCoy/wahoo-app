@@ -1,6 +1,6 @@
 # Wahoo Text Game
 
-Console-based Python prototype plus Godot 4 browser-port scaffold for Wahoo. The Godot visual board phase is complete; the next Godot work is Phase 3, porting the validated Python AI opponents into GDScript.
+Console-based Python prototype plus Godot 4 browser port for Wahoo. Single-device hot-seat play with configurable AI seats is complete; the next major phase is internet multiplayer.
 
 ## Current State
 
@@ -34,7 +34,6 @@ Implemented:
 
 Not implemented yet:
 
-- Godot AI opponent selection and move execution (Phase 3).
 - Stronger sprinter-beating AI candidate (requires a larger overnight tuning run).
 - Richer human-like AI profile (requires more recorded human-reasoning games).
 
@@ -46,7 +45,7 @@ Phase 2b complete:
 
 - `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
-- `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, legal-move destination highlighting, tap-to-move selection, movement animation, turn status, Roll button state, and a win overlay.
+- `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, tap-to-move selection, lift-and-place movement animation, dynamic marble shadows, landing impact pulse, turn status, Roll button state, and a win overlay.
 - Phase 2b validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
 
 ## Requirements
@@ -274,7 +273,7 @@ python -m tests.test_wahoo
 
 ## Godot Port
 
-The repository includes a Godot project in `godot/`. Phase 2a and Phase 2b are complete: the rules port, visual board, hot-seat interaction, animation, turn UI, win overlay, and Web export are in place.
+The repository includes a Godot project in `godot/`. Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete: rules port, visual board, AI seat integration, hot-seat interaction, animation polish, turn UI, and Web export are in place.
 
 To open it:
 
@@ -299,7 +298,7 @@ Version control policy:
 - The Godot project is standardized on `4.6.3`.
 - Commit source-adjacent Godot metadata sidecar files (for example `*.uid` and `*.import`).
 
-This runs both the rule parity suite and the visual layout suite. See `godot/README.md` for current scope and next porting steps.
+This runs rules, visual layout, and AI parity smoke suites. See `godot/README.md` for current scope and multiplayer-phase notes.
 
 ## Documentation Map
 

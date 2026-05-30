@@ -53,7 +53,7 @@ GDScript port of rules engine, 27 parity smoke tests, HTML5 export validated on 
 
 ### Phase 2b — Visual Board — *Complete*
 
-Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, movement animation, current-player indicator, turn announcements, win screen. Validated: 32/32 Godot smoke checks pass, 80 Python tests pass, Web export working.
+Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, lift-and-place movement animation (style presets: subtle/arcade/cinematic), dynamic marble shadow, landing impact pulse, current-player indicator, turn announcements, win screen. Validated: 32/32 Godot smoke checks pass, 80 Python tests pass, Web export working.
 
 ### Phase 3a — GDScript AI Engine — *Complete*
 
@@ -153,7 +153,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/project.godot` | Godot 4.6.3 project file | In repo |
 | `godot/scenes/Main.tscn` | Board-first Godot scene | In repo |
 | `godot/scripts/main.gd` | Scene controller: board, turn UI, AI dispatch, save/load, game menu | In repo |
-| `godot/scripts/wahoo_board_view.gd` | Visual board surface | In repo |
+| `godot/scripts/wahoo_board_view.gd` | Visual board surface, marble animation, and animation-style presets | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |
 | `godot/scripts/wahoo_rules.gd` | GDScript port of Python rules engine | In repo |
 | `godot/scripts/wahoo_rules_smoke.gd` | Godot parity smoke tests | In repo |

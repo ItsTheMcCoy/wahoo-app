@@ -15,6 +15,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 - AI load/scenario smoke tests (`wahoo_ai_smoke.gd`) — 18 checks (12 AI load + 6 scenario probes matching Python `test_ai.py`)
 - Per-seat profile dropdowns in setup: Human or any of 10 named AI profiles
 - Auto-played AI turns with pre-move pause; human turns use an End Turn button to advance
+- Board move polish in `wahoo_board_view.gd`: lift-and-place marble motion, dynamic marble shadow, and destination impact pulse with style presets (`subtle`, `arcade`, `cinematic`)
 - HTML5 export configured and validated on desktop and mobile browsers
 
 ## Open in Godot
@@ -102,7 +103,7 @@ Current Godot state:
 - `scenes/Main.tscn` is a two-column layout: the board fills the left column (`PanelContainer` with `EXPAND+FILL`); the right `SidePanel` (280 px min width) holds, top to bottom: `GameMenuButton`, `Status` log (expands), `DieFrame/DieLabel` (96 px Unicode die face), `TurnLabel` (26 px, bold via 2 px outline, player-colored), `RollButton` (72 px tall), and `EndTurnButton` (72 px tall).
 - `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves. Die rolling shows Unicode faces (⚀–⚅) with a 14-frame cycle and a center-pivoted scale pop on settle.
 - `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, tap/click targets, and movement animation.
-- `scripts/wahoo_board_view.gd` draws the board canvas: static geometry, marble nodes, and the selected-marble ring. Destination circles and moveable-marble rings are intentionally absent (no move highlighting).
+- `scripts/wahoo_board_view.gd` draws the board canvas, marble tokens, and selected-marble ring; legal move hints remain hidden (no destination circles or moveable-marble rings), while movement uses a lift-and-place tween with dynamic shadow and a brief landing pulse.
 - `scripts/wahoo_ai.gd` implements RandomPlayer and GreedyPlayer with 9 named profile weight dicts and a `make_profiles()` factory.
 
 ## HTML5 export (Phase 2a)
