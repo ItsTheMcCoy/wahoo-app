@@ -62,6 +62,10 @@ const PROFILE_LABELS := {
 @onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Name
 @onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat2Row/Seat2Name
 @onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat3Row/Seat3Name
+@onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Label
+@onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Label
+@onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupContent/Seat2Row/Seat2Label
+@onready var _seat_label_3: Control = $SetupOverlay/SetupPanel/SetupContent/Seat3Row/Seat3Label
 
 signal _opening_roll_pressed
 
@@ -97,6 +101,7 @@ func _ready() -> void:
 	_refresh_setup_name_fields()
 	_setup_overlay.visible = true
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
+	_status.scroll_following = true
 
 func _apply_visual_theme() -> void:
 	var panel_style := StyleBoxFlat.new()
@@ -151,6 +156,7 @@ func _apply_visual_theme() -> void:
 	status_style.content_margin_bottom = 8
 	_status.add_theme_stylebox_override("normal", status_style)
 	_status.add_theme_color_override("default_color", Color(0.97, 0.92, 0.84))
+	_status.add_theme_font_size_override("normal_font_size", 20)
 	_status.add_theme_constant_override("line_separation", 3)
 	_status.add_theme_constant_override("outline_size", 1)
 	_status.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.04, 0.90))
@@ -276,6 +282,34 @@ func _apply_visual_theme() -> void:
 		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
 		field.add_theme_color_override("font_placeholder_color", Color(0.74, 0.69, 0.62))
 
+	var seat_label_colors: Array = [
+		Color(0.86, 0.20, 0.17),
+		Color(0.16, 0.60, 0.27),
+		Color(0.93, 0.75, 0.17),
+		Color(0.17, 0.34, 0.78),
+	]
+	var seat_label_nodes: Array = [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]
+	for i in range(4):
+		var lbl: Control = seat_label_nodes[i]
+		lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var marble_color: Color = seat_label_colors[i]
+		var panel := Panel.new()
+		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		var circle_style := StyleBoxFlat.new()
+		circle_style.bg_color = marble_color
+		circle_style.corner_radius_top_left = 999
+		circle_style.corner_radius_top_right = 999
+		circle_style.corner_radius_bottom_left = 999
+		circle_style.corner_radius_bottom_right = 999
+		var edge_color := marble_color.darkened(0.38)
+		circle_style.border_color = edge_color
+		circle_style.border_width_left = 2
+		circle_style.border_width_top = 2
+		circle_style.border_width_right = 2
+		circle_style.border_width_bottom = 2
+		panel.add_theme_stylebox_override("panel", circle_style)
+		lbl.add_child(panel)
+
 	_side_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.98)
 
 func _populate_dropdowns() -> void:
@@ -361,7 +395,7 @@ func _new_game() -> void:
 	_die_label.scale = Vector2.ONE
 	_set_roll_ready(false)
 	_roll_button.text = "Roll"
-	_status.text = ""
+	_set_status_text("")
 	_turn_label.text = ""
 	_turn_label.self_modulate = Color.WHITE
 	await _run_starting_roll_phase()
@@ -511,7 +545,18 @@ func _render_status(header: String) -> void:
 	if _show_smoke_summary:
 		lines.append("")
 		lines.append(_smoke_summary)
-	_status.text = "\n".join(lines)
+	_set_status_text("\n".join(lines))
+
+func _set_status_text(text: String) -> void:
+	_status.text = text
+	_status.scroll_following = true
+	call_deferred("_scroll_status_to_bottom")
+
+func _scroll_status_to_bottom() -> void:
+	if _status == null:
+		return
+	var last_line: int = maxi(0, _status.get_line_count() - 1)
+	_status.scroll_to_line(last_line)
 
 func _turn_announcement(action: String) -> String:
 	return "Turn %d: %s\n%s" % [_turn_number, _player_label(_state.current_player), action]
@@ -545,11 +590,12 @@ func _on_end_turn_pressed() -> void:
 func _run_starting_roll_phase() -> void:
 	var contenders: Array = [0, 1, 2, 3]
 	var status_lines: PackedStringArray = []
+	var winning_roll := 0
 
 	_turn_label.text = ""
 	_turn_label.self_modulate = Color.WHITE
 	status_lines.append("Roll to see who goes first.")
-	_status.text = "\n".join(status_lines)
+	_set_status_text("\n".join(status_lines))
 	await get_tree().create_timer(1.0).timeout
 
 	while contenders.size() > 1:
@@ -557,7 +603,6 @@ func _run_starting_roll_phase() -> void:
 			return
 		var round_rolls: Array = []
 		var highest := 0
-		var highest_seat := -1
 
 		for player in contenders:
 			if not _starting_phase:
@@ -590,10 +635,9 @@ func _run_starting_roll_phase() -> void:
 			round_rolls.append({"player": seat, "roll": roll})
 			if roll > highest:
 				highest = roll
-				highest_seat = seat
 
 			status_lines.append("%s rolled %d." % [name, roll])
-			_status.text = "\n".join(status_lines)
+			_set_status_text("\n".join(status_lines))
 			await get_tree().create_timer(0.5).timeout
 			if not _starting_phase:
 				return
@@ -610,10 +654,12 @@ func _run_starting_roll_phase() -> void:
 			_turn_label.text = "Tie!"
 			_turn_label.self_modulate = Color.WHITE
 			status_lines.append("Tie at %d — %s roll again." % [highest, ", ".join(parts)])
-			_status.text = "\n".join(status_lines)
+			_set_status_text("\n".join(status_lines))
 			await get_tree().create_timer(1.0).timeout
 			if not _starting_phase:
 				return
+		else:
+			winning_roll = highest
 
 		contenders = tied
 
@@ -625,8 +671,9 @@ func _run_starting_roll_phase() -> void:
 	var winner_name: String = _seat_display_names[winner]
 	_turn_label.text = winner_name
 	_turn_label.self_modulate = PLAYER_COLORS[winner]
-	status_lines.append("%s goes first! Press Roll to start." % winner_name)
-	_status.text = "\n".join(status_lines)
+	status_lines.append("%s had the highest roll with a %d." % [winner_name, winning_roll])
+	status_lines.append("%s goes first!" % winner_name)
+	_set_status_text("\n".join(status_lines))
 	_set_roll_ready(true)
 
 func _seat_roll_label(player: int) -> String:

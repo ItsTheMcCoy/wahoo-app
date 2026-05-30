@@ -33,7 +33,8 @@ const TURN_FOCUS_RING_ALPHA := 0.55
 const BOARD_SCALE := 0.97
 const POSITION_SPOT_RADIUS_RATIO := 0.37
 const MARBLE_SIZE_RATIO := 0.71
-const BOARD_EDGE_PADDING_UNITS := 0.75
+const BOARD_EDGE_PADDING_UNITS := 1.10
+const SEAT_LABEL_OFFSET_UNITS := 1.30
 const ANIMATION_STYLE_PRESETS := {
     "subtle": {
         "move_seconds": 0.28,
@@ -485,7 +486,7 @@ func _draw_seat_labels() -> void:
     var font: Font = ThemeDB.fallback_font
     if font == null:
         return
-    var font_size := int(max(12.0, _cell_size * 0.52))
+    var font_size := int(max(16.0, _cell_size * 0.66))
     var font_height: float = font.get_height(font_size)
     for player in range(WahooState.NUM_PLAYERS):
         var label := String(_seat_labels[player]).strip_edges()
@@ -501,32 +502,46 @@ func _draw_seat_labels() -> void:
             _draw_centered_text(font, font_size, font_height, label, anchor, color)
 
 func _seat_label_anchor(player: int) -> Vector2:
-    var bounds := _base_cluster_bounds(player)
-    var padding := _cell_size * 0.30
-    match player:
-        0:
-            return Vector2(bounds.get_center().x, bounds.end.y + padding)
-        1:
-            return Vector2(bounds.position.x - padding, bounds.get_center().y)
-        2:
-            return Vector2(bounds.get_center().x, bounds.position.y - padding)
-        3:
-            return Vector2(bounds.end.x + padding, bounds.get_center().y)
-    return bounds.get_center()
+    var base_center := _base_cluster_center(player)
+    var inward_dirs := [
+        Vector2(0.0, 1.0),
+        Vector2(-1.0, 0.0),
+        Vector2(0.0, -1.0),
+        Vector2(1.0, 0.0),
+    ]
+    return base_center + inward_dirs[player] * (_cell_size * 0.72)
+
+func _base_cluster_center(player: int) -> Vector2:
+    var coords := WahooLayout.base_cluster_grid_coords(player)
+    var sum := Vector2.ZERO
+    for coord in coords:
+        sum += _grid_to_local(coord)
+    return sum / float(max(1, coords.size()))
 
 func _draw_centered_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, color: Color) -> void:
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-    var shadow_pos := anchor + Vector2(-text_size.x * 0.5 + _cell_size * 0.05, font_height * 0.38 + _cell_size * 0.06)
-    var shadow_color := Color(0.06, 0.05, 0.04, 0.52)
-    draw_string(font, shadow_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, shadow_color)
     var draw_pos := anchor + Vector2(-text_size.x * 0.5, font_height * 0.38)
+    var bevel_offset := Vector2(_cell_size * 0.03, _cell_size * 0.03)
+    var bevel_light := color.lerp(Color.WHITE, 0.52)
+    bevel_light.a = minf(1.0, color.a)
+    var bevel_dark := color.darkened(0.68)
+    bevel_dark.a = 0.62
+    draw_string(font, draw_pos - bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_light)
+    draw_string(font, draw_pos + bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_dark)
     draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 func _draw_centered_rotated_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, angle: float, color: Color) -> void:
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
     draw_set_transform(anchor, angle, Vector2.ONE)
-    draw_string(font, Vector2(-text_size.x * 0.5 + _cell_size * 0.05, font_height * 0.38 + _cell_size * 0.06), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.06, 0.05, 0.04, 0.52))
-    draw_string(font, Vector2(-text_size.x * 0.5, font_height * 0.38), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+    var draw_pos := Vector2(-text_size.x * 0.5, font_height * 0.38)
+    var bevel_offset := Vector2(_cell_size * 0.03, _cell_size * 0.03)
+    var bevel_light := color.lerp(Color.WHITE, 0.52)
+    bevel_light.a = minf(1.0, color.a)
+    var bevel_dark := color.darkened(0.68)
+    bevel_dark.a = 0.62
+    draw_string(font, draw_pos - bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_light)
+    draw_string(font, draw_pos + bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_dark)
+    draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
     draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _grid_to_local(coord: Vector2i) -> Vector2:
