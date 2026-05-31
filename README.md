@@ -320,3 +320,7 @@ This runs rules, visual layout, and AI parity smoke suites. See `godot/README.md
 - Game history is recorded after each resolved roll/move.
 - Replay is useful for reproducing specific board states and verifying rule behavior.
 - Generated `game*.json` files and `__pycache__/` files should not be committed even if they appear in a local working archive.
+
+## Git Maintenance
+
+**Note on `git gc` failures:** If `git gc` (garbage collection) fails with file deletion errors, this is usually caused by Windows, OneDrive, or antivirus locking `.git` objects. This is not critical — `git gc` is just cleanup and runs automatically occasionally. It is safe to ignore the error and continue using git normally.
