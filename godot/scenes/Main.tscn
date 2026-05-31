@@ -43,7 +43,7 @@ theme_override_constants/separation = 10
 
 [node name="GameTitle" type="Label" parent="Root/SidePanel"]
 layout_mode = 2
-text = "WAHULO"
+text = "Wahulo"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(0.784, 0.573, 0.165, 1)
@@ -130,7 +130,7 @@ theme_override_constants/separation = 12
 
 [node name="BrandTitle" type="Label" parent="WinOverlay/WinPanel/WinContent"]
 layout_mode = 2
-text = "WAHULO"
+text = "Wahulo"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(0.784, 0.573, 0.165, 1)
@@ -183,7 +183,7 @@ theme_override_constants/separation = 16
 
 [node name="BrandTitle" type="Label" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-text = "WAHULO"
+text = "Wahulo"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 42
 theme_override_colors/font_color = Color(0.784, 0.573, 0.165, 1)

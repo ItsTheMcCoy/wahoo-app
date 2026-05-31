@@ -21,6 +21,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 - HTML5 export configured and validated on desktop and mobile browsers
 - Branded loading screen: custom HTML shell (`custom_html_shell.html`) with dark felt background, Wahulo wordmark, and amber progress bar; persists across Godot re-exports
 - Full launch asset set: app icon (`icon.png`), boot splash (`assets/textures/boot_splash.png`), favicon, Apple touch icon, OG/social preview image, wordmark SVG/PNG, and felt background tile; all wired into `project.godot` and the HTML shell
+- Brand consistency: in-game/setup/win title labels use `Wahulo` title case to match the official wordmark text
 
 ## Open in Godot
 
