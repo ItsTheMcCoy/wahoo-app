@@ -17,7 +17,9 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Wahulo: Marble Mayham"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
+boot_splash/image="res://assets/textures/boot_splash.png"
+boot_splash/bg_color=Color(0.118, 0.086, 0.055, 1)
 
 [rendering]
 
