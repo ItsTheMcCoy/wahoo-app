@@ -1,7 +1,7 @@
 # Cloudflare Application Setup Guide (Wahulo)
 
-Last reviewed: 2026-05-30
-Scope: Cloudflare Pages app + domain + DNS + TLS for this repository
+Last reviewed: 2026-05-31
+Scope: Cloudflare domain/DNS + Netlify static hosting + Render relay for this repository
 
 This guide is written for your current state:
 - Domain purchased in Cloudflare: `wahulo.com`
@@ -10,6 +10,14 @@ This guide is written for your current state:
 - Current Netlify URL: `www.wahulo.netlify.app` (live)
 - Relay server planned on Render: `relay.wahulo.com`
 - Current blocker: Cloudflare Pages rejects `godot/build/web/index.wasm` (~36 MiB) because Pages supports files up to 25 MiB.
+
+## Confirmed Live Configuration (May 31, 2026)
+
+The following items are confirmed complete:
+1. Cloudflare DNS configured with required A and CNAME records for Netlify hosting.
+2. Netlify domain management completed for custom domain setup.
+3. Production domain check passed: `https://wahulo.com` loads successfully.
+4. Netlify site URL active: `https://www.wahulo.netlify.app`.
 
 ## 1. Confirm Account And Zone Health
 
@@ -81,8 +89,8 @@ Current UI path:
 - `DNS` -> `Records`
 
 Confirm:
-1. Record exists for apex (`@`) pointing to Pages-managed target.
-2. Record exists for `www` pointing to Pages-managed target.
+1. Record exists for apex (`@`) pointing to Netlify-managed target(s).
+2. Record exists for `www` pointing to Netlify-managed target.
 3. Record for relay exists:
    - Type: `CNAME`
    - Name: `relay`
@@ -121,7 +129,7 @@ Run these checks in order:
    - `nslookup wahulo.com`
    - `nslookup www.wahulo.com`
    - `nslookup relay.wahulo.com`
-2. Pages site
+2. Production site
    - `https://wahulo.com` loads
    - `https://www.wahulo.com` loads (or redirects as configured)
 3. Relay origin

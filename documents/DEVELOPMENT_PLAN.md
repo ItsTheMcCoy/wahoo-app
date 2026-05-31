@@ -6,7 +6,7 @@ Current state of the project and the path forward. Updated as phases complete.
 
 Work is intentionally paused here and will resume on a later day.
 
-Deployment status update (May 31, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit). Netlify fallback is active and live at `wahulo.com` with Netlify origin URL `www.wahulo.netlify.app`.
+Deployment status update (May 31, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit). Netlify fallback is active and live at `wahulo.com` with Netlify origin URL `www.wahulo.netlify.app`. Cloudflare DNS A/CNAME records are configured, Netlify domain management is complete, and `wahulo.com` has been tested successfully.
 
 ## Project Goal
 

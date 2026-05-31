@@ -14,6 +14,8 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Domain status | `wahulo.com` purchased via Cloudflare Registrar |
 | Static hosting status | Netlify fallback is active and live; Cloudflare Pages blocked by current wasm size limit |
 | Current Netlify URL | `www.wahulo.netlify.app` |
+| Cloudflare DNS status | Required A and CNAME records configured for Netlify |
+| Domain verification status | Netlify domain management complete; `wahulo.com` test passed |
 
 ---
 
