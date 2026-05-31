@@ -160,6 +160,7 @@ Run these checks in order:
 1. Keep deployment source of truth as `main` branch.
 2. Do not manually repoint Pages DNS records away and back unless necessary; this can temporarily deactivate domains.
 3. Record each infra change (DNS, SSL mode, custom domains, Render endpoint) in `documents/DEVELOPMENT_PLAN.md`.
+4. Re-export the Godot Web build whenever gameplay-relevant Godot files change (for example: `godot/scenes/*.tscn`, `godot/scripts/*.gd`, or game assets). Commit updated files in `godot/build/web` before pushing so hosted environments match local behavior.
 
 ## 11. Netlify Fallback (Current Practical Path)
 

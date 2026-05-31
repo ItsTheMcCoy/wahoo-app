@@ -118,6 +118,8 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 
 **HTML5 export confirmed early.** Browser-specific issues surface before the project gets large.
 
+**Web deployment hygiene.** Whenever Godot gameplay or UI files change (`godot/scenes/*.tscn`, `godot/scripts/*.gd`, or relevant assets), perform a fresh Web export to `godot/build/web` and commit those export artifacts before pushing. Netlify deploys from `godot/build/web`, so missing re-exports can cause hosted behavior to lag behind local behavior.
+
 ## File Inventory
 
 | File | Purpose | Status |
