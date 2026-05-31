@@ -36,6 +36,10 @@ This section tracks feedback to address before advancing any in-progress phases.
 8. ✅ Inter-row spacer lines added so vertical spacing matches horizontal.
 9. ✅ Python board base layout adjusted: Yellow shifted up/right, Green shifted left, trailing blank rows removed.
 10. During human vs AI play, AI profiles will land on an opponent's base exit (when opponent has marbles in base) or opponent's center exit (when opponent has a marble in the center), even when less risky moves are available. All AI profiles should factor in whether landing on those squares is riskier than the alternatives.
+11. Yellow player name text collides with Yellow base positions on board; adjust label placement while preserving other player label placement.
+12. Post-label-fix queued items:
+	- Godot loading screen replacement: evaluate replacing default loading screen with a game-specific intro, build and test a simple version first, then define required loading-screen elements and ownership split (Copilot-generated vs user-created assets/content).
+	- Mobile UX pass: improve portrait and landscape readability/layout (board scale, side-panel text size and length), and evaluate fullscreen options to recover mobile browser address-bar screen space.
 
 ## Phase Summary
 

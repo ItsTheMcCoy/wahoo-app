@@ -509,7 +509,10 @@ func _seat_label_anchor(player: int) -> Vector2:
         Vector2(0.0, -1.0),
         Vector2(1.0, 0.0),
     ]
-    return base_center + inward_dirs[player] * (_cell_size * 0.72)
+    var offset_dirs := inward_dirs.duplicate()
+    # Yellow (player 2) is on the top edge; nudging toward center avoids overlap with base holes.
+    offset_dirs[2] = Vector2(0.0, 1.0)
+    return base_center + offset_dirs[player] * (_cell_size * 0.72)
 
 func _base_cluster_center(player: int) -> Vector2:
     var coords := WahooLayout.base_cluster_grid_coords(player)
