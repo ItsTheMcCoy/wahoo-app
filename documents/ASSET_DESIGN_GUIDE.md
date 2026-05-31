@@ -170,22 +170,31 @@ A grayscale gloss mask applied on top of the player-colored marble circles. It i
 
 | File                              | Type | Size    | Status   |
 |-----------------------------------|------|---------|----------|
-| `godot/assets/textures/board_wood.svg`   | SVG  | 1024×1024 | In use |
-| `godot/assets/textures/marble_gloss.svg` | SVG  | 256×256   | In use |
-| `godot/build/web/index.icon.png`         | PNG  | 32×32   | Godot default — replace recommended |
-| `godot/build/web/index.apple-touch-icon.png` | PNG | 180×180 | Godot default — replace recommended |
-| `godot/build/web/index.png`              | PNG  | 800×600 | Godot default boot splash — replace recommended |
+| `godot/assets/textures/board_wood.svg`            | SVG | 1024×1024 | In use |
+| `godot/assets/textures/marble_gloss.svg`          | SVG | 256×256   | In use |
+| `godot/assets/textures/wahulo_wordmark.svg`       | SVG | 1400×520  | In use — loading screen |
+| `godot/assets/textures/background_felt_tile_512.svg` | SVG | 512×512 | In use — loading screen background |
+| `godot/build/web/og_preview.png`                  | PNG | 1200×630  | Place manually — see below |
+| `godot/build/web/index.icon.png`                  | PNG | 32×32     | Replace with branded favicon |
+| `godot/build/web/index.apple-touch-icon.png`      | PNG | 180×180   | Replace with branded touch icon |
+| `godot/build/web/index.png`                       | PNG | 800×450   | Replace with branded boot splash |
+| `godot/assets/textures/boot_splash.png`           | PNG | 800×450   | Source boot splash for Godot project settings |
 
-### Not Yet Created (Opportunities)
+### Pending Manual Placement
 
-| Asset                    | Format | Suggested Size | Purpose                                     |
-|--------------------------|--------|----------------|---------------------------------------------|
-| Wahulo wordmark / logo   | SVG    | Scalable       | Loading screen, icon, social sharing        |
-| App icon                 | PNG    | 512×512        | Browser tab, home screen bookmark          |
-| Apple touch icon         | PNG    | 180×180        | iOS home screen bookmark                    |
-| Boot splash              | PNG    | 800×450        | Shown by Godot engine while scene loads     |
-| Background tile / felt   | SVG or PNG | 512×512  | Optional felt/baize background beneath board |
-| Social preview (OG image)| PNG    | 1200×630       | Link preview on social media / messaging    |
+These PNG files have been created and must be copied to the locations below. Godot exports will overwrite `index.icon.png`, `index.apple-touch-icon.png`, and `index.png` — set them in Godot project settings first so re-exports use the branded versions.
+
+| Save as…                                         | Size    | Content                              |
+|--------------------------------------------------|---------|--------------------------------------|
+| `godot/build/web/og_preview.png`                 | 1200×630 | Social/OG preview image             |
+| `godot/build/web/index.icon.png`                 | 32×32   | Favicon (cropped from app icon)      |
+| `godot/build/web/index.apple-touch-icon.png`     | 180×180 | iOS touch icon                       |
+| `godot/build/web/index.png`                      | 800×450 | Boot splash shown by Godot on load   |
+| `godot/assets/textures/boot_splash.png`          | 800×450 | Same boot splash, source copy        |
+| `godot/icon.png`                                 | 512×512 | App icon (also update `project.godot` to reference it) |
+
+To wire the boot splash in Godot: open Project Settings → Application → Boot Splash → set Image to `res://assets/textures/boot_splash.png`.
+To wire the app icon: open Project Settings → Application → Config → Icon, set to `res://icon.png`.
 
 ---
 
@@ -214,7 +223,7 @@ A grayscale gloss mask applied on top of the player-colored marble circles. It i
 
 ---
 
-## Logo / Wordmark Specification (Not Yet Created)
+## Logo / Wordmark Specification ✅ Complete
 
 When generating a Wahulo logo, these constraints apply:
 
@@ -232,7 +241,7 @@ When generating a Wahulo logo, these constraints apply:
 
 ---
 
-## Icon Specification (Not Yet Created)
+## Icon Specification ✅ Complete
 
 **Purpose:** Browser tab favicon + mobile home screen bookmark.
 
@@ -248,7 +257,7 @@ When generating a Wahulo logo, these constraints apply:
 
 ---
 
-## Boot Splash Specification (Not Yet Created)
+## Boot Splash Specification ✅ Complete
 
 Displayed by the Godot engine for ~0.5–2 seconds after WASM loads, before the main game scene appears.
 
@@ -262,7 +271,7 @@ Displayed by the Godot engine for ~0.5–2 seconds after WASM loads, before the 
 
 ---
 
-## Open Graph / Social Preview Specification (Not Yet Created)
+## Open Graph / Social Preview Specification ✅ Complete
 
 **Size:** 1200×630 PNG.
 
