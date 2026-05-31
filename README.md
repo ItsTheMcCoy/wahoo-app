@@ -273,7 +273,7 @@ python -m tests.test_wahoo
 
 ## Godot Port
 
-The repository includes a Godot project in `godot/`. Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete: rules port, visual board, AI seat integration, hot-seat interaction, animation polish, turn UI, and Web export are in place.
+The repository includes a Godot project in `godot/`. Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete: rules port, visual board, AI seat integration, hot-seat interaction, animation polish, turn UI, Web export, and a branded loading screen with a full launch asset set (icon, boot splash, OG image, wordmark, felt background). The game is live at wahulo.com.
 
 To open it:
 
@@ -311,6 +311,7 @@ This runs rules, visual layout, and AI parity smoke suites. See `godot/README.md
 - `documents/AI_Strategy_Spec.md` — strategy dimensions and scenario probe bank.
 - `documents/STAT_TRACKING_PLAN.md` — planned stat tracking module and recording extensions.
 - `documents/wahoo_strategy_metric_tracking_agent_spec.md` — detailed metric tracking plan for strategy analysis.
+- `documents/ASSET_DESIGN_GUIDE.md` — complete visual design system: color palette, asset specs, and style rules for generating new assets.
 - `wahoo/reasoning_export.py` — JSONL exporter for human move reasoning notes.
 - `wahoo/human_profile.py` — trainer that fits a `human_like` profile from replay reasoning data.
 - `scripts/tune_profile_against_sprinter.py` — random-plus-mutation tuning harness with checkpointing and holdout evaluation.

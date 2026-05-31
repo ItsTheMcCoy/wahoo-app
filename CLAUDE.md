@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. The Python rules engine and AI layer are nearly complete (Phase 1/1b). Phase 2a (Godot bootstrap) is complete — GDScript rules port validated by 27 parity smoke tests, HTML5 export working on desktop and mobile. Current work is Phase 2b: visual board in Godot.
+Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. Live at wahulo.com. Phases 1, 1b, 2a, 2b, 3a–3g are complete: Python rules engine and AI, full Godot visual board with AI opponents, branded loading screen, and all launch assets. Next major phase is internet multiplayer (Phase 4).
 
 ## Codebase Overview
 
@@ -21,24 +21,42 @@ tests/
   test_selfplay.py — Self-play runner and CLI tests
   test_reasoning_export.py — Reasoning export utility tests
 godot/
-  project.godot               — Godot 4.6.3 project (Phase 2a complete)
+  project.godot               — Godot 4.6.3 project; icon and boot splash configured
+  icon.png                    — 512×512 branded app icon
+  custom_html_shell.html      — Branded HTML export template (persists across re-exports)
   scripts/wahoo_state.gd      — GDScript port of game_state.py
   scripts/wahoo_rules.gd      — GDScript port of rules.py
   scripts/wahoo_rules_smoke.gd — 27 parity smoke tests (all passing)
   scripts/run_smoke.gd        — Headless smoke runner
-  scenes/Main.tscn            — Bootstrap scene: Roll button + state/smoke output
+  scenes/Main.tscn            — Main game scene: board + side panel
+  assets/textures/
+    board_wood.svg            — 1024×1024 procedural wood texture overlay
+    marble_gloss.svg          — 256×256 grayscale gloss mask for marbles
+    wahulo_wordmark.svg       — Scalable wordmark with marbles (loading screen)
+    wahulo_wordmark.png       — 1400×520 PNG version of wordmark
+    background_felt_tile_512.svg — 512×512 tileable dark felt background
+    boot_splash.png           — 800×450 branded boot splash (Godot project setting)
+  build/web/
+    index.html                — Branded HTML loading shell
+    wahulo_wordmark.svg       — Wordmark served to the loading screen
+    background_felt_tile_512.svg — Felt tile served to the loading screen
+    og_preview.png            — 1200×630 Open Graph / social preview image
+    index.png                 — 800×600 branded web boot splash
+    index.icon.png            — 32×32 favicon
+    index.apple-touch-icon.png — 180×180 iOS touch icon
 documents/
   RULES.md                    — Authoritative game rules spec. If code and spec disagree, spec wins.
   AI_PLAYER_BUILD_PLAN.md     — Full implementation spec for ai.py, selfplay.py, test_ai.py
   STAT_TRACKING_PLAN.md       — Full implementation spec for stats.py and recording extensions
   AI_Strategy_Spec.md         — Strategy dimensions, playstyle profiles, scenario probe bank
   DEVELOPMENT_PLAN.md         — Overall project roadmap
+  ASSET_DESIGN_GUIDE.md       — Complete visual design system; use when generating new assets
 ```
 
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 78 tests passing under `python -m pytest tests/`.
+Current verified test status: 80 tests passing under `python -m pytest tests/`.
 
 ## Architecture Contracts — Read Before Writing Any Code
 

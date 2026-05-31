@@ -1,6 +1,6 @@
-# Godot Project (Phases 2a–3e Complete)
+# Godot Project (Phases 2a–3g Complete)
 
-This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phases 2a, 2b, 3a, 3b, 3c, 3e, and 3f are complete. The game is fully playable with human and AI opponents on a single device.
+This folder contains the Godot 4 project for the browser port tracked in `documents/DEVELOPMENT_PLAN.md`. Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete. The game is fully playable with human and AI opponents on a single device and is live at wahulo.com.
 
 ## Current scope
 
@@ -19,6 +19,8 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 - Realism polish in `wahoo_board_view.gd`: layered wood board surface, external SVG board/marble textures, lane shadow underlay, and ambient depth pass for track/home/base/center pockets
 - UI readability polish in `main.gd`: stronger status/turn/die contrast and outline settings matched to the warm tabletop theme
 - HTML5 export configured and validated on desktop and mobile browsers
+- Branded loading screen: custom HTML shell (`custom_html_shell.html`) with dark felt background, Wahulo wordmark, and amber progress bar; persists across Godot re-exports
+- Full launch asset set: app icon (`icon.png`), boot splash (`assets/textures/boot_splash.png`), favicon, Apple touch icon, OG/social preview image, wordmark SVG/PNG, and felt background tile; all wired into `project.godot` and the HTML shell
 
 ## Open in Godot
 
@@ -98,7 +100,7 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 
 ## Current phase: Phase 4 — Internet Multiplayer (Not Started)
 
-Phases 2a, 2b, 3a, 3b, 3c, 3e, and 3f are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents. Phase 4 (WebRTC internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
+Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents, and is live at wahulo.com with a branded loading screen (custom HTML shell, felt background, wordmark, amber progress bar) and a full launch asset set (app icon, boot splash, favicon, Apple touch icon, OG image). Phase 4 (WebSocket internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
 
 Current Godot state:
 

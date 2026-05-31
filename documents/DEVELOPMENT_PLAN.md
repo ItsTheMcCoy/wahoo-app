@@ -4,9 +4,9 @@ Current state of the project and the path forward. Updated as phases complete.
 
 ## Session Note
 
-Work is intentionally paused here and will resume on a later day.
+**Deployment:** `wahulo.com` is live on Netlify. Domain purchased in Cloudflare; Cloudflare Pages is blocked by a per-file size limit (index.wasm ~36 MiB vs 25 MiB limit), so Netlify is the active host. DNS routes correctly; HTTPS confirmed on desktop and mobile.
 
-Deployment status update (May 31, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit). Netlify fallback is active and live at `wahulo.com` with Netlify origin URL `www.wahulo.netlify.app`. Cloudflare DNS A/CNAME records are configured, Netlify domain management is complete, and `wahulo.com` has been tested successfully.
+**Loading screen and assets (complete as of 2026-05-31):** The default Godot boot splash has been replaced with a branded loading experience — dark felt-textured background, Wahulo wordmark, and an amber progress bar. A custom HTML shell (`godot/custom_html_shell.html`) persists the branding across Godot re-exports. All launch assets are in place: app icon, favicon, Apple touch icon, boot splash, OG/social preview image, and the felt background tile. `project.godot` is wired to the branded icon and boot splash. Open Graph meta tags are in the HTML shell. See `documents/ASSET_DESIGN_GUIDE.md` for the full visual design system.
 
 ## Project Goal
 
@@ -37,9 +37,8 @@ This section tracks feedback to address before advancing any in-progress phases.
 9. ✅ Python board base layout adjusted: Yellow shifted up/right, Green shifted left, trailing blank rows removed.
 10. During human vs AI play, AI profiles will land on an opponent's base exit (when opponent has marbles in base) or opponent's center exit (when opponent has a marble in the center), even when less risky moves are available. All AI profiles should factor in whether landing on those squares is riskier than the alternatives.
 11. Yellow player name text collides with Yellow base positions on board; adjust label placement while preserving other player label placement.
-12. Post-label-fix queued items:
-	- Godot loading screen replacement: evaluate replacing default loading screen with a game-specific intro, build and test a simple version first, then define required loading-screen elements and ownership split (Copilot-generated vs user-created assets/content).
-	- Mobile UX pass: improve portrait and landscape readability/layout (board scale, side-panel text size and length), and evaluate fullscreen options to recover mobile browser address-bar screen space.
+12. ✅ Godot loading screen: replaced default Godot splash with branded HTML shell (felt background, wordmark, amber progress bar). All launch assets implemented: icon, favicon, touch icon, boot splash, OG image. Custom HTML shell persists across re-exports. See `documents/ASSET_DESIGN_GUIDE.md`.
+13. Mobile UX pass: improve portrait and landscape readability/layout (board scale, side-panel text size and length), and evaluate fullscreen options to recover mobile browser address-bar screen space.
 
 ## Phase Summary
 
@@ -159,7 +158,9 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `scripts/run_mixed_opponent_gauntlets.py` | Stage 3 mixed-opponent benchmark runner | In repo |
 | `scripts/run_stage4_pairwise_confirmation.py` | Stage 4 pairwise confirmation benchmark runner | In repo |
 | `scripts/tune_profile_against_sprinter.py` | Random-plus-mutation tuning harness for AI weights | In repo |
-| `godot/project.godot` | Godot 4.6.3 project file | In repo |
+| `godot/project.godot` | Godot 4.6.3 project file; icon and boot splash wired to branded assets | In repo |
+| `godot/icon.png` | 512×512 branded app icon | In repo |
+| `godot/custom_html_shell.html` | Branded HTML export template with Godot placeholders; persists across re-exports | In repo |
 | `godot/scenes/Main.tscn` | Board-first Godot scene | In repo |
 | `godot/scripts/main.gd` | Scene controller: board, turn UI, AI dispatch, save/load, game menu | In repo |
 | `godot/scripts/wahoo_board_view.gd` | Visual board surface, marble animation, and animation-style presets | In repo |
@@ -171,6 +172,14 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/scripts/wahoo_ai.gd` | GDScript AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts | In repo |
 | `godot/scripts/wahoo_ai_smoke.gd` | GDScript AI scenario probes (6 parity checks) | In repo |
 | `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (50 checks) | In repo |
-| `godot/export_presets.cfg` | Web export preset | In repo |
+| `godot/assets/textures/board_wood.svg` | 1024×1024 procedural wood texture overlay | In repo |
+| `godot/assets/textures/marble_gloss.svg` | 256×256 grayscale gloss mask for marble rendering | In repo |
+| `godot/assets/textures/wahulo_wordmark.svg` | Scalable wordmark (text + 4 marbles); used in loading screen | In repo |
+| `godot/assets/textures/wahulo_wordmark.png` | 1400×520 PNG version of wordmark | In repo |
+| `godot/assets/textures/background_felt_tile_512.svg` | 512×512 tileable dark felt background tile | In repo |
+| `godot/assets/textures/boot_splash.png` | 800×450 branded boot splash source (referenced by project.godot) | In repo |
+| `godot/build/web/og_preview.png` | 1200×630 Open Graph / social preview image | In repo |
+| `godot/export_presets.cfg` | Web export preset; references custom HTML shell | In repo |
 | `godot/README.md` | Godot setup, validation, and next-phase notes | In repo |
+| `documents/ASSET_DESIGN_GUIDE.md` | Complete visual design system: color palette, asset specs, style rules | In repo |
 | `.gitignore` | Standard Python + Godot ignores + generated game history files | In repo |
