@@ -6,7 +6,7 @@ Current state of the project and the path forward. Updated as phases complete.
 
 Work is intentionally paused here and will resume on a later day.
 
-Deployment status update (May 30, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is currently blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit), so Netlify is being explored for static hosting while keeping Cloudflare for domain/DNS.
+Deployment status update (May 31, 2026): Domain `wahulo.com` is purchased in Cloudflare, and a Cloudflare application has been created and connected to the `wahoo-app` GitHub repository. Cloudflare Pages deployment is blocked by per-file size limits (`godot/build/web/index.wasm` ~36 MiB vs 25 MiB limit). Netlify fallback is active and live at `wahulo.com` with Netlify origin URL `www.wahulo.netlify.app`.
 
 ## Project Goal
 
@@ -19,7 +19,7 @@ Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race)
 - **Primary target platform:** Web/HTML5 (playable in any browser, shareable by URL — no install required)
 - **Multiplayer transport:** WebSocket relay server (Node.js + `ws`); server-authoritative game state
 - **Server hosting:** Render free tier for the relay server (current plan; custom domain managed in Cloudflare DNS)
-- **Client hosting:** Netlify (active fallback exploration due to Cloudflare Pages file-size limit)
+- **Client hosting:** Netlify (active production hosting due to Cloudflare Pages file-size limit)
 - **iOS/Android native builds:** Out of scope — browser covers all mobile devices without an Apple Developer account or per-platform distribution
 
 ## User Feedback

@@ -7,6 +7,7 @@ This guide is written for your current state:
 - Domain purchased in Cloudflare: `wahulo.com`
 - Pages creation path confirmed via `Create application` -> `Looking to deploy pages? Get started`
 - GitHub repository to connect: `ItsTheMcCoy/wahoo-app`
+- Current Netlify URL: `www.wahulo.netlify.app` (live)
 - Relay server planned on Render: `relay.wahulo.com`
 - Current blocker: Cloudflare Pages rejects `godot/build/web/index.wasm` (~36 MiB) because Pages supports files up to 25 MiB.
 

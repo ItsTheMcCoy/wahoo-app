@@ -12,7 +12,8 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | In-game chat | Included in v1 |
 | Room persistence | In-memory only; rooms lost on server restart (acceptable for v1) |
 | Domain status | `wahulo.com` purchased via Cloudflare Registrar |
-| Static hosting status | Exploring Netlify fallback; Cloudflare Pages blocked by current wasm size limit |
+| Static hosting status | Netlify fallback is active and live; Cloudflare Pages blocked by current wasm size limit |
+| Current Netlify URL | `www.wahulo.netlify.app` |
 
 ---
 
