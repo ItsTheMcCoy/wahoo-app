@@ -8,6 +8,8 @@ Current state of the project and the path forward. Updated as phases complete.
 
 **Loading screen and assets (complete as of 2026-05-31):** The default Godot boot splash has been replaced with a branded loading experience — dark felt-textured background, Wahulo wordmark, and an amber progress bar. A custom HTML shell (`godot/custom_html_shell.html`) persists the branding across Godot re-exports. All launch assets are in place: app icon, favicon, Apple touch icon, boot splash, OG/social preview image, and the felt background tile. `project.godot` is wired to the branded icon and boot splash. Open Graph meta tags are in the HTML shell. See `documents/ASSET_DESIGN_GUIDE.md` for the full visual design system.
 
+**In-game branding (complete as of 2026-05-31):** The game title "WAHULO" now appears in three in-game locations in the Godot scene (`godot/scenes/Main.tscn`): as a gold label at the top of the side panel (visible throughout play), as a header above "Game Setup" in the setup overlay (seen before each game), and as a header above the winner announcement in the win overlay (seen at game end). All three use the gold color `#c8922a` from the design guide.
+
 ## Project Goal
 
 Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Public domain: wahulo.com (purchased via Cloudflare). Online multiplayer, learn-as-you-go hobby project.

@@ -283,6 +283,22 @@ Displayed by the Godot engine for ~0.5–2 seconds after WASM loads, before the 
 
 ---
 
+## In-Game Title Branding ✅ Complete
+
+The game title "WAHULO" appears in three locations within `godot/scenes/Main.tscn`. All use a gold Label node — no image asset is loaded in-game; color is applied via `theme_override_colors/font_color`.
+
+| Location | Node path | Font size | Context |
+|----------|-----------|-----------|---------|
+| Side panel top | `Root/SidePanel/GameTitle` | 28px | Visible throughout all gameplay |
+| Setup overlay header | `SetupOverlay/SetupPanel/SetupContent/BrandTitle` | 42px | Shown above "Game Setup" before each game |
+| Win overlay header | `WinOverlay/WinPanel/WinContent/BrandTitle` | 36px | Shown above the winner announcement |
+
+**Color:** Gold `Color(0.784, 0.573, 0.165, 1)` → `#c8922a` (primary wordmark color from the Logo spec above).
+
+**Typography:** Godot default font. The wordmark SVG/PNG is used only on the HTML loading screen and boot splash — not imported as an in-game Godot resource.
+
+---
+
 ## Atmosphere Reference Summary
 
 If describing the game world to an image generation model:
@@ -291,4 +307,4 @@ If describing the game world to an image generation model:
 
 ---
 
-*Last updated: 2026-05-31. All color values sourced from `godot/scripts/wahoo_board_view.gd`, `godot/scripts/main.gd`, `godot/assets/textures/board_wood.svg`, `godot/assets/textures/marble_gloss.svg`, and `godot/build/web/index.html`.*
+*Last updated: 2026-05-31. All color values sourced from `godot/scripts/wahoo_board_view.gd`, `godot/scripts/main.gd`, `godot/assets/textures/board_wood.svg`, `godot/assets/textures/marble_gloss.svg`, `godot/build/web/index.html`, and `godot/scenes/Main.tscn`.*
