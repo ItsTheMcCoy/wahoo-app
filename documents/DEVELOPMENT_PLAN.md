@@ -12,7 +12,7 @@ Current state of the project and the path forward. Updated as phases complete.
 
 **Latest test snapshot (2026-06-01):** Godot smoke suite remains `51/51 passed`. Python suite currently reports `100 collected`, `20 failed`, `80 passed` because `wahoo/profiles_manager.json` overrides builtin profile names expected by several AI/self-play/play tests.
 
-**Multiplayer backend status (2026-06-01):** Phase 4a has an initial Node.js WebSocket relay implementation under `server/`. It supports room creation/joining, host-only AI seat configuration, spectator joins, chat relay, server-side rolls, legal-move validation, state broadcasts, basic reconnect handling, room expiry, and a Render deployment config. The relay test suite passes locally with `npm test` (`8/8` Node tests passing). The next multiplayer work is Godot client integration: network wrapper, home/lobby UI, and server-authoritative online turn flow.
+**Multiplayer backend status (2026-06-01):** Phase 4a has a Node.js WebSocket relay implementation under `server/`. It supports room creation/joining, host-only AI seat configuration, spectator joins, chat relay, server-side rolls, legal-move validation, state broadcasts, basic reconnect handling, room expiry, and a Render deployment config. A `configure_seat` key-collision bug (where `type` was shared between the message-type router and the seat-type payload field) was fixed; the server now reads `seatType` for the seat type. Relay test suite passes locally with `npm test` (`9/9` Node tests passing). Phase 4b Godot client work has started: `godot/scripts/network.gd` is implemented as an autoload singleton (registered in `project.godot`) — it manages the WebSocket lifecycle, sends all client→server message types, and emits signals for every server→client message type. The next multiplayer work is the home screen and lobby UI.
 
 **Netlify owner-task status (2026-06-01):** Netlify is the active static host. The repo now includes `netlify.toml` with `publish = "godot/build/web"` and a catch-all rewrite to `/index.html` so future `/join/<code>` multiplayer deep links can load the Godot app. Owner-facing Netlify dashboard tasks and walkthrough steps are tracked in `documents/MULTIPLAYER_PLAN.md` under "Owner Task Tracking" and "Step 5: Verify Netlify Static Hosting for the Game Client". Update those sections whenever new implementation details change what the owner must do.
 
@@ -101,8 +101,8 @@ Font and tap-target pass to meet 48dp/44pt minimums; Status log repositioned abo
 Full design and step-by-step implementation plan: **[MULTIPLAYER_PLAN.md](MULTIPLAYER_PLAN.md)**
 
 Summary of sub-phases:
-- **4a:** Node.js WebSocket relay server — initial implementation complete locally; room management, spectator support, chat relay, server-side rolls, move validation, basic reconnect handling, room expiry, tests, and Render config are in repo. Remaining 4a work is deployment verification on Render.
-- **4b:** Godot home screen, network wrapper, lobby scene (host + guest views), AI seat configuration in lobby — next active work
+- **4a:** Node.js WebSocket relay server — complete locally; room management, spectator support, chat relay, server-side rolls, move validation, basic reconnect handling, room expiry, `configure_seat` key-collision bug fixed, 9/9 tests passing, Render config in repo. Remaining 4a work is deployment verification on Render.
+- **4b:** Godot home screen, network wrapper, lobby scene (host + guest views), AI seat configuration in lobby — `network.gd` singleton complete; home screen and lobby are next active work
 - **4c:** Online game flow — server-driven turns, AI seats via host client, disconnect/reconnect handling
 - **4d:** Domain and DNS in Cloudflare, static hosting on Netlify (current fallback path), relay server on Render with custom subdomain, HTTPS/WSS
 - **4e:** Polish — deep link joining, spectator mode, in-game chat refinements, recap page
@@ -172,6 +172,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/icon.png` | 512×512 branded app icon | In repo |
 | `godot/custom_html_shell.html` | Branded HTML export template with Godot placeholders; persists across re-exports | In repo |
 | `godot/scenes/Main.tscn` | Board-first Godot scene | In repo |
+| `godot/scripts/network.gd` | Autoload WebSocket singleton: relay connection, typed send methods, per-message-type signals | In repo |
 | `godot/scripts/main.gd` | Scene controller: board, turn UI, AI dispatch, save/load, game menu | In repo |
 | `godot/scripts/wahoo_board_view.gd` | Visual board surface, marble animation, and animation-style presets | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |

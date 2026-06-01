@@ -274,7 +274,7 @@ class Room {
       return;
     }
 
-    const type = String(message.type || "empty");
+    const type = String(message.seatType || "empty");
     if (type === "ai") {
       seat.type = "ai";
       seat.clientId = null;

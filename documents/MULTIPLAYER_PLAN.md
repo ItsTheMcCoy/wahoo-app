@@ -16,8 +16,8 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Current Netlify URL | `www.wahulo.netlify.app` |
 | Cloudflare DNS status | Required A and CNAME records configured for Netlify |
 | Domain verification status | Netlify domain management complete; `wahulo.com` test passed |
-| Backend relay status | Initial local implementation complete in `server/`; `npm test` passes `8/8` |
-| Current next step | Godot client networking, home screen, and lobby integration |
+| Backend relay status | Local implementation complete in `server/`; `configure_seat` bug fixed; `npm test` passes `9/9` |
+| Current next step | Home screen scene and lobby scene (network.gd complete) |
 | Netlify status | Active static host; root `netlify.toml` declares `godot/build/web` as publish directory and rewrites deep links to `/index.html` |
 
 ---
@@ -68,7 +68,7 @@ This section is the source of truth for tasks that require the project owner to 
 
 **Owner tasks on Netlify, current as of 2026-06-01 after checking Netlify docs:**
 
-1. Confirm the Netlify site is connected to the GitHub repo and production branch that should publish `wahulo.com`.
+1. Confirm the Netlify site is connected to the GitHub repo and production branch that should publish `wahulo.com`.  **Confirmed**
    - In Netlify, open the Wahulo project.
    - Go to **Project configuration > Build & deploy > Continuous deployment > Branches and deploy contexts**.
    - Confirm the production branch is the branch you actually push production web exports to, usually `main`.
@@ -140,15 +140,17 @@ Safe alphabet: `BCDFGHJKMNPQRSTVWXYZ23456789` (28 characters)
 
 ## Phase 4a — Backend Relay Server
 
-**Current status (2026-06-01): Initial local implementation complete.**
+**Current status (2026-06-01): Local implementation complete.**
 
 Implemented in `server/`:
 
 - `index.js` starts the HTTP/WebSocket service and exposes `/healthz`
 - `rooms.js` manages room codes, host/player/spectator membership, seat configuration, chat relay, rolls, move submission, broadcasts, reconnect markers, host promotion, and room expiry
 - `wahoo_rules.js` ports the Wahoo state/rules logic needed for server-side legal-move validation and move application
-- `server/test/*.test.js` covers room creation/joining, AI seat configuration, spectators/chat, move validation, and key rules behavior
+- `server/test/*.test.js` covers room creation/joining, AI seat configuration via WebSocket routing, spectators/chat, move validation, and key rules behavior
 - `.render.yaml` is present for Render deployment
+
+**Bug fixed:** `configure_seat` originally read `message.type` for the seat type, colliding with the message-type router field. Fixed to read `message.seatType`; tests updated to use `seatType`, and a new test verifies the fix through the full `handleClientMessage` routing path.
 
 Latest local verification:
 
@@ -157,7 +159,7 @@ cd server
 npm test
 ```
 
-Result: `8/8` Node tests pass.
+Result: `9/9` Node tests pass.
 
 Remaining 4a work:
 
@@ -166,7 +168,7 @@ Remaining 4a work:
 - Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://<relay-host>` for production
 - Add any server gaps discovered during real client integration
 
-Phase 4b is now the main active work: build the Godot network client, home screen, lobby, and server-authoritative game flow.
+Phase 4b is now the main active work: build the home screen, lobby, and server-authoritative game flow in Godot.
 
 ### Goal
 
@@ -295,6 +297,10 @@ No chat history is stored on the server — messages are fire-and-forget. A clie
 ---
 
 ## Phase 4b — Godot Client: Home Screen, Lobby & Game UI
+
+**Current status (2026-06-01): `network.gd` complete. Home screen and lobby are next.**
+
+`godot/scripts/network.gd` is implemented as an autoload singleton (registered in `project.godot` as `Network`). It manages the WebSocket lifecycle via `_process()` polling, exposes typed send methods for every client→server message (`send_create_room`, `send_join_room`, `send_join_as_spectator`, `send_configure_seat`, `send_start_game`, `send_roll_request`, `send_submit_move`, `send_chat_message`), and emits a dedicated signal for every server→client message type. A 30-second ping keepalive prevents relay timeouts. The `RELAY_URL` constant defaults to `ws://localhost:8080` for development; switch to `RELAY_URL_PROD` before a production export.
 
 ### Home Screen Scene
 
