@@ -183,10 +183,9 @@ python -m wahoo.profile_creator restore --name swarm
 
 Useful options:
 
-- `--list-traits` prints available granular traits and contradiction rules.
+- `--list-traits` prints available granular traits.
 - `--list-bases` prints valid trait-based base profiles.
 - `--trait FEATURE=SLIDER` sets slider `0..100`; repeat as needed.
-- Contradictory trait pairs are rejected (currently `RUN` vs `SPR`).
 - `add` and `rename` support `--overwrite`.
 
 Runtime behavior:

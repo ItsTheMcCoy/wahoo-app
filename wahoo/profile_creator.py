@@ -3,7 +3,6 @@
 Capabilities:
   - Create a trait-slider profile payload (legacy single-file output mode)
   - Manage in-game profiles (list/add/update/rename/remove/restore)
-  - Enforce contradictory trait constraints
 
 Examples:
     python -m wahoo.profile_creator --ui
@@ -76,7 +75,7 @@ TRAIT_LONG_DESCRIPTIONS = {
     ),
     "SPR": (
         "Spread focus. Higher SPR favors advancing less-progressed marbles to diversify "
-        "board presence. SPR conflicts with RUN and should not be selected together."
+        "board presence."
     ),
     "CAP": (
         "Capture aggression. Higher CAP values prioritize capturing opponents, with larger "
@@ -109,12 +108,6 @@ TRAIT_LONG_DESCRIPTIONS = {
     ),
 }
 
-# Mutually exclusive feature choices. Selecting both indicates a contradictory style.
-CONTRADICTIONS = {
-    "RUN": {"SPR"},
-    "SPR": {"RUN"},
-}
-
 PRESET_WEIGHTS = {
     "balanced": dict(BALANCED_WEIGHTS),
     "sprinter": dict(SPRINTER_WEIGHTS),
@@ -142,21 +135,10 @@ FEATURE_MAX_WEIGHTS = _feature_max_weights()
 
 
 def validate_selected_traits(selected_traits: list[str]) -> None:
-    """Validate feature names and enforce contradiction constraints."""
+    """Validate feature names."""
     unknown = [trait for trait in selected_traits if trait not in FEATURE_KEYS]
     if unknown:
         raise ValueError(f"Unknown trait(s): {', '.join(sorted(set(unknown)))}")
-
-    selected = set(selected_traits)
-    for trait in selected_traits:
-        conflicts = CONTRADICTIONS.get(trait, set())
-        overlap = conflicts & selected
-        if overlap:
-            conflict = sorted(overlap)[0]
-            raise ValueError(
-                f"Contradictory traits selected: {trait} conflicts with {conflict}. "
-                "Choose only one."
-            )
 
 
 def slider_to_weight(feature: str, slider_value: int) -> float:
@@ -581,9 +563,7 @@ def restore_managed_profile(config: dict, *, name: str) -> None:
 def _print_trait_catalog() -> None:
     print("Available traits (use each as FEATURE in --trait FEATURE=SLIDER):")
     for feature in FEATURE_KEYS:
-        conflicts = sorted(CONTRADICTIONS.get(feature, set()))
-        conflict_text = f"; conflicts: {', '.join(conflicts)}" if conflicts else ""
-        print(f"  {feature}: {TRAIT_DESCRIPTIONS[feature]}{conflict_text}")
+        print(f"  {feature}: {TRAIT_DESCRIPTIONS[feature]}")
 
 
 def _print_base_profiles() -> None:
@@ -613,15 +593,6 @@ def _interactive_collect(base_profile: str) -> dict[str, int]:
 
         if raw in selected:
             print(f"Trait {raw} is already selected.")
-            continue
-
-        conflicts = CONTRADICTIONS.get(raw, set())
-        active_conflicts = sorted(conflicts & set(selected.keys()))
-        if active_conflicts:
-            print(
-                f"Cannot add {raw}: conflicts with already selected trait(s) "
-                f"{', '.join(active_conflicts)}."
-            )
             continue
 
         slider_input = input(f"Slider for {raw} (0-100): ").strip()
@@ -1101,7 +1072,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Create and manage AI profiles with granular trait sliders "
-            "and contradiction checks."
+            "for all strategy features."
         )
     )
     parser.add_argument(

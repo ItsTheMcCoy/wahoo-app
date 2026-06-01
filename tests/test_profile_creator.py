@@ -25,9 +25,8 @@ def _empty_config() -> dict:
     }
 
 
-def test_validate_selected_traits_rejects_contradiction():
-    with pytest.raises(ValueError, match="Contradictory traits selected"):
-        validate_selected_traits(["RUN", "SPR"])
+def test_validate_selected_traits_allows_combined_traits():
+    validate_selected_traits(["RUN", "SPR"])
 
 
 def test_parse_trait_overrides_parses_valid_input():
