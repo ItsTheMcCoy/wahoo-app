@@ -9,7 +9,8 @@ This document defines the complete visual design system for Wahulo: Marble Mayha
 **Title:** Wahulo: Marble Mayham  
 **Genre:** Browser-based board game (marble race for 4 players)  
 **Physical world analogy:** A well-worn hardwood game board sitting on a dark tabletop, viewed from above in warm ambient light. The aesthetic is classic and tactile — like a quality family board game from the 1970s, rendered with modern lighting.  
-**Tone:** Warm, physical, slightly dramatic. Not cartoonish, not photorealistic. The board should feel like wood you could touch. Marbles should feel like glass you could roll.
+**Tone:** Warm, physical, slightly whimsical, but not cartoonish, not photorealistic. The board should feel like wood you could touch with detailed wood grain pattern and a matte finish. Marbles should be as realistic as possible and feel like glass you could roll.  The overall game should mix modern and vintage sytles well.
+**Asset Sytle** Marbles should look as realistic as possible.
 
 ---
 
@@ -44,7 +45,7 @@ Base zone spot color = primary color blended 52% toward board wood (`#917049`):
 | Yellow | `#b3a369`            |
 | Blue   | `#6778a6`            |
 
-### Board Surface
+### Cuurent Board Surface
 
 | Role                | Hex         | Opacity | Notes                                      |
 |---------------------|-------------|---------|---------------------------------------------|
@@ -56,6 +57,8 @@ Base zone spot color = primary color blended 52% toward board wood (`#917049`):
 | Edge vignette       | `#140f0a`   | 23%     | Corners darken to frame the board           |
 | Ambient occlusion   | `#120d08`   | 12%     | Depth shadow under/around spots             |
 | Lane shadow         | `#170f0a`   | 16%     | Drop shadow alongside the track path        |
+
+## Board Surface Notes: The current board surface feels pretty plain.  Use the above as a general guide, but let's make the board surface look more realistic.  With visible wood grain.
 
 ### Track Elements
 

@@ -13,7 +13,9 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 - Layout smoke tests (`wahoo_layout_smoke.gd`) — 5 checks covering board topology and normalized coordinate bounds
 - GDScript AI engine (`wahoo_ai.gd`) — port of Python `ai.py`: helpers, 10 features, RandomPlayer, GreedyPlayer, 9 profile weight dicts, `make_profiles()`
 - AI load/scenario smoke tests (`wahoo_ai_smoke.gd`) — 18 checks (12 AI load + 6 scenario probes matching Python `test_ai.py`)
-- Per-seat profile dropdowns in setup: Human or any of 10 named AI profiles
+- Per-seat profile dropdowns in setup: Human plus builtin and manager-defined AI profiles
+- Profile manager integration in setup flow: `main.gd` merges aliases/custom/disabled names from `profiles_manager.json`
+- Bundled web/runtime manager config: `godot/profiles_manager.json`
 - Auto-played AI turns with pre-move pause; human turns use an End Turn button to advance
 - Board move polish in `wahoo_board_view.gd`: lift-and-place marble motion, dynamic marble shadow, and destination impact pulse with style presets (`subtle`, `arcade`, `cinematic`)
 - Realism polish in `wahoo_board_view.gd`: layered wood board surface, external SVG board/marble textures, lane shadow underlay, and ambient depth pass for track/home/base/center pockets
@@ -32,11 +34,7 @@ This folder contains the Godot 4 project for the browser port tracked in `docume
 
 ## Packaged launch commands
 
-Run these commands from the repository root:
-
-```powershell
-cd "C:\Users\macwe\OneDrive\Documents\Claude\Projects\Wahoo-app"
-```
+Run these commands from the repository root.
 
 Launch the playable Godot game:
 
@@ -80,7 +78,7 @@ Then open `http://localhost:8000` in a browser.
 
 - Project opens and runs on desktop.
 - Main scene loads as a visual board surface and UI responds to Roll clicks and tap-to-move choices on desktop and mobile (responsive layout).
-- 50 headless smoke tests pass: 27 rule parity checks, 5 visual layout checks, 12 AI load checks, and 6 AI scenario probes.
+- 51 headless smoke tests pass: 27 rule parity checks, 5 visual layout checks, 12 AI load checks, 6 AI scenario probes, and 1 setup-profile integration check.
 - HTML5 export builds and loads correctly in desktop and mobile browsers.
 
 ## Run smoke tests headlessly
@@ -95,7 +93,7 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 
 ### Windows PATH note
 
-- Add the folder (not the file) to your user PATH: `C:\Users\macwe\OneDrive\Documents\Gdot4`
+- Add your local Godot 4.6.3 folder (not the file) to PATH.
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`, not `godot`
 - If you create a `godot` alias or wrapper on your machine, `godot --headless --script res://scripts/run_smoke.gd` works the same way
 
@@ -109,7 +107,7 @@ Current Godot state:
 - `scripts/main.gd` manages game flow: opening roll phase, human turn (Roll → select move by clicking → End Turn), and AI turn (auto-roll → auto-move → auto-advance). No move hints are shown; players must recall legal moves themselves. Die rolling shows Unicode faces (⚀–⚅) with a 14-frame cycle and a center-pivoted scale pop on settle.
 - `scripts/wahoo_layout.gd` maps rules locations to normalized visual board coordinates for static geometry, marbles, tap/click targets, and movement animation.
 - `scripts/wahoo_board_view.gd` draws the board canvas, marble tokens, and selected-marble ring; legal move hints remain hidden (no destination circles or moveable-marble rings), while movement uses a lift-and-place tween with dynamic shadow and a brief landing pulse.
-- `scripts/wahoo_ai.gd` implements RandomPlayer and GreedyPlayer with 9 named profile weight dicts and a `make_profiles()` factory.
+- `scripts/wahoo_ai.gd` implements RandomPlayer and GreedyPlayer with 9 named profile weight dicts and a `make_profiles()` factory; `scripts/main.gd` then applies profile-manager overrides from `profiles_manager.json` for setup selection.
 
 ## HTML5 export (Phase 2a)
 
@@ -134,3 +132,4 @@ Current status:
 - Mobile browser validation: complete (Roll interaction and state updates verified over HTTPS).
 - Mobile text readability: fixed (responsive full-viewport layout, 22 px title, 16 px status, 60 px tap target for Roll).
 - Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
+- Latest verification (June 1, 2026): Godot smoke checks `51/51 passed`.

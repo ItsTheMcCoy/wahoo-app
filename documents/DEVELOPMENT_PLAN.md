@@ -60,7 +60,7 @@ GDScript port of rules engine, 27 parity smoke tests, HTML5 export validated on 
 
 ### Phase 2b — Visual Board — *Complete*
 
-Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, lift-and-place movement animation (style presets: subtle/arcade/cinematic), dynamic marble shadow, landing impact pulse, current-player indicator, turn announcements, and win screen. Visual polish passes added warm tabletop realism: layered wood board surface, external board/marble textures, cavity/ambient depth cues, lane shadowing, and improved side-panel readability/contrast. Validated: 32/32 Godot smoke checks pass, 80 Python tests pass, Web export working.
+Board-left / info-panel-right layout, graphical board with marble rendering, tap-to-move selection, lift-and-place movement animation (style presets: subtle/arcade/cinematic), dynamic marble shadow, landing impact pulse, current-player indicator, turn announcements, and win screen. Visual polish passes added warm tabletop realism: layered wood board surface, external board/marble textures, cavity/ambient depth cues, lane shadowing, and improved side-panel readability/contrast. Initial Phase 2b validation: 32/32 Godot smoke checks and 80 Python tests.
 
 ### Phase 3a — GDScript AI Engine — *Complete*
 
@@ -68,7 +68,7 @@ Full `wahoo_ai.gd` port: all 10 features, 9 profile weight dicts, `RandomPlayer`
 
 ### Phase 3b — AI Parity Smoke Tests — *Complete*
 
-All 6 scenario probes from `test_ai.py` ported to `wahoo_ai_smoke.gd` and passing headlessly. 50/50 total smoke checks.
+All 6 scenario probes from `test_ai.py` ported to `wahoo_ai_smoke.gd` and passing headlessly. Current total Godot smoke count: 51/51.
 
 ### Phase 3c — Game Loop AI Integration — *Complete*
 
@@ -136,6 +136,8 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `wahoo/reasoning_export.py` | Export human move-reasoning examples from replays to JSONL | In repo |
 | `wahoo/human_profile.py` | Fit a `human_like` AI profile from replay reasoning data | In repo |
 | `wahoo/human_like_profile.json` | Generated/current human-like AI profile weights | In repo |
+| `wahoo/profile_creator.py` | Profile creator/manager tool (UI + CLI: add/update/rename/disable/delete/restore) | In repo |
+| `wahoo/profiles_manager.json` | Python runtime profile-manager config (aliases, disabled names, managed profiles) | In repo |
 | `tests/test_wahoo.py` | Rule and behavior test suite | In repo |
 | `tests/test_ai.py` | AI scenario probe coverage | In repo |
 | `tests/test_reasoning_export.py` | Reasoning export utility tests | In repo |
@@ -172,6 +174,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/scripts/wahoo_layout.gd` | Normalized visual board coordinate mapping | In repo |
 | `godot/scripts/wahoo_layout_smoke.gd` | Godot smoke checks for layout mapping | In repo |
 | `godot/scripts/wahoo_ai.gd` | GDScript AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts | In repo |
+| `godot/profiles_manager.json` | Bundled Godot/web profile-manager config used by setup profile list | In repo |
 | `godot/scripts/wahoo_ai_smoke.gd` | GDScript AI scenario probes (6 parity checks) | In repo |
 | `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (50 checks) | In repo |
 | `godot/assets/textures/board_wood.svg` | 1024×1024 procedural wood texture overlay | In repo |
