@@ -1,0 +1,33 @@
+{
+  "disabled_profiles": [],
+  "aliases": {},
+  "custom_profiles": {
+    "nikki ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.4,
+        "RUN": 0.5,
+        "SPR": 0.6,
+        "CAP": 0.8,
+        "SAFE": 1.0,
+        "CTR": 0.4,
+        "DEN": 1.0,
+        "FLOW": 0.8,
+        "HOME": 0.76,
+        "FIN": 0.3
+      },
+      "trait_sliders": {
+        "DEP": 40,
+        "CAP": 80,
+        "SAFE": 40,
+        "CTR": 40,
+        "DEN": 100,
+        "FLOW": 80,
+        "HOME": 76,
+        "FIN": 30
+      },
+      "description": "Will ALWAYS caputre Mac",
+      "updated_at": "2026-06-01T04:38:48.559411+00:00"
+    }
+  }
+}

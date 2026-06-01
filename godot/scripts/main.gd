@@ -121,8 +121,10 @@ func _load_profiles_manager_config() -> Dictionary:
 		"custom_profiles": {},
 	}
 	var path_candidates := [
+		ProjectSettings.globalize_path("res://profiles_manager.json"),
 		ProjectSettings.globalize_path("res://../wahoo/profiles_manager.json"),
 		ProjectSettings.globalize_path("res://wahoo/profiles_manager.json"),
+		"profiles_manager.json",
 		"wahoo/profiles_manager.json",
 	]
 
