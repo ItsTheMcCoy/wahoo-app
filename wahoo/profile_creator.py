@@ -65,6 +65,50 @@ TRAIT_DESCRIPTIONS = {
     "FIN": "Finish-over-fight preference",
 }
 
+TRAIT_LONG_DESCRIPTIONS = {
+    "DEP": (
+        "Deployment / exit pressure. Higher DEP increases preference for moves "
+        "that exit marbles from BASE onto TRACK (kind=exit_base), improving early rollout."
+    ),
+    "RUN": (
+        "Single-runner focus. Higher RUN favors advancing your furthest-progress marble, "
+        "concentrating progress on one lead piece."
+    ),
+    "SPR": (
+        "Spread focus. Higher SPR favors advancing less-progressed marbles to diversify "
+        "board presence. SPR conflicts with RUN and should not be selected together."
+    ),
+    "CAP": (
+        "Capture aggression. Higher CAP values prioritize capturing opponents, with larger "
+        "reward for capturing marbles that had higher progress."
+    ),
+    "SAFE": (
+        "Safety-first bias. SAFE scores net reduction in exposure to being captured. "
+        "Existing profiles use up to 2.5 SAFE (for example Tortoise and Gatekeeper), "
+        "so this slider range supports that stronger defensive style."
+    ),
+    "CTR": (
+        "Shortcut eagerness. Higher CTR prefers entering center when available, "
+        "trading immediate board position for shortcut opportunities."
+    ),
+    "DEN": (
+        "Center denial. Higher DEN rewards center-entry moves that also bump an opponent "
+        "from center, preventing their shortcut use."
+    ),
+    "FLOW": (
+        "Flow control. Higher FLOW favors moves that reduce self-blocking and improve "
+        "future mobility among your own marbles."
+    ),
+    "HOME": (
+        "Home-lane engineering. Higher HOME emphasizes moves deeper into HOME slots, "
+        "helping convert track progress into near-finish positioning."
+    ),
+    "FIN": (
+        "Finish-over-fight bias. In states where both HOME and capture options exist, "
+        "higher FIN leans toward taking HOME progress instead of fighting."
+    ),
+}
+
 # Mutually exclusive feature choices. Selecting both indicates a contradictory style.
 CONTRADICTIONS = {
     "RUN": {"SPR"},
@@ -727,6 +771,17 @@ def _launch_profile_creator_ui(default_output: str) -> int:
         value_label = tk.Label(sliders_container, text="0.00", width=6)
         value_label.grid(row=row, column=col_base + 3, sticky="w", padx=(0, 10), pady=6)
         slider_value_labels[feature] = value_label
+
+        def _open_trait_details(feat: str = feature) -> None:
+            details = TRAIT_LONG_DESCRIPTIONS.get(feat, TRAIT_DESCRIPTIONS.get(feat, ""))
+            messagebox.showinfo("%s Trait Details" % feat, details)
+
+        tk.Button(
+            sliders_container,
+            text="Details",
+            width=8,
+            command=_open_trait_details,
+        ).grid(row=row, column=col_base + 4, sticky="w", padx=(0, 8), pady=6)
 
     preview_frame = tk.LabelFrame(editor_panel, text="Generated Payload Preview")
     preview_frame.pack(fill="both", expand=True, pady=(0, 8))
