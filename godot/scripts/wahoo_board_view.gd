@@ -296,11 +296,8 @@ func _draw_board_surface() -> void:
 
     var bevel_light := BOARD_BG_INNER.lerp(Color.WHITE, 0.24)
     bevel_light.a = 0.62
-    var bevel_dark := BOARD_EDGE
-    bevel_dark.a = 0.84
     draw_rect(inner.grow(_cell_size * 0.08), bevel_light, false, max(2.0, _cell_size * 0.07))
     draw_rect(_board_rect, BOARD_EDGE, false, max(3.0, _cell_size * 0.10))
-    draw_rect(_board_rect.grow(-_cell_size * 0.10), bevel_dark, false, max(1.0, _cell_size * 0.04))
 
     var vignette_inset := _cell_size * 0.82
     var top_band := Rect2(_board_rect.position, Vector2(_board_rect.size.x, vignette_inset))
