@@ -5,7 +5,7 @@ set "REPO_ROOT=%~dp0"
 set "GODOT_DIR=%REPO_ROOT%godot"
 set "WEB_DIR=%GODOT_DIR%\build\web"
 set "GODOT_EXE=Godot_v4.6.3-stable_win64_console.exe"
-set "GODOT_FALLBACK=C:\Users\macwe\OneDrive\Documents\Gdot4\Godot_v4.6.3-stable_win64_console.exe"
+set "GODOT_FALLBACK=C:\Users\pc\OneDrive\Documents\Gdot4\Godot_v4.6.3-stable_win64_console.exe"
 set "MODE=%~1"
 set "PORT=%~2"
 
