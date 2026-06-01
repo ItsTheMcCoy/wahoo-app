@@ -15,7 +15,7 @@ $GodotDir = Join-Path $RepoRoot "godot"
 $WebDir = Join-Path $GodotDir "build\web"
 $ExportPath = Join-Path $WebDir "index.html"
 $GodotExe = "Godot_v4.6.3-stable_win64_console.exe"
-$GodotFallback = "C:\Users\macwe\OneDrive\Documents\Gdot4\Godot_v4.6.3-stable_win64_console.exe"
+$GodotFallback = "C:\Users\pc\OneDrive\Documents\Gdot4\Godot_v4.6.3-stable_win64_console.exe"
 
 function Write-Step {
     param([string]$Message)

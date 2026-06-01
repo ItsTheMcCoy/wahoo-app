@@ -1,5 +1,16 @@
 {
-  "disabled_profiles": [],
+  "disabled_profiles": [
+    "random",
+    "sprinter",
+    "swarm",
+    "assassin",
+    "gambler",
+    "tortoise",
+    "gatekeeper",
+    "engineer",
+    "balanced",
+    "human_like"
+  ],
   "aliases": {},
   "custom_profiles": {
     "nikki ai": {
