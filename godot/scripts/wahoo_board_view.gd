@@ -440,7 +440,11 @@ func _draw_track_cells() -> void:
         var fill := TRACK_CELL
         for player in range(WahooState.NUM_PLAYERS):
             if coord == WahooLayout.track_grid_coord(WahooState.base_exit(player)):
-                fill = _lightened(PLAYER_COLORS[player], 0.72)
+                var lightening := 0.72
+                if player == 2:
+                    # Yellow needs a stronger tint to remain distinguishable from the wood-toned track cells.
+                    lightening = 0.42
+                fill = _lightened(PLAYER_COLORS[player], lightening)
         _draw_grid_spot(coord, fill, TRACK_CELL_EDGE)
 
 func _draw_center() -> void:
