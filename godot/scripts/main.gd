@@ -4,6 +4,7 @@ const WahooState = preload("res://scripts/wahoo_state.gd")
 const WahooRules = preload("res://scripts/wahoo_rules.gd")
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
+const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.svg")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
 const PLAYER_COLORS := [
@@ -45,14 +46,17 @@ const PROFILE_LABELS := {
 @onready var _side_panel: VBoxContainer = $Root/SidePanel
 @onready var _die_frame: PanelContainer = $Root/SidePanel/DieFrame
 @onready var _board = $Root/BoardFrame/BoardView
+@onready var _side_panel_title: TextureRect = $Root/SidePanel/GameTitle
 @onready var _status: RichTextLabel = $Root/SidePanel/Status
 @onready var _roll_button: Button = $Root/SidePanel/RollButton
 @onready var _end_turn_button: Button = $Root/SidePanel/EndTurnButton
 @onready var _win_overlay: ColorRect = $WinOverlay
+@onready var _win_brand_title: TextureRect = $WinOverlay/WinPanel/WinContent/BrandTitle
 @onready var _win_title: Label = $WinOverlay/WinPanel/WinContent/WinTitle
 @onready var _win_subtitle: Label = $WinOverlay/WinPanel/WinContent/WinSubtitle
 @onready var _new_game_button: Button = $WinOverlay/WinPanel/WinContent/NewGameButton
 @onready var _setup_overlay: ColorRect = $SetupOverlay
+@onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupContent/BrandTitle
 @onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupContent/StartButton
 @onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Option
 @onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Option
@@ -95,6 +99,7 @@ func _ready() -> void:
 	_setup_game_menu()
 	_die_label.text = "–"
 	_profiles = WahooAI.make_profiles()
+	_apply_wordmark_branding()
 	_apply_visual_theme()
 	_populate_dropdowns()
 	_wire_setup_inputs()
@@ -102,6 +107,12 @@ func _ready() -> void:
 	_setup_overlay.visible = true
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
 	_status.scroll_following = true
+
+func _apply_wordmark_branding() -> void:
+	for title in [_side_panel_title, _setup_brand_title, _win_brand_title]:
+		title.texture = WORDMARK_TEXTURE
+		title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 func _apply_visual_theme() -> void:
 	var panel_style := StyleBoxFlat.new()

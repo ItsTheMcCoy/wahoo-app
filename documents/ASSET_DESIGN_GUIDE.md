@@ -285,17 +285,15 @@ Displayed by the Godot engine for ~0.5–2 seconds after WASM loads, before the 
 
 ## In-Game Title Branding ✅ Complete
 
-The game title "WAHULO" appears in three locations within `godot/scenes/Main.tscn`. All use a gold Label node — no image asset is loaded in-game; color is applied via `theme_override_colors/font_color`.
+The game name uses the official wordmark SVG in all in-game title locations in `godot/scenes/Main.tscn`. Each title slot is a `TextureRect` wired to `res://assets/textures/wahulo_wordmark.svg`, and `godot/scripts/main.gd` re-applies this at runtime to enforce consistency.
 
-| Location | Node path | Font size | Context |
+| Location | Node path | Node type | Context |
 |----------|-----------|-----------|---------|
-| Side panel top | `Root/SidePanel/GameTitle` | 28px | Visible throughout all gameplay |
-| Setup overlay header | `SetupOverlay/SetupPanel/SetupContent/BrandTitle` | 42px | Shown above "Game Setup" before each game |
-| Win overlay header | `WinOverlay/WinPanel/WinContent/BrandTitle` | 36px | Shown above the winner announcement |
+| Side panel top | `Root/SidePanel/GameTitle` | `TextureRect` | Visible throughout all gameplay |
+| Setup overlay header | `SetupOverlay/SetupPanel/SetupContent/BrandTitle` | `TextureRect` | Shown above "Game Setup" before each game |
+| Win overlay header | `WinOverlay/WinPanel/WinContent/BrandTitle` | `TextureRect` | Shown above the winner announcement |
 
-**Color:** Gold `Color(0.784, 0.573, 0.165, 1)` → `#c8922a` (primary wordmark color from the Logo spec above).
-
-**Typography:** Godot default font. The wordmark SVG/PNG is used only on the HTML loading screen and boot splash — not imported as an in-game Godot resource.
+**Rendering behavior:** Titles use `STRETCH_KEEP_ASPECT_CENTERED` so the full wordmark is preserved across desktop and mobile panel widths.
 
 ---
 

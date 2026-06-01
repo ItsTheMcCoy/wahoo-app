@@ -33,7 +33,7 @@ function Assert-PathExists {
     }
 }
 
-function Run-Godot {
+function Invoke-Godot {
     param([string[]]$GodotArgs)
     Push-Location $GodotDir
     try {
@@ -63,24 +63,24 @@ else {
 
 if (-not $SkipSmoke -and $Mode -ne "editor") {
     Write-Step "Running Godot smoke tests from $GodotDir"
-    Run-Godot -GodotArgs @("--headless", "--script", "res://scripts/run_smoke.gd")
+    Invoke-Godot -GodotArgs @("--headless", "--script", "res://scripts/run_smoke.gd")
 }
 
 switch ($Mode) {
     "smoke" {
         if ($SkipSmoke) {
             Write-Step "Running Godot smoke tests from $GodotDir"
-            Run-Godot -GodotArgs @("--headless", "--script", "res://scripts/run_smoke.gd")
+            Invoke-Godot -GodotArgs @("--headless", "--script", "res://scripts/run_smoke.gd")
         }
     }
     "export" {
         Write-Step "Exporting Web build from $GodotDir"
-        Run-Godot -GodotArgs @("--headless", "--path", ".", "--export-release", "Web", "build/web/index.html")
+        Invoke-Godot -GodotArgs @("--headless", "--path", ".", "--export-release", "Web", "build/web/index.html")
         Write-Host "Export written to $ExportPath"
     }
     "web" {
         Write-Step "Exporting Web build from $GodotDir"
-        Run-Godot -GodotArgs @("--headless", "--path", ".", "--export-release", "Web", "build/web/index.html")
+        Invoke-Godot -GodotArgs @("--headless", "--path", ".", "--export-release", "Web", "build/web/index.html")
 
         Write-Step "Serving Web build from $WebDir"
         Assert-PathExists $ExportPath "Web export"
@@ -95,10 +95,10 @@ switch ($Mode) {
     }
     "editor" {
         Write-Step "Opening Godot editor from $GodotDir"
-        Run-Godot -GodotArgs @("--path", ".", "--editor")
+        Invoke-Godot -GodotArgs @("--path", ".", "--editor")
     }
     "game" {
         Write-Step "Launching Godot game from $GodotDir"
-        Run-Godot -GodotArgs @("--path", ".")
+        Invoke-Godot -GodotArgs @("--path", ".")
     }
 }
