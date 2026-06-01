@@ -525,6 +525,7 @@ func _new_game() -> void:
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
+	_board.set_turn_focus_enabled(false)
 	_die_label.text = "–"
 	_die_label.scale = Vector2.ONE
 	_set_roll_ready(false)
@@ -623,6 +624,7 @@ func _execute_move(move: Dictionary, player: int, roll: int) -> void:
 		_set_end_turn_ready()
 	else:
 		_advance_to_next_player()
+		_board.set_state(_state)
 		line += "\n%s is up next" % _player_label(_state.current_player)
 		_turn_number += 1
 		_render_status(line)
@@ -717,6 +719,7 @@ func _on_end_turn_pressed() -> void:
 		return
 	_end_turn_button.disabled = true
 	_advance_to_next_player()
+	_board.set_state(_state)
 	_turn_number += 1
 	_render_status("%s is up next" % _player_label(_state.current_player))
 	_set_roll_ready(true)
@@ -802,6 +805,8 @@ func _run_starting_roll_phase() -> void:
 	var winner := int(contenders[0])
 	_state.current_player = winner
 	_starting_phase = false
+	_board.set_turn_focus_enabled(true)
+	_board.set_state(_state)
 	var winner_name: String = _seat_display_names[winner]
 	_turn_label.text = winner_name
 	_turn_label.self_modulate = PLAYER_COLORS[winner]

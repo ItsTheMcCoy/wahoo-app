@@ -93,6 +93,7 @@ var _legal_move_player := -1
 var _selected_marble := -1
 var _animation_in_progress := false
 var _seat_labels: Array = ["Red", "Green", "Yellow", "Blue"]
+var _turn_focus_enabled := true
 var _impact_active := false
 var _impact_progress := 1.0
 var _impact_center := Vector2.ZERO
@@ -161,6 +162,10 @@ func set_seat_labels(labels: Array) -> void:
     if labels.size() < WahooState.NUM_PLAYERS:
         return
     _seat_labels = labels.duplicate(true)
+    queue_redraw()
+
+func set_turn_focus_enabled(enabled: bool) -> void:
+    _turn_focus_enabled = enabled
     queue_redraw()
 
 func animate_move(move: Dictionary, player: int) -> void:
@@ -388,7 +393,7 @@ func _draw_player_areas() -> void:
         _draw_base_cells(player, _base_spot_color(player))
 
 func _draw_current_player_focus() -> void:
-    if _state == null:
+    if _state == null or not _turn_focus_enabled:
         return
     var player := _state.current_player
     var ring_color: Color = PLAYER_COLORS[player]
