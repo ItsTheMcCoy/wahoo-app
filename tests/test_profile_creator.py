@@ -3,6 +3,7 @@
 import pytest
 
 from wahoo.profile_creator import (
+    _manager_config_output_paths,
     add_managed_profile,
     build_profile_weights,
     delete_managed_profile,
@@ -12,6 +13,7 @@ from wahoo.profile_creator import (
     remove_managed_profile,
     rename_managed_profile,
     restore_managed_profile,
+    save_manager_config,
     slider_to_weight,
     update_managed_profile,
     validate_selected_traits,
@@ -171,3 +173,43 @@ def test_delete_builtin_profile_is_rejected():
 
     with pytest.raises(ValueError, match="builtin and cannot be deleted"):
         delete_managed_profile(config, name="sprinter")
+
+
+def test_manager_config_output_paths_include_python_and_godot_for_default(monkeypatch, tmp_path):
+    python_path = tmp_path / "wahoo" / "profiles_manager.json"
+    godot_path = tmp_path / "godot" / "profiles_manager.json"
+    monkeypatch.setattr("wahoo.profile_creator.MANAGER_CONFIG_PATH", str(python_path))
+    monkeypatch.setattr("wahoo.profile_creator.GODOT_MANAGER_CONFIG_PATH", str(godot_path))
+
+    output_paths = _manager_config_output_paths(str(python_path))
+
+    assert output_paths == [str(python_path), str(godot_path)]
+
+
+def test_manager_config_output_paths_keep_custom_path_single_target(tmp_path):
+    custom_path = tmp_path / "custom" / "profiles_manager.json"
+
+    output_paths = _manager_config_output_paths(str(custom_path))
+
+    assert output_paths == [str(custom_path)]
+
+
+def test_save_manager_config_default_writes_python_and_godot(monkeypatch, tmp_path):
+    python_path = tmp_path / "wahoo" / "profiles_manager.json"
+    godot_path = tmp_path / "godot" / "profiles_manager.json"
+    monkeypatch.setattr("wahoo.profile_creator.MANAGER_CONFIG_PATH", str(python_path))
+    monkeypatch.setattr("wahoo.profile_creator.GODOT_MANAGER_CONFIG_PATH", str(godot_path))
+
+    config = _empty_config()
+    add_managed_profile(
+        config,
+        name="Dual Write",
+        base_profile="balanced",
+        trait_sliders={"RUN": 75},
+    )
+
+    save_manager_config(config)
+
+    assert python_path.exists()
+    assert godot_path.exists()
+    assert python_path.read_text(encoding="utf-8") == godot_path.read_text(encoding="utf-8")

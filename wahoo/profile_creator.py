@@ -49,7 +49,10 @@ except ImportError:
 
 FEATURE_KEYS = ("DEP", "RUN", "SPR", "CAP", "SAFE", "CTR", "DEN", "FLOW", "HOME", "FIN")
 NON_TRAIT_BUILTIN_PROFILES = ("random", "expectimax")
-MANAGER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "profiles_manager.json")
+_PACKAGE_ROOT = Path(__file__).resolve().parent
+_REPO_ROOT = _PACKAGE_ROOT.parent
+MANAGER_CONFIG_PATH = str(_PACKAGE_ROOT / "profiles_manager.json")
+GODOT_MANAGER_CONFIG_PATH = str(_REPO_ROOT / "godot" / "profiles_manager.json")
 
 TRAIT_DESCRIPTIONS = {
     "DEP": "Deployment pressure (prefer exiting base)",
@@ -231,8 +234,9 @@ def _default_manager_config() -> dict:
     }
 
 
-def load_manager_config(path: str = MANAGER_CONFIG_PATH) -> dict:
+def load_manager_config(path: str | None = None) -> dict:
     """Load profile management config with schema normalization."""
+    path = path or MANAGER_CONFIG_PATH
     default = _default_manager_config()
     if not os.path.exists(path):
         return default
@@ -310,13 +314,42 @@ def load_manager_config(path: str = MANAGER_CONFIG_PATH) -> dict:
     }
 
 
-def save_manager_config(config: dict, path: str = MANAGER_CONFIG_PATH) -> None:
-    """Persist profile management config to disk."""
-    output_dir = os.path.dirname(path)
-    if output_dir:
-        os.makedirs(output_dir, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as handle:
-        json.dump(config, handle, indent=2)
+def _manager_config_output_paths(path: str) -> list[str]:
+    """Resolve profile-manager output paths.
+
+    Default saves are mirrored to both Python and Godot manager config files so
+    profile updates are visible in both game runtimes.
+    """
+    requested_path = os.path.abspath(path)
+    default_path = os.path.abspath(MANAGER_CONFIG_PATH)
+    if requested_path != default_path:
+        return [path]
+
+    outputs = [MANAGER_CONFIG_PATH, GODOT_MANAGER_CONFIG_PATH]
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for candidate in outputs:
+        normalized = os.path.abspath(candidate)
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(candidate)
+    return deduped
+
+
+def save_manager_config(config: dict, path: str | None = None) -> None:
+    """Persist profile management config to disk.
+
+    When called with the default path, writes both manager config files used by
+    the Python and Godot game runtimes.
+    """
+    target_path = path or MANAGER_CONFIG_PATH
+    for output_path in _manager_config_output_paths(target_path):
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as handle:
+            json.dump(config, handle, indent=2)
 
 
 def _builtin_profile_index() -> dict[str, dict]:
