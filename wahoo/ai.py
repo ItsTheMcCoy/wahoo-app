@@ -236,6 +236,8 @@ HUMAN_LIKE_DEFAULT_WEIGHTS = {
     "FIN": 0.72,
 }
 
+CUSTOM_PROFILE_DEFAULT_WEIGHTS = dict(BALANCED_WEIGHTS)
+
 
 def _load_human_like_weights() -> dict:
     """Load human-like profile weights from local JSON if available.
@@ -261,6 +263,36 @@ def _load_human_like_weights() -> dict:
             value = loaded.get(key)
             if isinstance(value, (int, float)):
                 # Keep weights non-negative; large values are allowed for style.
+                weights[key] = max(0.0, float(value))
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return weights
+
+    return weights
+
+
+def _load_custom_profile_weights() -> dict:
+    """Load custom profile weights from local JSON if available.
+
+    Expected file format:
+      {
+        "weights": {"DEP": 0.7, ...}
+      }
+    """
+    weights = dict(CUSTOM_PROFILE_DEFAULT_WEIGHTS)
+    path = os.path.join(os.path.dirname(__file__), "custom_profile.json")
+    if not os.path.exists(path):
+        return weights
+
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        loaded = payload.get("weights", {})
+        if not isinstance(loaded, dict):
+            return weights
+
+        for key in CUSTOM_PROFILE_DEFAULT_WEIGHTS:
+            value = loaded.get(key)
+            if isinstance(value, (int, float)):
                 weights[key] = max(0.0, float(value))
     except (OSError, json.JSONDecodeError, TypeError, ValueError):
         return weights
@@ -429,5 +461,6 @@ PROFILES: dict = {
     "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
     "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
     "human_like": GreedyPlayer(_load_human_like_weights()),
+    "custom": GreedyPlayer(_load_custom_profile_weights()),
     "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
 }

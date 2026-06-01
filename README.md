@@ -20,6 +20,7 @@ Implemented:
   - `GreedyPlayer`
   - `ExpectimaxPlayer` (one-ply with reroll-aware lookahead)
   - `human_like` profile support (loaded from `wahoo/human_like_profile.json` when present)
+  - `custom` profile support (loaded from `wahoo/custom_profile.json` when present)
   - 10-feature move scoring
   - 8 named greedy profiles plus `human_like`, `random`, and `expectimax` in `PROFILES`
 - Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
@@ -148,6 +149,30 @@ Output file (`wahoo/human_like_profile.json`) contains:
 - final weight vector
 
 At runtime, `wahoo/ai.py` auto-loads this file if it exists and registers `human_like` in `PROFILES`.
+
+## Create a Custom Profile with Trait Sliders
+
+Create a new profile from existing traits with contradiction checking and per-trait sliders:
+
+```powershell
+python -m wahoo.profile_creator
+```
+
+Scripted mode (no prompts):
+
+```powershell
+python -m wahoo.profile_creator --base balanced --trait RUN=85 --trait CAP=70 --trait SAFE=40 --output wahoo/custom_profile.json
+```
+
+Useful options:
+
+- `--list-traits` prints available granular traits and contradiction rules.
+- `--list-bases` prints valid base profiles.
+- `--trait FEATURE=SLIDER` selects one trait and sets slider `0..100`; repeat as needed.
+- Contradictory trait pairs are rejected (currently `RUN` vs `SPR`).
+
+Output file (`wahoo/custom_profile.json`) includes the selected trait sliders and final `weights`.
+At runtime, `wahoo/ai.py` auto-loads this file if it exists and registers `custom` in `PROFILES`.
 
 AI player behavior:
 
