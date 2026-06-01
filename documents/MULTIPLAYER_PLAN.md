@@ -73,13 +73,13 @@ This section is the source of truth for tasks that require the project owner to 
    - Go to **Project configuration > Build & deploy > Continuous deployment > Branches and deploy contexts**.
    - Confirm the production branch is the branch you actually push production web exports to, usually `main`.
 
-2. Confirm the static deploy settings.
+2. Confirm the static deploy settings. **Confirmed**
    - Go to **Project configuration > Build & deploy > Continuous deployment > Build settings**.
    - Publish directory should resolve to `godot/build/web`.
    - Build command can stay blank while Web export artifacts are committed to the repo.
    - The repo now includes `netlify.toml`, so Netlify should read `publish = "godot/build/web"` from source. If the UI shows a different publish path, prefer the repo config unless you intentionally change the hosting layout.
 
-3. Confirm custom domains and HTTPS.
+3. Confirm custom domains and HTTPS. **Confirmed**
    - Go to **Domain management > Production domains**.
    - Confirm `wahulo.com` is present and set as the primary domain.
    - Confirm `www.wahulo.com` is present as an alias or redirect target if you want `www` to work.
@@ -116,7 +116,7 @@ This section is the source of truth for tasks that require the project owner to 
 | Component | Technology | Hosting |
 |-----------|-----------|---------|
 | Game client | Godot 4 HTML5 export (existing) | Netlify free tier (current fallback) |
-| Relay server | Node.js + `ws` WebSocket library | Render free tier |
+| Relay server | Node.js + `ws` WebSocket library | Render free tier **Instructions for Render setup/config New account already created**
 | Custom domain | `wahulo.com` (already purchased) | Cloudflare Registrar |
 | HTTPS / WSS | Automatic via Netlify + Render custom domain | Free |
 
