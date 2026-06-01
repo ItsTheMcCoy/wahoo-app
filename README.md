@@ -1,6 +1,6 @@
 # Wahulo: Marble Mayham
 
-Console-based Python prototype plus Godot 4 browser port for Wahulo (a Wahoo-style marble race). Single-device hot-seat play with configurable AI seats is complete; the next major phase is internet multiplayer.
+Console-based Python prototype plus Godot 4 browser port for Wahulo (a Wahoo-style marble race). Single-device hot-seat play with configurable AI seats is complete; internet multiplayer is in progress, with the Node.js WebSocket relay implemented locally and the Godot client/lobby integration next.
 
 ## Current State
 
@@ -38,6 +38,18 @@ Implemented:
   - center denial
   - threat escape
 - Stage 2 baseline benchmark cycle completed across seeds `20260526`-`20260530` with Stage 3 candidates selected as `sprinter`, `gambler`, and `expectimax` (see `documents/AI_BENCHMARK_RESULTS.md`).
+- Initial Phase 4a multiplayer relay under `server/`:
+  - Node.js + `ws` WebSocket service
+  - room creation/joining with short game codes
+  - host-only AI seat configuration
+  - spectator joins and chat relay
+  - server-side rolls, legal-move validation, and state broadcasts
+  - Render deployment config
+  - local Node test suite passing (`8/8`)
+- Netlify static hosting config in `netlify.toml`:
+  - publishes `godot/build/web`
+  - rewrites deep links such as `/join/<code>` to `/index.html`
+  - owner Netlify dashboard checklist lives in `documents/MULTIPLAYER_PLAN.md`
 
 Not implemented yet:
 

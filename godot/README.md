@@ -97,9 +97,16 @@ This executes the Godot rule and layout smoke suites without opening the game UI
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`, not `godot`
 - If you create a `godot` alias or wrapper on your machine, `godot --headless --script res://scripts/run_smoke.gd` works the same way
 
-## Current phase: Phase 4 — Internet Multiplayer (Not Started)
+## Current phase: Phase 4 — Internet Multiplayer (In Progress)
 
 Phases 2a, 2b, 3a, 3b, 3c, 3e, 3f, and 3g are complete. The game is fully playable as a single-device hot-seat game with configurable human and AI opponents, and is live at wahulo.com with a branded loading screen (custom HTML shell, felt background, wordmark, amber progress bar) and a full launch asset set (app icon, boot splash, favicon, Apple touch icon, OG image). Phase 4 (WebSocket internet multiplayer) is tracked in `documents/DEVELOPMENT_PLAN.md`.
+
+Phase 4a backend status:
+
+- Initial Node.js WebSocket relay implementation exists under `../server/`
+- Relay supports room creation/joining, host-only AI seat configuration, spectator joins, chat, server-side rolls, legal-move validation, state broadcasts, basic reconnect handling, room expiry, and Render deployment config
+- Server tests pass locally with `npm test` from `../server/` (`8/8` passing)
+- Next Godot work is Phase 4b: add a network client script, home screen, host/join/spectate lobby, and online mode that updates from server broadcasts instead of local move application
 
 Current Godot state:
 

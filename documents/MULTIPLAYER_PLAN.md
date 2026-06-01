@@ -16,6 +16,9 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Current Netlify URL | `www.wahulo.netlify.app` |
 | Cloudflare DNS status | Required A and CNAME records configured for Netlify |
 | Domain verification status | Netlify domain management complete; `wahulo.com` test passed |
+| Backend relay status | Initial local implementation complete in `server/`; `npm test` passes `8/8` |
+| Current next step | Godot client networking, home screen, and lobby integration |
+| Netlify status | Active static host; root `netlify.toml` declares `godot/build/web` as publish directory and rewrites deep links to `/index.html` |
 
 ---
 
@@ -51,6 +54,46 @@ The current development plan called for WebRTC. A **WebSocket relay server** is 
 | Debug difficulty | High | Low |
 
 The relay server holds the authoritative game state and relays moves and chat to all connected clients. Clients send moves; the server validates them, applies them, and broadcasts the updated state to everyone including spectators.
+
+### Owner Task Tracking
+
+This section is the source of truth for tasks that require the project owner to click through a hosted service UI. Keep it current whenever implementation details change.
+
+**Codex-maintained repo tasks:**
+
+- Keep `netlify.toml` aligned with the deployed Godot export path and any required rewrites.
+- Keep the Godot production relay URL aligned with the deployed Render/custom-domain relay URL.
+- Re-export Godot Web artifacts to `godot/build/web` before any production deploy that changes client behavior.
+- Update this owner task list whenever new Netlify, Render, Cloudflare, or domain information changes what the owner must do.
+
+**Owner tasks on Netlify, current as of 2026-06-01 after checking Netlify docs:**
+
+1. Confirm the Netlify site is connected to the GitHub repo and production branch that should publish `wahulo.com`.
+   - In Netlify, open the Wahulo project.
+   - Go to **Project configuration > Build & deploy > Continuous deployment > Branches and deploy contexts**.
+   - Confirm the production branch is the branch you actually push production web exports to, usually `main`.
+
+2. Confirm the static deploy settings.
+   - Go to **Project configuration > Build & deploy > Continuous deployment > Build settings**.
+   - Publish directory should resolve to `godot/build/web`.
+   - Build command can stay blank while Web export artifacts are committed to the repo.
+   - The repo now includes `netlify.toml`, so Netlify should read `publish = "godot/build/web"` from source. If the UI shows a different publish path, prefer the repo config unless you intentionally change the hosting layout.
+
+3. Confirm custom domains and HTTPS.
+   - Go to **Domain management > Production domains**.
+   - Confirm `wahulo.com` is present and set as the primary domain.
+   - Confirm `www.wahulo.com` is present as an alias or redirect target if you want `www` to work.
+   - Go to **Domain management > HTTPS** and confirm Netlify-managed HTTPS is active for the production domains.
+
+4. Confirm deep-link joining after the next deploy.
+   - After `netlify.toml` is deployed, open `https://wahulo.com/join/ABC123`.
+   - Expected result: Netlify serves the Godot app instead of a 404.
+   - Before Phase 4b is implemented, the app may ignore the code. Once Phase 4b lands, the app should read `/join/ABC123` and pre-fill or skip the room-code prompt.
+
+5. No Netlify environment variable is currently required for multiplayer.
+   - If a future implementation uses a build-time variable such as `WAHULO_RELAY_URL`, add it in Netlify rather than committing secrets or `.env` files.
+   - Netlify environment variables used by the build must include the **Builds** scope.
+   - Only use Netlify environment variables for non-secret browser values if they will be injected into the static Godot client; anything visible to browser JavaScript is public.
 
 ### Component Diagram
 
@@ -96,6 +139,34 @@ Safe alphabet: `BCDFGHJKMNPQRSTVWXYZ23456789` (28 characters)
 ---
 
 ## Phase 4a — Backend Relay Server
+
+**Current status (2026-06-01): Initial local implementation complete.**
+
+Implemented in `server/`:
+
+- `index.js` starts the HTTP/WebSocket service and exposes `/healthz`
+- `rooms.js` manages room codes, host/player/spectator membership, seat configuration, chat relay, rolls, move submission, broadcasts, reconnect markers, host promotion, and room expiry
+- `wahoo_rules.js` ports the Wahoo state/rules logic needed for server-side legal-move validation and move application
+- `server/test/*.test.js` covers room creation/joining, AI seat configuration, spectators/chat, move validation, and key rules behavior
+- `.render.yaml` is present for Render deployment
+
+Latest local verification:
+
+```powershell
+cd server
+npm test
+```
+
+Result: `8/8` Node tests pass.
+
+Remaining 4a work:
+
+- Deploy the service to Render
+- Verify `/healthz` from the deployed URL
+- Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://<relay-host>` for production
+- Add any server gaps discovered during real client integration
+
+Phase 4b is now the main active work: build the Godot network client, home screen, lobby, and server-authoritative game flow.
 
 ### Goal
 
@@ -502,12 +573,56 @@ DNS record types you'll use:
 | Record Type | What it does |
 |-------------|-------------|
 | `A` | Points domain to an IP address |
-| `CNAME` | Points domain to another domain name (e.g., your Cloudflare Pages URL) |
+| `CNAME` | Points domain to another domain name (for example, a Netlify or Render hostname) |
 | `TXT` | Ownership verification — various services ask you to add one |
 
 Changes to DNS records can take 1–60 minutes to propagate globally. Cloudflare's is usually under 5 minutes.
 
-#### Step 5: Set Up Static Hosting for the Game Client (Cloudflare Pages)
+#### Step 5: Verify Netlify Static Hosting for the Game Client
+
+The Godot HTML5 export is a set of static files served from `godot/build/web/`. Netlify is the active production host because Cloudflare Pages is blocked by the current `index.wasm` file size.
+
+Repo-side Netlify config:
+
+```toml
+[build]
+  publish = "godot/build/web"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+Why this matters:
+
+- `publish = "godot/build/web"` tells Netlify to serve the committed Godot Web export.
+- The rewrite lets URLs like `/join/J7WKBC` load the Godot app instead of producing a static-host 404.
+- Real exported files still win over the catch-all rewrite, so `index.wasm`, `index.pck`, images, icons, and other assets continue to serve normally.
+
+Owner checklist in Netlify:
+
+1. Open the Wahulo project in Netlify.
+2. Go to **Project configuration > Build & deploy > Continuous deployment > Build settings**.
+3. Confirm the publish directory resolves to `godot/build/web`. If Netlify shows a different value from older UI setup, use the repo `netlify.toml` as the intended source of truth.
+4. Leave the build command blank while Web exports are committed manually. If we later automate Godot exports in CI, update this section with the exact build command.
+5. Go to **Project configuration > Build & deploy > Continuous deployment > Branches and deploy contexts** and confirm the production branch is the branch that receives production-ready Godot exports.
+6. Go to **Domain management > Production domains** and confirm `wahulo.com` is the primary domain and `www.wahulo.com` is configured if you want the `www` URL to work.
+7. Go to **Domain management > HTTPS** and confirm the Netlify-managed certificate is active.
+8. After deploy, test:
+   - `https://wahulo.com/`
+   - `https://wahulo.com/join/J7WKBC`
+   - `https://www.wahulo.com/` if `www` is configured
+
+Reference docs checked on 2026-06-01:
+
+- Netlify build settings and publish directory: `https://docs.netlify.com/build/configure-builds/overview/`
+- Netlify production branches/deploy contexts: `https://docs.netlify.com/deploy/deploy-overview/`
+- Netlify custom domains: `https://docs.netlify.com/domains/configure-domains/bring-a-domain-to-netlify/`
+- Netlify HTTPS: `https://docs.netlify.com/domains-https/https-ssl/`
+- Netlify SPA rewrites: `https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/`
+
+#### Historical Cloudflare Pages Notes (Do Not Use for Current Production)
 
 The Godot HTML5 export is a set of static files served from `godot/build/web/`. Cloudflare Pages hosts these for free and auto-deploys on every GitHub push.
 
@@ -568,7 +683,7 @@ const RELAY_URL = "wss://relay.wahulo.com"
 |------|------|-------|
 | `.com` domain | ~$10/year | Cloudflare Registrar or Porkbun |
 | `.gg` domain | ~$10/year | Often available when `.com` is not |
-| Game client hosting | Free | Cloudflare Pages free tier |
+| Game client hosting | Free | Netlify free tier |
 | Relay server | Free | Render free tier (sleeps after 15 min inactivity) |
 | Relay server (no sleep) | $7/month | Render Starter — eliminates 30s cold-start |
 | **Total (free tier)** | **~$10/year** | Just the domain |

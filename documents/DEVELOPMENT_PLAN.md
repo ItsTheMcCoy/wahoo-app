@@ -12,6 +12,10 @@ Current state of the project and the path forward. Updated as phases complete.
 
 **Latest test snapshot (2026-06-01):** Godot smoke suite remains `51/51 passed`. Python suite currently reports `100 collected`, `20 failed`, `80 passed` because `wahoo/profiles_manager.json` overrides builtin profile names expected by several AI/self-play/play tests.
 
+**Multiplayer backend status (2026-06-01):** Phase 4a has an initial Node.js WebSocket relay implementation under `server/`. It supports room creation/joining, host-only AI seat configuration, spectator joins, chat relay, server-side rolls, legal-move validation, state broadcasts, basic reconnect handling, room expiry, and a Render deployment config. The relay test suite passes locally with `npm test` (`8/8` Node tests passing). The next multiplayer work is Godot client integration: network wrapper, home/lobby UI, and server-authoritative online turn flow.
+
+**Netlify owner-task status (2026-06-01):** Netlify is the active static host. The repo now includes `netlify.toml` with `publish = "godot/build/web"` and a catch-all rewrite to `/index.html` so future `/join/<code>` multiplayer deep links can load the Godot app. Owner-facing Netlify dashboard tasks and walkthrough steps are tracked in `documents/MULTIPLAYER_PLAN.md` under "Owner Task Tracking" and "Step 5: Verify Netlify Static Hosting for the Game Client". Update those sections whenever new implementation details change what the owner must do.
+
 ## Project Goal
 
 Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Public domain: wahulo.com (purchased via Cloudflare). Online multiplayer, learn-as-you-go hobby project.
@@ -92,16 +96,16 @@ Two-column layout (board left, info panel right), Unicode die faces, 14-frame di
 
 Font and tap-target pass to meet 48dp/44pt minimums; Status log repositioned above die frame; opening-roll phase redesigned with sequential per-player messages; TurnLabel updates to rolling player during opening phase.
 
-### Phase 4 — Internet Multiplayer — *Not started*
+### Phase 4 — Internet Multiplayer — *In progress*
 
 Full design and step-by-step implementation plan: **[MULTIPLAYER_PLAN.md](MULTIPLAYER_PLAN.md)**
 
 Summary of sub-phases:
-- **4a:** Node.js WebSocket relay server — room management, move validation, Render deployment
-- **4b:** Godot home screen, lobby scene (host + guest views), AI seat configuration in lobby
+- **4a:** Node.js WebSocket relay server — initial implementation complete locally; room management, spectator support, chat relay, server-side rolls, move validation, basic reconnect handling, room expiry, tests, and Render config are in repo. Remaining 4a work is deployment verification on Render.
+- **4b:** Godot home screen, network wrapper, lobby scene (host + guest views), AI seat configuration in lobby — next active work
 - **4c:** Online game flow — server-driven turns, AI seats via host client, disconnect/reconnect handling
 - **4d:** Domain and DNS in Cloudflare, static hosting on Netlify (current fallback path), relay server on Render with custom subdomain, HTTPS/WSS
-- **4e:** Polish — deep link joining, spectator mode, in-game chat (all optional)
+- **4e:** Polish — deep link joining, spectator mode, in-game chat refinements, recap page
 
 ### Phase 5 — Decide Next Direction — *Not started*
 
