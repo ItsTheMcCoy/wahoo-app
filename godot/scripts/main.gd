@@ -970,8 +970,7 @@ func _load_game() -> void:
 	_render_status("Saved game loaded")
 
 func _die_face(value: int) -> String:
-	const FACES := ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
-	return FACES[clampi(value, 1, 6)]
+	return str(clampi(value, 1, 6))
 
 func _play_roll_visual(final_roll: int) -> void:
 	_die_label.pivot_offset = _die_label.size * 0.5
