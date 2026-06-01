@@ -2,7 +2,7 @@
 
 Capabilities:
   - Create a trait-slider profile payload (legacy single-file output mode)
-  - Manage in-game profiles (list/add/update/rename/remove/restore)
+    - Manage in-game profiles (list/add/update/rename/disable/restore)
 
 Examples:
     python -m wahoo.profile_creator --ui
@@ -537,8 +537,8 @@ def rename_managed_profile(
         disabled.append(old_profile)
 
 
-def remove_managed_profile(config: dict, *, name: str) -> None:
-    """Remove a profile from in-game availability by name."""
+def disable_managed_profile(config: dict, *, name: str) -> None:
+    """Disable a profile so it no longer appears in game profile lists."""
     profile_name = _normalize_profile_name(name)
     custom = config.setdefault("custom_profiles", {})
     aliases = config.setdefault("aliases", {})
@@ -550,6 +550,11 @@ def remove_managed_profile(config: dict, *, name: str) -> None:
         aliases.pop(profile_name, None)
     if isinstance(disabled, list) and profile_name not in disabled:
         disabled.append(profile_name)
+
+
+def remove_managed_profile(config: dict, *, name: str) -> None:
+    """Compatibility alias for disable_managed_profile()."""
+    disable_managed_profile(config, name=name)
 
 
 def restore_managed_profile(config: dict, *, name: str) -> None:
@@ -611,7 +616,7 @@ def _interactive_collect(base_profile: str) -> dict[str, int]:
 
 
 def _launch_profile_creator_ui(default_output: str) -> int:
-    """Launch a desktop UI for creating, editing, and deleting profiles."""
+    """Launch a desktop UI for creating, editing, and disabling profiles."""
     try:
         import tkinter as tk
         from tkinter import filedialog, messagebox, scrolledtext
@@ -626,7 +631,7 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     header = tk.Label(
         root,
-        text="Profile Manager (Create / Edit / Delete)",
+        text="Profile Manager (Create / Edit / Disable)",
         font=("Segoe UI", 16, "bold"),
         anchor="w",
     )
@@ -999,24 +1004,24 @@ def _launch_profile_creator_ui(default_output: str) -> int:
         _set_form_from_base(base_profile)
         _refresh_preview()
 
-    def _delete_selected_profile() -> None:
+    def _disable_selected_profile() -> None:
         selected_name = _current_selection_name()
         if not selected_name:
-            messagebox.showwarning("Delete Profile", "Select a profile to delete.")
+            messagebox.showwarning("Disable Profile", "Select a profile to disable.")
             return
 
         confirmed = messagebox.askyesno(
-            "Delete Profile",
-            "Remove '%s' from in-game availability?" % selected_name,
+            "Disable Profile",
+            "Disable '%s' so it no longer appears in-game?" % selected_name,
         )
         if not confirmed:
             return
 
         config = load_manager_config()
-        remove_managed_profile(config, name=selected_name)
+        disable_managed_profile(config, name=selected_name)
         save_manager_config(config)
         _refresh_profile_list()
-        status_var.set("Deleted '%s' from in-game availability." % selected_name)
+        status_var.set("Disabled '%s' (hidden from in-game profile lists)." % selected_name)
 
     def _edit_selected_profile() -> None:
         selected_name = _current_selection_name()
@@ -1039,7 +1044,7 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     tk.Button(list_actions, text="Create New", command=_create_new_profile).pack(fill="x", pady=(0, 6))
     tk.Button(list_actions, text="Edit Selected", command=_edit_selected_profile).pack(fill="x", pady=(0, 6))
-    tk.Button(list_actions, text="Delete Selected", command=_delete_selected_profile).pack(
+    tk.Button(list_actions, text="Disable Selected", command=_disable_selected_profile).pack(
         fill="x", pady=(0, 6)
     )
     tk.Button(list_actions, text="Refresh", command=_refresh_profile_list).pack(fill="x")
@@ -1154,7 +1159,16 @@ def _build_parser() -> argparse.ArgumentParser:
     rename_parser.add_argument("--new-name", required=True, help="new profile name")
     rename_parser.add_argument("--overwrite", action="store_true", help="replace existing target name")
 
-    remove_parser = subparsers.add_parser("remove", help="remove profile from in-game availability")
+    disable_parser = subparsers.add_parser(
+        "disable",
+        help="disable profile so it no longer appears in-game",
+    )
+    disable_parser.add_argument("--name", required=True, help="profile name")
+
+    remove_parser = subparsers.add_parser(
+        "remove",
+        help="deprecated alias for disable",
+    )
     remove_parser.add_argument("--name", required=True, help="profile name")
 
     restore_parser = subparsers.add_parser("restore", help="restore a removed/disabled profile name")
@@ -1225,10 +1239,10 @@ def _handle_management_command(args: argparse.Namespace) -> int:
             )
             return 0
 
-        if args.command == "remove":
-            remove_managed_profile(config, name=args.name)
+        if args.command == "disable" or args.command == "remove":
+            disable_managed_profile(config, name=args.name)
             save_manager_config(config)
-            print(f"Removed profile '{args.name.strip().lower()}' from in-game availability.")
+            print(f"Disabled profile '{args.name.strip().lower()}' from in-game availability.")
             return 0
 
         if args.command == "restore":

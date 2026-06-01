@@ -5,6 +5,7 @@ import pytest
 from wahoo.profile_creator import (
     add_managed_profile,
     build_profile_weights,
+    disable_managed_profile,
     effective_profile_index,
     parse_trait_overrides,
     remove_managed_profile,
@@ -107,11 +108,18 @@ def test_update_builtin_profile_overrides_traits():
     assert profiles["balanced"]["weights"]["CAP"] == pytest.approx(0.9)
 
 
-def test_remove_and_restore_profile_name():
+def test_disable_and_restore_profile_name():
     config = _empty_config()
 
-    remove_managed_profile(config, name="swarm")
+    disable_managed_profile(config, name="swarm")
     assert "swarm" not in effective_profile_index(config)
 
     restore_managed_profile(config, name="swarm")
     assert "swarm" in effective_profile_index(config)
+
+
+def test_remove_alias_still_disables_profile_name():
+    config = _empty_config()
+
+    remove_managed_profile(config, name="swarm")
+    assert "swarm" not in effective_profile_index(config)

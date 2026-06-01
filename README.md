@@ -177,7 +177,7 @@ python -m wahoo.profile_creator list
 python -m wahoo.profile_creator add --name my_style --base balanced --trait CAP=75 --trait SAFE=65
 python -m wahoo.profile_creator update --name my_style --trait RUN=80 --description "Aggressive runner"
 python -m wahoo.profile_creator rename --name sprinter --new-name blitz
-python -m wahoo.profile_creator remove --name swarm
+python -m wahoo.profile_creator disable --name swarm
 python -m wahoo.profile_creator restore --name swarm
 ```
 
@@ -191,7 +191,7 @@ Useful options:
 Runtime behavior:
 
 - `wahoo/custom_profile.json` still controls the built-in `custom` profile.
-- `wahoo/profiles_manager.json` stores profile manager operations (aliases, removals, managed profiles).
+- `wahoo/profiles_manager.json` stores profile manager operations (aliases, disabled names, managed profiles).
 - At runtime, `wahoo/ai.py` applies manager config so renamed/removed/updated/added profiles are reflected in `PROFILES`.
 
 AI player behavior:
