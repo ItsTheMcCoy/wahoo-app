@@ -20,12 +20,12 @@ const MENU_RESTART_GAME := 2
 const MENU_EXIT_TO_SETUP := 3
 const MENU_QUIT_APP := 4
 
-# Profile keys in easiest→hardest order for the setup dropdown (matches play.py PROFILE_DISPLAY_ORDER)
-const PROFILE_ORDER := [
+# Profile keys in easiest→hardest order for builtin profiles.
+const BUILTIN_PROFILE_ORDER := [
 	"human", "random", "swarm", "tortoise", "engineer",
 	"balanced", "assassin", "gatekeeper", "human_like", "gambler", "sprinter"
 ]
-const PROFILE_LABELS := {
+const BUILTIN_PROFILE_LABELS := {
 	"human":      "Human",
 	"random":     "Random",
 	"swarm":      "Swarm",
@@ -83,6 +83,8 @@ var _game_over := false
 var _seat_types: Array = ["human", "human", "human", "human"]
 var _seat_display_names: Array = PLAYER_NAMES.duplicate(true)
 var _profiles: Dictionary = {}
+var _profile_order: Array = []
+var _profile_labels: Dictionary = {}
 var _ai_busy := false
 var _show_smoke_summary := false
 var _starting_phase := false
@@ -98,7 +100,8 @@ func _ready() -> void:
 	_smoke_summary = _build_smoke_summary()
 	_setup_game_menu()
 	_die_label.text = "–"
-	_profiles = WahooAI.make_profiles()
+	_profiles = _make_profiles_with_manager()
+	_rebuild_profile_catalog()
 	_apply_wordmark_branding()
 	_apply_visual_theme()
 	_populate_dropdowns()
@@ -107,6 +110,117 @@ func _ready() -> void:
 	_setup_overlay.visible = true
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
 	_status.scroll_following = true
+
+func _normalize_profile_name(name: String) -> String:
+	return name.strip_edges().to_lower()
+
+func _load_profiles_manager_config() -> Dictionary:
+	var default_config := {
+		"disabled_profiles": [],
+		"aliases": {},
+		"custom_profiles": {},
+	}
+	var path_candidates := [
+		ProjectSettings.globalize_path("res://../wahoo/profiles_manager.json"),
+		ProjectSettings.globalize_path("res://wahoo/profiles_manager.json"),
+		"wahoo/profiles_manager.json",
+	]
+
+	for candidate in path_candidates:
+		if not FileAccess.file_exists(candidate):
+			continue
+		var file := FileAccess.open(candidate, FileAccess.READ)
+		if file == null:
+			continue
+		var parsed = JSON.parse_string(file.get_as_text())
+		if parsed is Dictionary:
+			return parsed
+
+	return default_config
+
+func _normalized_weights(weights_raw: Dictionary) -> Dictionary:
+	var weights := WahooAI.BALANCED_WEIGHTS.duplicate(true)
+	for feature in WahooAI.FEATURE_KEYS:
+		if not weights_raw.has(feature):
+			continue
+		var value = weights_raw[feature]
+		if value is int or value is float:
+			weights[feature] = max(0.0, float(value))
+	return weights
+
+func _make_profiles_with_manager() -> Dictionary:
+	var profiles := WahooAI.make_profiles()
+	var config := _load_profiles_manager_config()
+
+	var aliases = config.get("aliases", {})
+	if aliases is Dictionary:
+		for alias_key in aliases.keys():
+			var alias := _normalize_profile_name(String(alias_key))
+			var target := _normalize_profile_name(String(aliases[alias_key]))
+			if target.is_empty() or not profiles.has(target):
+				continue
+			profiles[alias] = profiles[target]
+
+	var custom_profiles = config.get("custom_profiles", {})
+	if custom_profiles is Dictionary:
+		for name_key in custom_profiles.keys():
+			var name := _normalize_profile_name(String(name_key))
+			if name.is_empty():
+				continue
+			var payload = custom_profiles[name_key]
+			if not (payload is Dictionary):
+				continue
+			var weights_raw = payload.get("weights", {})
+			if not (weights_raw is Dictionary):
+				continue
+			profiles[name] = WahooAI.GreedyPlayer.new(_normalized_weights(weights_raw))
+
+	var disabled = config.get("disabled_profiles", [])
+	if disabled is Array:
+		for raw in disabled:
+			var name := _normalize_profile_name(String(raw))
+			if not name.is_empty():
+				profiles.erase(name)
+
+	return profiles
+
+func _display_profile_label(profile_key: String) -> String:
+	if BUILTIN_PROFILE_LABELS.has(profile_key):
+		return String(BUILTIN_PROFILE_LABELS[profile_key])
+	var words := profile_key.split(" ")
+	for i in range(words.size()):
+		if words[i].length() > 0:
+			words[i] = words[i].substr(0, 1).to_upper() + words[i].substr(1)
+	return " ".join(words)
+
+func _rebuild_profile_catalog() -> void:
+	_profile_order = ["human"]
+	_profile_labels = {"human": "Human"}
+
+	var known_profiles: Array = []
+	for key in _profiles.keys():
+		var name := _normalize_profile_name(String(key))
+		if name.is_empty() or name == "human":
+			continue
+		if not known_profiles.has(name):
+			known_profiles.append(name)
+
+	for key in BUILTIN_PROFILE_ORDER:
+		if key == "human":
+			continue
+		if known_profiles.has(key):
+			_profile_order.append(key)
+
+	var extras: Array = []
+	for key in known_profiles:
+		if not _profile_order.has(key):
+			extras.append(key)
+	extras.sort()
+	for key in extras:
+		_profile_order.append(key)
+
+	for key in _profile_order:
+		_profile_labels[key] = _display_profile_label(String(key))
 
 func _apply_wordmark_branding() -> void:
 	for title in [_side_panel_title, _setup_brand_title, _win_brand_title]:
@@ -327,11 +441,11 @@ func _populate_dropdowns() -> void:
 	var opts := [_seat_option_0, _seat_option_1, _seat_option_2, _seat_option_3]
 	for opt in opts:
 		opt.clear()
-		for key in PROFILE_ORDER:
-			opt.add_item(PROFILE_LABELS.get(key, key), -1)
+		for key in _profile_order:
+			opt.add_item(_profile_labels.get(key, key), -1)
 		if opt.item_count > 0:
 			opt.select(0)
-			opt.text = PROFILE_LABELS.get(PROFILE_ORDER[0], PROFILE_ORDER[0])
+			opt.text = _profile_labels.get(_profile_order[0], _profile_order[0])
 
 func _wire_setup_inputs() -> void:
 	var opts := [_seat_option_0, _seat_option_1, _seat_option_2, _seat_option_3]
@@ -352,11 +466,11 @@ func _refresh_setup_name_fields() -> void:
 	var fields := _seat_name_fields()
 	for i in range(WahooState.NUM_PLAYERS):
 		var selected_idx: int = int(opts[i].selected)
-		if selected_idx < 0 or selected_idx >= PROFILE_ORDER.size():
+		if selected_idx < 0 or selected_idx >= _profile_order.size():
 			selected_idx = 0
 			if opts[i].item_count > 0:
 				opts[i].select(selected_idx)
-		var profile_key: String = PROFILE_ORDER[selected_idx]
+		var profile_key: String = _profile_order[selected_idx]
 		var field: LineEdit = fields[i]
 		if profile_key == "human":
 			field.visible = true
@@ -372,16 +486,16 @@ func _on_start_pressed() -> void:
 	var fields := _seat_name_fields()
 	for i in range(4):
 		var selected_idx: int = int(opts[i].selected)
-		if selected_idx < 0 or selected_idx >= PROFILE_ORDER.size():
+		if selected_idx < 0 or selected_idx >= _profile_order.size():
 			selected_idx = 0
-		_seat_types[i] = PROFILE_ORDER[selected_idx]
+		_seat_types[i] = _profile_order[selected_idx]
 		if _seat_types[i] == "human":
 			var entered := String(fields[i].text).strip_edges()
 			if entered == "Enter Name":
 				entered = ""
 			_seat_display_names[i] = entered if not entered.is_empty() else PLAYER_NAMES[i]
 		else:
-			_seat_display_names[i] = PROFILE_LABELS.get(_seat_types[i], _seat_types[i])
+			_seat_display_names[i] = _profile_labels.get(_seat_types[i], _seat_types[i])
 	_setup_overlay.visible = false
 	_new_game()
 
