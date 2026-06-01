@@ -44,7 +44,7 @@ theme_override_constants/separation = 10
 
 [node name="GameTitle" type="TextureRect" parent="Root/SidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 92)
+custom_minimum_size = Vector2(0, 138)
 texture = ExtResource("3_0dv5w")
 expand_mode = 1
 stretch_mode = 5
@@ -131,7 +131,7 @@ theme_override_constants/separation = 12
 
 [node name="BrandTitle" type="TextureRect" parent="WinOverlay/WinPanel/WinContent"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 108)
+custom_minimum_size = Vector2(0, 162)
 texture = ExtResource("3_0dv5w")
 expand_mode = 1
 stretch_mode = 5
@@ -184,7 +184,7 @@ theme_override_constants/separation = 16
 
 [node name="BrandTitle" type="TextureRect" parent="SetupOverlay/SetupPanel/SetupContent"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 136)
+custom_minimum_size = Vector2(0, 204)
 texture = ExtResource("3_0dv5w")
 expand_mode = 1
 stretch_mode = 5
