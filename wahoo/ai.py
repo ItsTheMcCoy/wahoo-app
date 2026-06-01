@@ -300,6 +300,90 @@ def _load_custom_profile_weights() -> dict:
     return weights
 
 
+def _load_managed_profiles_config() -> dict:
+    """Load profile manager config with best-effort validation.
+
+    Expected file format:
+      {
+        "disabled_profiles": ["swarm"],
+        "aliases": {"my_sprinter": "sprinter"},
+        "custom_profiles": {
+          "my_profile": {
+            "weights": {"DEP": 0.7, ...}
+          }
+        }
+      }
+    """
+    default = {
+        "disabled_profiles": [],
+        "aliases": {},
+        "custom_profiles": {},
+    }
+    path = os.path.join(os.path.dirname(__file__), "profiles_manager.json")
+    if not os.path.exists(path):
+        return default
+
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return default
+
+    if not isinstance(payload, dict):
+        return default
+
+    disabled_raw = payload.get("disabled_profiles", [])
+    aliases_raw = payload.get("aliases", {})
+    custom_raw = payload.get("custom_profiles", {})
+
+    disabled: list[str] = []
+    if isinstance(disabled_raw, list):
+        for value in disabled_raw:
+            if isinstance(value, str):
+                name = value.strip().lower()
+                if name and name not in disabled:
+                    disabled.append(name)
+
+    aliases: dict[str, str] = {}
+    if isinstance(aliases_raw, dict):
+        for alias, target in aliases_raw.items():
+            if isinstance(alias, str) and isinstance(target, str):
+                alias_name = alias.strip().lower()
+                target_name = target.strip().lower()
+                if alias_name and target_name:
+                    aliases[alias_name] = target_name
+
+    custom_profiles: dict[str, dict] = {}
+    if isinstance(custom_raw, dict):
+        for name, profile_payload in custom_raw.items():
+            if not isinstance(name, str) or not isinstance(profile_payload, dict):
+                continue
+            profile_name = name.strip().lower()
+            if not profile_name:
+                continue
+
+            loaded = profile_payload.get("weights", {})
+            if not isinstance(loaded, dict):
+                continue
+
+            weights = dict(BALANCED_WEIGHTS)
+            for key in BALANCED_WEIGHTS:
+                value = loaded.get(key)
+                if isinstance(value, (int, float)):
+                    weights[key] = max(0.0, float(value))
+
+            custom_profiles[profile_name] = {
+                "weights": weights,
+                "description": str(profile_payload.get("description", "")).strip(),
+            }
+
+    return {
+        "disabled_profiles": disabled,
+        "aliases": aliases,
+        "custom_profiles": custom_profiles,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Player classes
 # ---------------------------------------------------------------------------
@@ -450,17 +534,52 @@ class ExpectimaxPlayer:
 # Profile registry
 # ---------------------------------------------------------------------------
 
-PROFILES: dict = {
-    "random":    RandomPlayer(),
-    "sprinter":  GreedyPlayer(SPRINTER_WEIGHTS),
-    "swarm":     GreedyPlayer(SWARM_WEIGHTS),
-    "assassin":  GreedyPlayer(ASSASSIN_WEIGHTS),
-    "gambler":   GreedyPlayer(GAMBLER_WEIGHTS),
-    "tortoise":  GreedyPlayer(TORTOISE_WEIGHTS),
-    "gatekeeper":GreedyPlayer(GATEKEEPER_WEIGHTS),
-    "engineer":  GreedyPlayer(ENGINEER_WEIGHTS),
-    "balanced":  GreedyPlayer(BALANCED_WEIGHTS),
-    "human_like": GreedyPlayer(_load_human_like_weights()),
-    "custom": GreedyPlayer(_load_custom_profile_weights()),
-    "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
-}
+
+def _base_profiles() -> dict:
+    """Return builtin profile registry before manager overrides."""
+    return {
+        "random": RandomPlayer(),
+        "sprinter": GreedyPlayer(SPRINTER_WEIGHTS),
+        "swarm": GreedyPlayer(SWARM_WEIGHTS),
+        "assassin": GreedyPlayer(ASSASSIN_WEIGHTS),
+        "gambler": GreedyPlayer(GAMBLER_WEIGHTS),
+        "tortoise": GreedyPlayer(TORTOISE_WEIGHTS),
+        "gatekeeper": GreedyPlayer(GATEKEEPER_WEIGHTS),
+        "engineer": GreedyPlayer(ENGINEER_WEIGHTS),
+        "balanced": GreedyPlayer(BALANCED_WEIGHTS),
+        "human_like": GreedyPlayer(_load_human_like_weights()),
+        "custom": GreedyPlayer(_load_custom_profile_weights()),
+        "expectimax": ExpectimaxPlayer(BALANCED_WEIGHTS),
+    }
+
+
+def _apply_managed_profiles(base_profiles: dict) -> dict:
+    """Apply aliases, managed custom profiles, and disabled names."""
+    profiles = dict(base_profiles)
+    config = _load_managed_profiles_config()
+
+    aliases = config.get("aliases", {})
+    if isinstance(aliases, dict):
+        for alias, target in aliases.items():
+            if target in profiles:
+                profiles[alias] = profiles[target]
+
+    custom_profiles = config.get("custom_profiles", {})
+    if isinstance(custom_profiles, dict):
+        for name, payload in custom_profiles.items():
+            if not isinstance(payload, dict):
+                continue
+            weights = payload.get("weights", {})
+            if isinstance(weights, dict):
+                profiles[name] = GreedyPlayer(weights)
+
+    disabled = config.get("disabled_profiles", [])
+    if isinstance(disabled, list):
+        for name in disabled:
+            if isinstance(name, str):
+                profiles.pop(name, None)
+
+    return profiles
+
+
+PROFILES: dict = _apply_managed_profiles(_base_profiles())

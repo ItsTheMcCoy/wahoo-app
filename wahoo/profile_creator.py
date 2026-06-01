@@ -1,11 +1,16 @@
-"""Interactive and scripted tool for building custom AI profiles.
+"""Interactive and scripted tool for creating and managing AI profiles.
 
-This tool starts from an existing profile and lets you tune granular, single-trait
-weights using slider values (0-100). It prevents contradictory trait selections.
+Capabilities:
+  - Create a trait-slider profile payload (legacy single-file output mode)
+  - Manage in-game profiles (list/add/update/rename/remove/restore)
+  - Enforce contradictory trait constraints
 
 Examples:
+    python -m wahoo.profile_creator --ui
   python -m wahoo.profile_creator
   python -m wahoo.profile_creator --base balanced --trait RUN=85 --trait CAP=70
+  python -m wahoo.profile_creator list
+  python -m wahoo.profile_creator add --name my_style --base balanced --trait CAP=75
 """
 
 from __future__ import annotations
@@ -14,6 +19,7 @@ import argparse
 import json
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 try:
     from .ai import (
@@ -25,6 +31,7 @@ try:
         SPRINTER_WEIGHTS,
         SWARM_WEIGHTS,
         TORTOISE_WEIGHTS,
+        _load_custom_profile_weights,
         _load_human_like_weights,
     )
 except ImportError:
@@ -37,10 +44,13 @@ except ImportError:
         SPRINTER_WEIGHTS,
         SWARM_WEIGHTS,
         TORTOISE_WEIGHTS,
+        _load_custom_profile_weights,
         _load_human_like_weights,
     )
 
 FEATURE_KEYS = ("DEP", "RUN", "SPR", "CAP", "SAFE", "CTR", "DEN", "FLOW", "HOME", "FIN")
+NON_TRAIT_BUILTIN_PROFILES = ("random", "expectimax")
+MANAGER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "profiles_manager.json")
 
 TRAIT_DESCRIPTIONS = {
     "DEP": "Deployment pressure (prefer exiting base)",
@@ -71,6 +81,7 @@ PRESET_WEIGHTS = {
     "gatekeeper": dict(GATEKEEPER_WEIGHTS),
     "engineer": dict(ENGINEER_WEIGHTS),
     "human_like": dict(_load_human_like_weights()),
+    "custom": dict(_load_custom_profile_weights()),
 }
 
 
@@ -162,6 +173,350 @@ def parse_trait_overrides(raw_traits: list[str]) -> dict[str, int]:
     return overrides
 
 
+def _normalize_profile_name(name: str) -> str:
+    cleaned = name.strip().lower()
+    if not cleaned:
+        raise ValueError("Profile name cannot be blank")
+    return cleaned
+
+
+def _default_manager_config() -> dict:
+    return {
+        "disabled_profiles": [],
+        "aliases": {},
+        "custom_profiles": {},
+    }
+
+
+def load_manager_config(path: str = MANAGER_CONFIG_PATH) -> dict:
+    """Load profile management config with schema normalization."""
+    default = _default_manager_config()
+    if not os.path.exists(path):
+        return default
+
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return default
+
+    if not isinstance(payload, dict):
+        return default
+
+    disabled = payload.get("disabled_profiles", [])
+    aliases = payload.get("aliases", {})
+    custom_profiles = payload.get("custom_profiles", {})
+
+    normalized_disabled = []
+    if isinstance(disabled, list):
+        for value in disabled:
+            if isinstance(value, str):
+                name = value.strip().lower()
+                if name and name not in normalized_disabled:
+                    normalized_disabled.append(name)
+
+    normalized_aliases: dict[str, str] = {}
+    if isinstance(aliases, dict):
+        for alias, target in aliases.items():
+            if not isinstance(alias, str) or not isinstance(target, str):
+                continue
+            alias_name = alias.strip().lower()
+            target_name = target.strip().lower()
+            if alias_name and target_name:
+                normalized_aliases[alias_name] = target_name
+
+    normalized_custom: dict[str, dict] = {}
+    if isinstance(custom_profiles, dict):
+        for name, profile_payload in custom_profiles.items():
+            if not isinstance(name, str) or not isinstance(profile_payload, dict):
+                continue
+            profile_name = name.strip().lower()
+            if not profile_name:
+                continue
+            weights = profile_payload.get("weights", {})
+            if not isinstance(weights, dict):
+                continue
+
+            normalized_weights = dict(BALANCED_WEIGHTS)
+            for key in FEATURE_KEYS:
+                value = weights.get(key)
+                if isinstance(value, (int, float)):
+                    normalized_weights[key] = max(0.0, float(value))
+
+            trait_sliders = profile_payload.get("trait_sliders", {})
+            normalized_sliders: dict[str, int] = {}
+            if isinstance(trait_sliders, dict):
+                for feature, slider in trait_sliders.items():
+                    if feature in FEATURE_KEYS and isinstance(slider, int) and 0 <= slider <= 100:
+                        normalized_sliders[feature] = slider
+
+            entry = {
+                "base_profile": str(profile_payload.get("base_profile", "balanced")).strip().lower(),
+                "weights": normalized_weights,
+                "trait_sliders": normalized_sliders,
+                "description": str(profile_payload.get("description", "")).strip(),
+                "updated_at": str(profile_payload.get("updated_at", "")).strip(),
+            }
+            normalized_custom[profile_name] = entry
+
+    return {
+        "disabled_profiles": normalized_disabled,
+        "aliases": normalized_aliases,
+        "custom_profiles": normalized_custom,
+    }
+
+
+def save_manager_config(config: dict, path: str = MANAGER_CONFIG_PATH) -> None:
+    """Persist profile management config to disk."""
+    output_dir = os.path.dirname(path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(config, handle, indent=2)
+
+
+def _builtin_profile_index() -> dict[str, dict]:
+    """Return builtin profiles and metadata for management views."""
+    builtins = {}
+    for name, weights in PRESET_WEIGHTS.items():
+        builtins[name] = {
+            "name": name,
+            "kind": "builtin-greedy",
+            "source": "builtin",
+            "weights": dict(weights),
+        }
+    for name in NON_TRAIT_BUILTIN_PROFILES:
+        builtins[name] = {
+            "name": name,
+            "kind": "builtin-special",
+            "source": "builtin",
+            "weights": None,
+        }
+    return builtins
+
+
+def effective_profile_index(config: dict | None = None) -> dict[str, dict]:
+    """Return profiles visible in-game after applying manager config."""
+    config = config or load_manager_config()
+    resolved = _builtin_profile_index()
+
+    aliases = config.get("aliases", {})
+    if isinstance(aliases, dict):
+        for alias, target in aliases.items():
+            target_profile = resolved.get(target)
+            if target_profile is None:
+                continue
+            aliased = dict(target_profile)
+            aliased["name"] = alias
+            aliased["source"] = f"alias:{target}"
+            resolved[alias] = aliased
+
+    custom_profiles = config.get("custom_profiles", {})
+    if isinstance(custom_profiles, dict):
+        for name, profile_payload in custom_profiles.items():
+            if not isinstance(profile_payload, dict):
+                continue
+            weights = profile_payload.get("weights")
+            if not isinstance(weights, dict):
+                continue
+            resolved[name] = {
+                "name": name,
+                "kind": "managed-greedy",
+                "source": "managed",
+                "weights": dict(weights),
+                "base_profile": profile_payload.get("base_profile", "balanced"),
+                "trait_sliders": dict(profile_payload.get("trait_sliders", {})),
+                "description": profile_payload.get("description", ""),
+            }
+
+    disabled = set(config.get("disabled_profiles", []))
+    for name in list(resolved.keys()):
+        if name in disabled:
+            resolved.pop(name, None)
+
+    return resolved
+
+
+def add_managed_profile(
+    config: dict,
+    *,
+    name: str,
+    base_profile: str,
+    trait_sliders: dict[str, int],
+    description: str = "",
+    overwrite: bool = False,
+) -> dict:
+    """Add a managed profile or overwrite an existing one."""
+    profile_name = _normalize_profile_name(name)
+    base_name = _normalize_profile_name(base_profile)
+    if base_name not in PRESET_WEIGHTS:
+        valid = ", ".join(sorted(PRESET_WEIGHTS))
+        raise ValueError(f"Unknown base profile '{base_name}'. Valid profiles: {valid}")
+
+    existing = effective_profile_index(config)
+    if profile_name in existing and not overwrite:
+        raise ValueError(f"Profile '{profile_name}' already exists. Use --overwrite to replace it.")
+
+    validate_selected_traits(list(trait_sliders.keys()))
+    weights = build_profile_weights(base_name, trait_sliders)
+    custom = config.setdefault("custom_profiles", {})
+    if not isinstance(custom, dict):
+        custom = {}
+        config["custom_profiles"] = custom
+
+    custom[profile_name] = {
+        "base_profile": base_name,
+        "weights": weights,
+        "trait_sliders": dict(trait_sliders),
+        "description": description.strip(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    disabled = config.setdefault("disabled_profiles", [])
+    if isinstance(disabled, list):
+        config["disabled_profiles"] = [n for n in disabled if n != profile_name]
+
+    aliases = config.setdefault("aliases", {})
+    if isinstance(aliases, dict):
+        aliases.pop(profile_name, None)
+
+    return custom[profile_name]
+
+
+def update_managed_profile(
+    config: dict,
+    *,
+    name: str,
+    base_profile: str | None = None,
+    trait_updates: dict[str, int] | None = None,
+    description: str | None = None,
+    reset_traits: bool = False,
+) -> dict:
+    """Update managed profile by name, creating an override when needed."""
+    profile_name = _normalize_profile_name(name)
+    trait_updates = trait_updates or {}
+    validate_selected_traits(list(trait_updates.keys()))
+
+    custom = config.setdefault("custom_profiles", {})
+    if not isinstance(custom, dict):
+        custom = {}
+        config["custom_profiles"] = custom
+
+    existing_payload = custom.get(profile_name, {}) if isinstance(custom.get(profile_name), dict) else {}
+
+    if existing_payload:
+        current_base = existing_payload.get("base_profile", "balanced")
+        current_traits = {} if reset_traits else dict(existing_payload.get("trait_sliders", {}))
+        current_description = existing_payload.get("description", "")
+    else:
+        current_base = profile_name if profile_name in PRESET_WEIGHTS else "balanced"
+        current_traits = {}
+        current_description = ""
+
+    if profile_name in NON_TRAIT_BUILTIN_PROFILES and base_profile is None and not existing_payload:
+        raise ValueError(
+            f"Profile '{profile_name}' is a non-trait builtin. Provide --base to convert it to a trait-driven override."
+        )
+
+    next_base = _normalize_profile_name(base_profile) if base_profile is not None else current_base
+    if next_base not in PRESET_WEIGHTS:
+        valid = ", ".join(sorted(PRESET_WEIGHTS))
+        raise ValueError(f"Unknown base profile '{next_base}'. Valid profiles: {valid}")
+
+    current_traits.update(trait_updates)
+    validate_selected_traits(list(current_traits.keys()))
+    weights = build_profile_weights(next_base, current_traits)
+
+    payload = {
+        "base_profile": next_base,
+        "weights": weights,
+        "trait_sliders": dict(current_traits),
+        "description": current_description if description is None else description.strip(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    custom[profile_name] = payload
+
+    disabled = config.setdefault("disabled_profiles", [])
+    if isinstance(disabled, list):
+        config["disabled_profiles"] = [n for n in disabled if n != profile_name]
+
+    aliases = config.setdefault("aliases", {})
+    if isinstance(aliases, dict):
+        aliases.pop(profile_name, None)
+
+    return payload
+
+
+def rename_managed_profile(
+    config: dict,
+    *,
+    old_name: str,
+    new_name: str,
+    overwrite: bool = False,
+) -> None:
+    """Rename a profile; builtin names become alias-based renames."""
+    old_profile = _normalize_profile_name(old_name)
+    new_profile = _normalize_profile_name(new_name)
+    if old_profile == new_profile:
+        return
+
+    existing = effective_profile_index(config)
+    if old_profile not in existing:
+        raise ValueError(f"Unknown profile '{old_profile}'")
+    if new_profile in existing and not overwrite:
+        raise ValueError(f"Profile '{new_profile}' already exists. Use --overwrite to replace it.")
+
+    custom = config.setdefault("custom_profiles", {})
+    aliases = config.setdefault("aliases", {})
+    disabled = config.setdefault("disabled_profiles", [])
+    if isinstance(custom, dict):
+        custom.pop(new_profile, None)
+    if isinstance(aliases, dict):
+        aliases.pop(new_profile, None)
+
+    if isinstance(custom, dict) and old_profile in custom:
+        payload = custom.pop(old_profile)
+        custom[new_profile] = payload
+        if old_profile in PRESET_WEIGHTS or old_profile in NON_TRAIT_BUILTIN_PROFILES:
+            if old_profile not in disabled:
+                disabled.append(old_profile)
+        return
+
+    if isinstance(aliases, dict) and old_profile in aliases:
+        target = aliases.pop(old_profile)
+        aliases[new_profile] = target
+        return
+
+    # Builtin rename via alias + disable old name.
+    if isinstance(aliases, dict):
+        aliases[new_profile] = old_profile
+    if isinstance(disabled, list) and old_profile not in disabled:
+        disabled.append(old_profile)
+
+
+def remove_managed_profile(config: dict, *, name: str) -> None:
+    """Remove a profile from in-game availability by name."""
+    profile_name = _normalize_profile_name(name)
+    custom = config.setdefault("custom_profiles", {})
+    aliases = config.setdefault("aliases", {})
+    disabled = config.setdefault("disabled_profiles", [])
+
+    if isinstance(custom, dict):
+        custom.pop(profile_name, None)
+    if isinstance(aliases, dict):
+        aliases.pop(profile_name, None)
+    if isinstance(disabled, list) and profile_name not in disabled:
+        disabled.append(profile_name)
+
+
+def restore_managed_profile(config: dict, *, name: str) -> None:
+    """Restore visibility for a previously disabled profile name."""
+    profile_name = _normalize_profile_name(name)
+    disabled = config.setdefault("disabled_profiles", [])
+    if isinstance(disabled, list):
+        config["disabled_profiles"] = [n for n in disabled if n != profile_name]
+
+
 def _print_trait_catalog() -> None:
     print("Available traits (use each as FEATURE in --trait FEATURE=SLIDER):")
     for feature in FEATURE_KEYS:
@@ -223,12 +578,256 @@ def _interactive_collect(base_profile: str) -> dict[str, int]:
     return selected
 
 
+def _launch_profile_creator_ui(default_output: str) -> int:
+    """Launch a desktop UI for creating and saving profile presets."""
+    try:
+        import tkinter as tk
+        from tkinter import filedialog, messagebox, scrolledtext
+    except ImportError:
+        print("Error: Tkinter is not available in this Python environment.")
+        return 2
+
+    root = tk.Tk()
+    root.title("Wahoo Profile Creator")
+    root.geometry("980x760")
+    root.minsize(900, 680)
+
+    header = tk.Label(
+        root,
+        text="Create AI Profiles with Trait Sliders",
+        font=("Segoe UI", 16, "bold"),
+        anchor="w",
+    )
+    header.pack(fill="x", padx=12, pady=(12, 6))
+
+    form = tk.Frame(root)
+    form.pack(fill="x", padx=12, pady=(0, 8))
+
+    profile_name_var = tk.StringVar(value="custom")
+    base_options = sorted(PRESET_WEIGHTS.keys())
+    base_profile_var = tk.StringVar(value="balanced")
+    description_var = tk.StringVar(value="")
+    output_var = tk.StringVar(value=default_output)
+    overwrite_var = tk.BooleanVar(value=False)
+    status_var = tk.StringVar(value="Adjust sliders and review the generated profile.")
+
+    tk.Label(form, text="Profile name:").grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
+    tk.Entry(form, textvariable=profile_name_var, width=28).grid(
+        row=0, column=1, sticky="w", padx=(0, 14), pady=4
+    )
+
+    tk.Label(form, text="Base profile:").grid(row=0, column=2, sticky="w", padx=(0, 8), pady=4)
+    tk.OptionMenu(form, base_profile_var, *base_options).grid(
+        row=0, column=3, sticky="w", padx=(0, 14), pady=4
+    )
+
+    tk.Label(form, text="Description:").grid(row=1, column=0, sticky="w", padx=(0, 8), pady=4)
+    tk.Entry(form, textvariable=description_var, width=54).grid(
+        row=1, column=1, columnspan=3, sticky="we", padx=(0, 14), pady=4
+    )
+
+    tk.Label(form, text="Export path:").grid(row=2, column=0, sticky="w", padx=(0, 8), pady=4)
+    tk.Entry(form, textvariable=output_var, width=54).grid(
+        row=2, column=1, columnspan=2, sticky="we", padx=(0, 8), pady=4
+    )
+
+    def _choose_output_path() -> None:
+        selected = filedialog.asksaveasfilename(
+            title="Export Profile JSON",
+            defaultextension=".json",
+            initialfile=Path(output_var.get()).name,
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if selected:
+            output_var.set(selected)
+
+    tk.Button(form, text="Browse...", command=_choose_output_path).grid(
+        row=2, column=3, sticky="w", padx=(0, 14), pady=4
+    )
+    tk.Checkbutton(form, text="Overwrite existing managed profile", variable=overwrite_var).grid(
+        row=3, column=0, columnspan=3, sticky="w", pady=(4, 2)
+    )
+
+    sliders_container = tk.LabelFrame(root, text="Trait Sliders (0-100)")
+    sliders_container.pack(fill="x", padx=12, pady=(0, 8))
+
+    slider_vars: dict[str, tk.IntVar] = {}
+    slider_value_labels: dict[str, tk.Label] = {}
+
+    for idx, feature in enumerate(FEATURE_KEYS):
+        row = idx // 2
+        col_base = (idx % 2) * 4
+
+        slider_vars[feature] = tk.IntVar(value=0)
+
+        tk.Label(
+            sliders_container,
+            text="%s: %s" % (feature, TRAIT_DESCRIPTIONS[feature]),
+            anchor="w",
+        ).grid(row=row, column=col_base, sticky="w", padx=(8, 6), pady=6)
+
+        scale = tk.Scale(
+            sliders_container,
+            from_=0,
+            to=100,
+            orient="horizontal",
+            variable=slider_vars[feature],
+            showvalue=False,
+            length=180,
+            resolution=1,
+        )
+        scale.grid(row=row, column=col_base + 1, sticky="we", padx=(0, 6), pady=6)
+
+        value_label = tk.Label(sliders_container, text="0", width=4)
+        value_label.grid(row=row, column=col_base + 2, sticky="w", padx=(0, 10), pady=6)
+        slider_value_labels[feature] = value_label
+
+    preview_frame = tk.LabelFrame(root, text="Generated Payload Preview")
+    preview_frame.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+    preview_text = scrolledtext.ScrolledText(preview_frame, wrap="none", font=("Consolas", 10))
+    preview_text.pack(fill="both", expand=True, padx=8, pady=8)
+    preview_text.configure(state="disabled")
+
+    footer = tk.Frame(root)
+    footer.pack(fill="x", padx=12, pady=(0, 12))
+    tk.Label(footer, textvariable=status_var, anchor="w", fg="#184b18").pack(
+        side="left", fill="x", expand=True
+    )
+
+    def _selected_trait_sliders() -> dict[str, int]:
+        selected: dict[str, int] = {}
+        for feature in FEATURE_KEYS:
+            value = int(slider_vars[feature].get())
+            if value > 0:
+                selected[feature] = value
+        return selected
+
+    def _build_payload_for_ui() -> tuple[dict, dict[str, int], dict[str, float]]:
+        profile_name = profile_name_var.get().strip()
+        if not profile_name:
+            raise ValueError("Profile name cannot be blank")
+
+        base_profile = base_profile_var.get().strip().lower()
+        if base_profile not in PRESET_WEIGHTS:
+            valid = ", ".join(sorted(PRESET_WEIGHTS))
+            raise ValueError(f"Unknown base profile '{base_profile}'. Valid profiles: {valid}")
+
+        sliders = _selected_trait_sliders()
+        weights = build_profile_weights(base_profile, sliders)
+        payload = {
+            "profile_name": profile_name,
+            "base_profile": base_profile,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "selected_traits": [
+                {
+                    "feature": feature,
+                    "description": TRAIT_DESCRIPTIONS[feature],
+                    "slider": slider,
+                    "weight": weights[feature],
+                }
+                for feature, slider in sorted(sliders.items())
+            ],
+            "weights": weights,
+            "description": description_var.get().strip(),
+        }
+        return payload, sliders, weights
+
+    def _set_preview(payload: dict) -> None:
+        preview_text.configure(state="normal")
+        preview_text.delete("1.0", "end")
+        preview_text.insert("1.0", json.dumps(payload, indent=2))
+        preview_text.configure(state="disabled")
+
+    def _refresh_preview(*_args) -> None:
+        for feature in FEATURE_KEYS:
+            slider_value_labels[feature].configure(text=str(int(slider_vars[feature].get())))
+
+        try:
+            payload, sliders, _weights = _build_payload_for_ui()
+            _set_preview(payload)
+            status_var.set(
+                "Ready: %d trait override(s) selected." % len(sliders)
+            )
+        except ValueError as exc:
+            status_var.set(f"Validation error: {exc}")
+
+    def _save_managed_profile() -> None:
+        try:
+            _payload, sliders, _weights = _build_payload_for_ui()
+            profile_name = profile_name_var.get().strip()
+            base_profile = base_profile_var.get().strip().lower()
+            config = load_manager_config()
+            add_managed_profile(
+                config,
+                name=profile_name,
+                base_profile=base_profile,
+                trait_sliders=sliders,
+                description=description_var.get().strip(),
+                overwrite=bool(overwrite_var.get()),
+            )
+            save_manager_config(config)
+            status_var.set("Saved managed profile '%s'." % profile_name.strip().lower())
+            messagebox.showinfo("Profile Saved", "Managed profile saved to profiles_manager.json")
+        except ValueError as exc:
+            status_var.set(f"Save failed: {exc}")
+            messagebox.showerror("Save Failed", str(exc))
+
+    def _export_json() -> None:
+        try:
+            payload, _sliders, _weights = _build_payload_for_ui()
+            output_path = output_var.get().strip()
+            if not output_path:
+                raise ValueError("Export path cannot be blank")
+
+            output_dir = os.path.dirname(output_path)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+
+            with open(output_path, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, indent=2)
+
+            status_var.set(f"Exported profile JSON to {output_path}")
+            messagebox.showinfo("Export Complete", f"Wrote custom AI profile to:\n{output_path}")
+        except (OSError, ValueError) as exc:
+            status_var.set(f"Export failed: {exc}")
+            messagebox.showerror("Export Failed", str(exc))
+
+    def _reset_sliders() -> None:
+        for feature in FEATURE_KEYS:
+            slider_vars[feature].set(0)
+        _refresh_preview()
+
+    action_bar = tk.Frame(root)
+    action_bar.pack(fill="x", padx=12, pady=(0, 12))
+    tk.Button(action_bar, text="Reset Sliders", command=_reset_sliders).pack(side="left", padx=(0, 8))
+    tk.Button(action_bar, text="Save Managed Profile", command=_save_managed_profile).pack(
+        side="left", padx=(0, 8)
+    )
+    tk.Button(action_bar, text="Export JSON", command=_export_json).pack(side="left", padx=(0, 8))
+    tk.Button(action_bar, text="Close", command=root.destroy).pack(side="right")
+
+    base_profile_var.trace_add("write", _refresh_preview)
+    profile_name_var.trace_add("write", _refresh_preview)
+    description_var.trace_add("write", _refresh_preview)
+    for feature in FEATURE_KEYS:
+        slider_vars[feature].trace_add("write", _refresh_preview)
+
+    _refresh_preview()
+    root.mainloop()
+    return 0
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Create a custom AI profile from existing profile traits with "
-            "per-trait sliders and contradiction checks."
+            "Create and manage AI profiles with granular trait sliders "
+            "and contradiction checks."
         )
+    )
+    parser.add_argument(
+        "--ui",
+        action="store_true",
+        help="launch desktop UI for profile creation",
     )
     parser.add_argument(
         "--base",
@@ -266,12 +865,142 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print available base profiles and exit",
     )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    subparsers.add_parser("list", help="list effective in-game profiles")
+
+    add_parser = subparsers.add_parser("add", help="add a managed profile")
+    add_parser.add_argument("--name", required=True, help="profile name")
+    add_parser.add_argument("--base", default="balanced", help="base profile")
+    add_parser.add_argument(
+        "--trait",
+        action="append",
+        default=[],
+        help="trait slider in FEATURE=SLIDER format",
+    )
+    add_parser.add_argument("--description", default="", help="optional profile description")
+    add_parser.add_argument("--overwrite", action="store_true", help="replace if name already exists")
+
+    update_parser = subparsers.add_parser("update", help="update or override a profile")
+    update_parser.add_argument("--name", required=True, help="profile name")
+    update_parser.add_argument("--base", help="optional new base profile")
+    update_parser.add_argument(
+        "--trait",
+        action="append",
+        default=[],
+        help="trait slider update in FEATURE=SLIDER format",
+    )
+    update_parser.add_argument(
+        "--reset-traits",
+        action="store_true",
+        help="clear previous managed trait sliders before applying --trait updates",
+    )
+    update_parser.add_argument("--description", help="optional new description")
+
+    rename_parser = subparsers.add_parser("rename", help="rename a profile")
+    rename_parser.add_argument("--name", required=True, help="existing profile name")
+    rename_parser.add_argument("--new-name", required=True, help="new profile name")
+    rename_parser.add_argument("--overwrite", action="store_true", help="replace existing target name")
+
+    remove_parser = subparsers.add_parser("remove", help="remove profile from in-game availability")
+    remove_parser.add_argument("--name", required=True, help="profile name")
+
+    restore_parser = subparsers.add_parser("restore", help="restore a removed/disabled profile name")
+    restore_parser.add_argument("--name", required=True, help="profile name")
+
     return parser
+
+
+def _handle_management_command(args: argparse.Namespace) -> int:
+    config = load_manager_config()
+
+    try:
+        if args.command == "list":
+            profiles = effective_profile_index(config)
+            print("In-game profiles:")
+            for name in sorted(profiles):
+                meta = profiles[name]
+                print(f"  {name:<14} source={meta.get('source', 'unknown')}")
+
+            disabled = config.get("disabled_profiles", [])
+            if disabled:
+                print("Disabled profile names:")
+                for name in sorted(disabled):
+                    print(f"  {name}")
+            return 0
+
+        if args.command == "add":
+            sliders = parse_trait_overrides(args.trait)
+            payload = add_managed_profile(
+                config,
+                name=args.name,
+                base_profile=args.base,
+                trait_sliders=sliders,
+                description=args.description,
+                overwrite=args.overwrite,
+            )
+            save_manager_config(config)
+            print(f"Added profile '{args.name.strip().lower()}'.")
+            print(f"Base: {payload['base_profile']}")
+            return 0
+
+        if args.command == "update":
+            sliders = parse_trait_overrides(args.trait)
+            payload = update_managed_profile(
+                config,
+                name=args.name,
+                base_profile=args.base,
+                trait_updates=sliders,
+                description=args.description,
+                reset_traits=args.reset_traits,
+            )
+            save_manager_config(config)
+            print(f"Updated profile '{args.name.strip().lower()}'.")
+            print(f"Base: {payload['base_profile']}")
+            return 0
+
+        if args.command == "rename":
+            rename_managed_profile(
+                config,
+                old_name=args.name,
+                new_name=args.new_name,
+                overwrite=args.overwrite,
+            )
+            save_manager_config(config)
+            print(
+                f"Renamed profile '{args.name.strip().lower()}' -> "
+                f"'{args.new_name.strip().lower()}'."
+            )
+            return 0
+
+        if args.command == "remove":
+            remove_managed_profile(config, name=args.name)
+            save_manager_config(config)
+            print(f"Removed profile '{args.name.strip().lower()}' from in-game availability.")
+            return 0
+
+        if args.command == "restore":
+            restore_managed_profile(config, name=args.name)
+            save_manager_config(config)
+            print(f"Restored profile name '{args.name.strip().lower()}'.")
+            return 0
+    except ValueError as exc:
+        print(f"Error: {exc}")
+        return 2
+
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    if args.command:
+        return _handle_management_command(args)
+
+    if args.ui:
+        return _launch_profile_creator_ui(args.output)
 
     if args.list_traits:
         _print_trait_catalog()
