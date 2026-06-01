@@ -297,6 +297,7 @@ def load_manager_config(path: str = MANAGER_CONFIG_PATH) -> dict:
                 "base_profile": str(profile_payload.get("base_profile", "balanced")).strip().lower(),
                 "weights": normalized_weights,
                 "trait_sliders": normalized_sliders,
+                "display_name": str(profile_payload.get("display_name", profile_name)).strip() or profile_name,
                 "description": str(profile_payload.get("description", "")).strip(),
                 "updated_at": str(profile_payload.get("updated_at", "")).strip(),
             }
@@ -338,8 +339,12 @@ def _builtin_profile_index() -> dict[str, dict]:
     return builtins
 
 
-def effective_profile_index(config: dict | None = None) -> dict[str, dict]:
-    """Return profiles visible in-game after applying manager config."""
+def effective_profile_index(config: dict | None = None, *, include_disabled: bool = False) -> dict[str, dict]:
+    """Return profiles visible in-game after applying manager config.
+
+    When include_disabled=True, disabled profiles are retained with
+    meta["disabled"] = True.
+    """
     config = config or load_manager_config()
     resolved = _builtin_profile_index()
 
@@ -351,6 +356,7 @@ def effective_profile_index(config: dict | None = None) -> dict[str, dict]:
                 continue
             aliased = dict(target_profile)
             aliased["name"] = alias
+            aliased["display_name"] = alias
             aliased["source"] = f"alias:{target}"
             resolved[alias] = aliased
 
@@ -364,6 +370,7 @@ def effective_profile_index(config: dict | None = None) -> dict[str, dict]:
                 continue
             resolved[name] = {
                 "name": name,
+                "display_name": str(profile_payload.get("display_name", name)).strip() or name,
                 "kind": "managed-greedy",
                 "source": "managed",
                 "weights": dict(weights),
@@ -375,7 +382,16 @@ def effective_profile_index(config: dict | None = None) -> dict[str, dict]:
     disabled = set(config.get("disabled_profiles", []))
     for name in list(resolved.keys()):
         if name in disabled:
-            resolved.pop(name, None)
+            if include_disabled:
+                resolved[name]["disabled"] = True
+            else:
+                resolved.pop(name, None)
+                continue
+        else:
+            resolved[name]["disabled"] = False
+
+        if "display_name" not in resolved[name]:
+            resolved[name]["display_name"] = resolved[name]["name"]
 
     return resolved
 
@@ -391,6 +407,7 @@ def add_managed_profile(
 ) -> dict:
     """Add a managed profile or overwrite an existing one."""
     profile_name = _normalize_profile_name(name)
+    display_name = name.strip() or profile_name
     base_name = _normalize_profile_name(base_profile)
     if base_name not in PRESET_WEIGHTS:
         valid = ", ".join(sorted(PRESET_WEIGHTS))
@@ -411,6 +428,7 @@ def add_managed_profile(
         "base_profile": base_name,
         "weights": weights,
         "trait_sliders": dict(trait_sliders),
+        "display_name": display_name,
         "description": description.strip(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -437,6 +455,7 @@ def update_managed_profile(
 ) -> dict:
     """Update managed profile by name, creating an override when needed."""
     profile_name = _normalize_profile_name(name)
+    display_name = name.strip() or profile_name
     trait_updates = trait_updates or {}
     validate_selected_traits(list(trait_updates.keys()))
 
@@ -451,10 +470,12 @@ def update_managed_profile(
         current_base = existing_payload.get("base_profile", "balanced")
         current_traits = {} if reset_traits else dict(existing_payload.get("trait_sliders", {}))
         current_description = existing_payload.get("description", "")
+        current_display_name = str(existing_payload.get("display_name", display_name)).strip() or display_name
     else:
         current_base = profile_name if profile_name in PRESET_WEIGHTS else "balanced"
         current_traits = {}
         current_description = ""
+        current_display_name = display_name
 
     if profile_name in NON_TRAIT_BUILTIN_PROFILES and base_profile is None and not existing_payload:
         raise ValueError(
@@ -474,6 +495,7 @@ def update_managed_profile(
         "base_profile": next_base,
         "weights": weights,
         "trait_sliders": dict(current_traits),
+        "display_name": current_display_name,
         "description": current_description if description is None else description.strip(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -498,6 +520,7 @@ def rename_managed_profile(
     overwrite: bool = False,
 ) -> None:
     """Rename a profile; builtin names become alias-based renames."""
+    new_display_name = new_name.strip()
     old_profile = _normalize_profile_name(old_name)
     new_profile = _normalize_profile_name(new_name)
     if old_profile == new_profile:
@@ -519,6 +542,8 @@ def rename_managed_profile(
 
     if isinstance(custom, dict) and old_profile in custom:
         payload = custom.pop(old_profile)
+        if isinstance(payload, dict):
+            payload["display_name"] = new_display_name or new_profile
         custom[new_profile] = payload
         if old_profile in PRESET_WEIGHTS or old_profile in NON_TRAIT_BUILTIN_PROFILES:
             if old_profile not in disabled:
@@ -782,14 +807,17 @@ def _launch_profile_creator_ui(default_output: str) -> int:
     def _refresh_profile_list(select_name: str | None = None) -> None:
         nonlocal profile_rows
         config = load_manager_config()
-        profiles = effective_profile_index(config)
+        profiles = effective_profile_index(config, include_disabled=True)
         profile_rows = []
         profile_listbox.delete(0, "end")
 
         for name in sorted(profiles):
             source = str(profiles[name].get("source", "unknown"))
+            display_name = str(profiles[name].get("display_name", name))
+            disabled = bool(profiles[name].get("disabled", False))
             profile_rows.append((name, source))
-            profile_listbox.insert("end", f"{name:<18} [{source}]")
+            disabled_tag = " [DISABLED]" if disabled else ""
+            profile_listbox.insert("end", f"{display_name:<18} [{source}]{disabled_tag}")
 
         if not profile_rows:
             return
@@ -899,7 +927,9 @@ def _launch_profile_creator_ui(default_output: str) -> int:
                     slider_vars[feature].set(candidate_weight)
 
         _refresh_preview()
-        if name in NON_TRAIT_BUILTIN_PROFILES:
+        if bool(selected.get("disabled", False)):
+            status_var.set("Loaded '%s' (currently disabled). Saving will re-enable it." % name)
+        elif name in NON_TRAIT_BUILTIN_PROFILES:
             status_var.set(
                 "Loaded '%s'. Saving will convert it to a trait-driven managed profile." % name
             )
@@ -1182,17 +1212,15 @@ def _handle_management_command(args: argparse.Namespace) -> int:
 
     try:
         if args.command == "list":
-            profiles = effective_profile_index(config)
+            profiles = effective_profile_index(config, include_disabled=True)
             print("In-game profiles:")
             for name in sorted(profiles):
                 meta = profiles[name]
-                print(f"  {name:<14} source={meta.get('source', 'unknown')}")
-
-            disabled = config.get("disabled_profiles", [])
-            if disabled:
-                print("Disabled profile names:")
-                for name in sorted(disabled):
-                    print(f"  {name}")
+                display_name = str(meta.get("display_name", name))
+                disabled_tag = " [DISABLED]" if bool(meta.get("disabled", False)) else ""
+                print(
+                    f"  {display_name:<14} key={name:<14} source={meta.get('source', 'unknown')}{disabled_tag}"
+                )
             return 0
 
         if args.command == "add":

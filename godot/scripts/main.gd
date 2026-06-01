@@ -85,6 +85,7 @@ var _seat_display_names: Array = PLAYER_NAMES.duplicate(true)
 var _profiles: Dictionary = {}
 var _profile_order: Array = []
 var _profile_labels: Dictionary = {}
+var _profile_display_name_overrides: Dictionary = {}
 var _ai_busy := false
 var _show_smoke_summary := false
 var _starting_phase := false
@@ -153,6 +154,7 @@ func _normalized_weights(weights_raw: Dictionary) -> Dictionary:
 func _make_profiles_with_manager() -> Dictionary:
 	var profiles := WahooAI.make_profiles()
 	var config := _load_profiles_manager_config()
+	_profile_display_name_overrides = {}
 
 	var aliases = config.get("aliases", {})
 	if aliases is Dictionary:
@@ -175,6 +177,9 @@ func _make_profiles_with_manager() -> Dictionary:
 			var weights_raw = payload.get("weights", {})
 			if not (weights_raw is Dictionary):
 				continue
+			var display_name := String(payload.get("display_name", name_key)).strip_edges()
+			if not display_name.is_empty():
+				_profile_display_name_overrides[name] = display_name
 			profiles[name] = WahooAI.GreedyPlayer.new(_normalized_weights(weights_raw))
 
 	var disabled = config.get("disabled_profiles", [])
@@ -187,6 +192,8 @@ func _make_profiles_with_manager() -> Dictionary:
 	return profiles
 
 func _display_profile_label(profile_key: String) -> String:
+	if _profile_display_name_overrides.has(profile_key):
+		return String(_profile_display_name_overrides[profile_key])
 	if BUILTIN_PROFILE_LABELS.has(profile_key):
 		return String(BUILTIN_PROFILE_LABELS[profile_key])
 	var words := profile_key.split(" ")

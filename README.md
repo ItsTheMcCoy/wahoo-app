@@ -187,6 +187,7 @@ Useful options:
 - `--list-bases` prints valid trait-based base profiles.
 - `--trait FEATURE=SLIDER` sets slider `0..100`; repeat as needed.
 - `add` and `rename` support `--overwrite`.
+- `list` includes disabled profiles with a `[DISABLED]` indicator.
 
 Runtime behavior:
 

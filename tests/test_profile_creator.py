@@ -84,6 +84,21 @@ def test_add_managed_profile_adds_effective_profile():
     assert profiles["my_style"]["source"] == "managed"
 
 
+def test_add_managed_profile_preserves_display_name_case():
+    config = _empty_config()
+
+    add_managed_profile(
+        config,
+        name="Nikki AI",
+        base_profile="balanced",
+        trait_sliders={"RUN": 75},
+    )
+    profiles = effective_profile_index(config)
+
+    assert "nikki ai" in profiles
+    assert profiles["nikki ai"]["display_name"] == "Nikki AI"
+
+
 def test_rename_builtin_profile_creates_alias_and_disables_old_name():
     config = _empty_config()
 
@@ -116,6 +131,16 @@ def test_disable_and_restore_profile_name():
 
     restore_managed_profile(config, name="swarm")
     assert "swarm" in effective_profile_index(config)
+
+
+def test_effective_profile_index_include_disabled_marks_profile():
+    config = _empty_config()
+    disable_managed_profile(config, name="swarm")
+
+    profiles = effective_profile_index(config, include_disabled=True)
+
+    assert "swarm" in profiles
+    assert profiles["swarm"]["disabled"] is True
 
 
 def test_remove_alias_still_disables_profile_name():

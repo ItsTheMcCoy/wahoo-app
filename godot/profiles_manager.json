@@ -4,6 +4,7 @@
   "custom_profiles": {
     "nikki ai": {
       "base_profile": "balanced",
+      "display_name": "Nikki AI",
       "weights": {
         "DEP": 0.4,
         "RUN": 0.5,
