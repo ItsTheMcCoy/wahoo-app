@@ -865,7 +865,7 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     def _load_profile_into_editor(name: str) -> None:
         config = load_manager_config()
-        profiles = effective_profile_index(config)
+        profiles = effective_profile_index(config, include_disabled=True)
         selected = profiles.get(name)
         if selected is None:
             status_var.set(f"Profile '{name}' no longer exists.")
