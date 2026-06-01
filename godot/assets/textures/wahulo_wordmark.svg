@@ -1,28 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2100" height="780" viewBox="0 0 1400 520">
   <defs>
     <radialGradient id="marbleRed" cx="35%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity=".75"/>
-      <stop offset="18%" stop-color="#b32721" stop-opacity="1"/>
-      <stop offset="72%" stop-color="#b32721" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#63130f"/>
+      <stop offset="0%" stop-color="#f3ede7" stop-opacity=".62"/>
+      <stop offset="18%" stop-color="#971f1a" stop-opacity="1"/>
+      <stop offset="72%" stop-color="#971f1a" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#4b0d0a"/>
     </radialGradient>
     <radialGradient id="marbleGreen" cx="35%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity=".70"/>
-      <stop offset="18%" stop-color="#1f7032" stop-opacity="1"/>
-      <stop offset="72%" stop-color="#1f7032" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#103b1b"/>
+      <stop offset="0%" stop-color="#eff3ec" stop-opacity=".60"/>
+      <stop offset="18%" stop-color="#1a5928" stop-opacity="1"/>
+      <stop offset="72%" stop-color="#1a5928" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0c2b14"/>
     </radialGradient>
     <radialGradient id="marbleYellow" cx="35%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#fffdf0" stop-opacity=".82"/>
-      <stop offset="18%" stop-color="#c49722" stop-opacity="1"/>
-      <stop offset="74%" stop-color="#c49722" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#73570f"/>
+      <stop offset="0%" stop-color="#f8f1dc" stop-opacity=".66"/>
+      <stop offset="18%" stop-color="#a87f1d" stop-opacity="1"/>
+      <stop offset="74%" stop-color="#a87f1d" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#59420b"/>
     </radialGradient>
     <radialGradient id="marbleBlue" cx="35%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity=".70"/>
-      <stop offset="18%" stop-color="#203f90" stop-opacity="1"/>
-      <stop offset="74%" stop-color="#203f90" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#10214f"/>
+      <stop offset="0%" stop-color="#eceff7" stop-opacity=".60"/>
+      <stop offset="18%" stop-color="#173173" stop-opacity="1"/>
+      <stop offset="74%" stop-color="#173173" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0a1536"/>
     </radialGradient>
     <linearGradient id="ivoryBody" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff"/>
