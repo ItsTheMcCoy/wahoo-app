@@ -525,7 +525,7 @@ func _new_game() -> void:
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
-	_board.set_turn_focus_enabled(false)
+	_board.set_turn_focus_enabled(true)
 	_die_label.text = "–"
 	_die_label.scale = Vector2.ONE
 	_set_roll_ready(false)
@@ -746,6 +746,8 @@ func _run_starting_roll_phase() -> void:
 				return
 			var seat := int(player)
 			var name: String = _seat_display_names[seat]
+			_state.current_player = seat
+			_board.set_state(_state)
 
 			_turn_label.text = name
 			_turn_label.self_modulate = PLAYER_COLORS[seat]
