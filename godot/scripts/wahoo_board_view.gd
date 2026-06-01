@@ -535,11 +535,11 @@ func _base_cluster_center(player: int) -> Vector2:
 func _draw_centered_text(font: Font, font_size: int, font_height: float, text: String, anchor: Vector2, color: Color) -> void:
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
     var draw_pos := anchor + Vector2(-text_size.x * 0.5, font_height * 0.38)
-    var bevel_offset := Vector2(_cell_size * 0.03, _cell_size * 0.03)
-    var bevel_light := color.lerp(Color.WHITE, 0.52)
+    var bevel_offset := Vector2(_cell_size * 0.018, _cell_size * 0.018)
+    var bevel_light := color.lerp(Color.WHITE, 0.28)
     bevel_light.a = minf(1.0, color.a)
-    var bevel_dark := color.darkened(0.68)
-    bevel_dark.a = 0.62
+    var bevel_dark := color.darkened(0.45)
+    bevel_dark.a = 0.35
     draw_string(font, draw_pos - bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_light)
     draw_string(font, draw_pos + bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_dark)
     draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
@@ -548,11 +548,11 @@ func _draw_centered_rotated_text(font: Font, font_size: int, font_height: float,
     var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
     draw_set_transform(anchor, angle, Vector2.ONE)
     var draw_pos := Vector2(-text_size.x * 0.5, font_height * 0.38)
-    var bevel_offset := Vector2(_cell_size * 0.03, _cell_size * 0.03)
-    var bevel_light := color.lerp(Color.WHITE, 0.52)
+    var bevel_offset := Vector2(_cell_size * 0.018, _cell_size * 0.018)
+    var bevel_light := color.lerp(Color.WHITE, 0.28)
     bevel_light.a = minf(1.0, color.a)
-    var bevel_dark := color.darkened(0.68)
-    bevel_dark.a = 0.62
+    var bevel_dark := color.darkened(0.45)
+    bevel_dark.a = 0.35
     draw_string(font, draw_pos - bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_light)
     draw_string(font, draw_pos + bevel_offset, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, bevel_dark)
     draw_string(font, draw_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
