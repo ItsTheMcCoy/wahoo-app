@@ -11,15 +11,21 @@ wahoo/
   game_state.py   — Board model: GameState, Location types, helper functions
   rules.py        — legal_moves() and apply_move() — the canonical rules engine
   play.py         — Console game loop, rendering, per-seat human/AI input
-  ai.py           — AI player classes, feature scoring, profiles (implemented)
-  selfplay.py     — Headless N-game AI runner (implemented)
+  ai.py           — AI player classes, feature scoring, builtin and manager-defined profiles
+  selfplay.py     — Headless N-game AI runner and benchmark mode
+  profile_creator.py — Profile creator/manager workflows (UI + CLI)
+  human_profile.py — Human-like profile fitting from replay reasoning data
   reasoning_export.py — JSONL exporter for human move-reasoning samples
-  stats.py        — Per-game stat tracking and CSV export (present)
+  stats.py        — Per-game stat tracking and CSV export
+  profiles_manager.json — Runtime profile-manager config (aliases, disabled names, managed profiles)
 tests/
   test_wahoo.py   — Existing rule and behavior test suite
   test_ai.py      — AI scenario probe suite (probes 1-6 implemented)
   test_selfplay.py — Self-play runner and CLI tests
   test_reasoning_export.py — Reasoning export utility tests
+  test_profile_creator.py — Profile creator/manager CLI and persistence tests
+  test_human_profile.py — Human-profile trainer tests
+  test_stats.py   — Stat aggregation/reporting tests
 godot/
   project.godot               — Godot 4.6.3 project; icon and boot splash configured
   icon.png                    — 512×512 branded app icon
@@ -56,7 +62,9 @@ documents/
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test status: 80 tests passing under `python -m pytest tests/`.
+Current verified test snapshot (June 1, 2026): `100 collected`, `20 failed`, `80 passed` under `python -m pytest tests/`.
+
+Failure context: the committed `wahoo/profiles_manager.json` currently replaces builtin profile names with managed names (for example `nikki ai`, `mac ai`, `monty ai`). Several AI/self-play/play tests still assert builtin names like `balanced`, `random`, and `expectimax`, which causes those failures in the current checked-in configuration.
 
 ## Architecture Contracts — Read Before Writing Any Code
 

@@ -6,9 +6,9 @@ This review summarizes the verified current state of playability, structure, and
 
 ## Verification Performed
 
-- Python profile creator suite: `py -m pytest tests/test_profile_creator.py` -> `17 passed`.
+- Python profile creator suite: `py -m pytest tests/test_profile_creator.py` -> `20 passed`.
 - Godot smoke suite: `Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd` -> `51/51 passed`.
-- Full Python suite: `py -m pytest tests/` -> `97 collected`, `17 failed`, `80 passed`.
+- Full Python suite: `py -m pytest tests/` -> `100 collected`, `20 failed`, `80 passed`.
 
 Important context for full-suite failures:
 

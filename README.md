@@ -322,6 +322,8 @@ python -m pytest tests/
 
 Test counts change as new coverage is added. Use the command output as the source of truth for the current pass count.
 
+Current snapshot (June 1, 2026): full suite reports `100 collected`, `20 failed`, `80 passed`.
+
 Profile-manager note for reproducibility:
 
 - `wahoo/profiles_manager.json` can change which profile names exist at runtime.

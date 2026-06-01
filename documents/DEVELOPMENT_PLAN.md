@@ -10,6 +10,8 @@ Current state of the project and the path forward. Updated as phases complete.
 
 **In-game branding (complete as of 2026-05-31):** The game title "WAHULO" now appears in three in-game locations in the Godot scene (`godot/scenes/Main.tscn`): as a gold label at the top of the side panel (visible throughout play), as a header above "Game Setup" in the setup overlay (seen before each game), and as a header above the winner announcement in the win overlay (seen at game end). All three use the gold color `#c8922a` from the design guide.
 
+**Latest test snapshot (2026-06-01):** Godot smoke suite remains `51/51 passed`. Python suite currently reports `100 collected`, `20 failed`, `80 passed` because `wahoo/profiles_manager.json` overrides builtin profile names expected by several AI/self-play/play tests.
+
 ## Project Goal
 
 Build a browser-based game for Wahulo: Marble Mayham (a Wahoo-style marble race), playable on any device (Windows, Mac, Android, iPhone, iPad) via a shared URL. Public domain: wahulo.com (purchased via Cloudflare). Online multiplayer, learn-as-you-go hobby project.
@@ -176,7 +178,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/scripts/wahoo_ai.gd` | GDScript AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts | In repo |
 | `godot/profiles_manager.json` | Bundled Godot/web profile-manager config used by setup profile list | In repo |
 | `godot/scripts/wahoo_ai_smoke.gd` | GDScript AI scenario probes (6 parity checks) | In repo |
-| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (50 checks) | In repo |
+| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (51 checks) | In repo |
 | `godot/assets/textures/board_wood.svg` | 1024×1024 procedural wood texture overlay | In repo |
 | `godot/assets/textures/marble_gloss.svg` | 256×256 grayscale gloss mask for marble rendering | In repo |
 | `godot/assets/textures/wahulo_wordmark.svg` | Scalable wordmark (text + 4 marbles); used in loading screen | In repo |
