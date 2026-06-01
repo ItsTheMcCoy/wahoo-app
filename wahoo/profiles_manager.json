@@ -1,0 +1,124 @@
+{
+  "disabled_profiles": [
+    "tortoise",
+    "custom",
+    "balanced"
+  ],
+  "aliases": {},
+  "custom_profiles": {
+    "nikki ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.4,
+        "RUN": 0.5,
+        "SPR": 0.6,
+        "CAP": 0.8,
+        "SAFE": 1.0,
+        "CTR": 0.4,
+        "DEN": 1.0,
+        "FLOW": 0.8,
+        "HOME": 0.76,
+        "FIN": 0.3
+      },
+      "trait_sliders": {
+        "DEP": 40,
+        "CAP": 80,
+        "SAFE": 40,
+        "CTR": 40,
+        "DEN": 100,
+        "FLOW": 80,
+        "HOME": 76,
+        "FIN": 30
+      },
+      "description": "Will ALWAYS caputre Mac",
+      "updated_at": "2026-06-01T05:42:46.414810+00:00"
+    },
+    "lauren ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.8,
+        "RUN": 0.32,
+        "SPR": 0.8,
+        "CAP": 0.53,
+        "SAFE": 1.4,
+        "CTR": 0.63,
+        "DEN": 0.41,
+        "FLOW": 0.3,
+        "HOME": 0.5,
+        "FIN": 0.54
+      },
+      "trait_sliders": {
+        "DEP": 80,
+        "RUN": 32,
+        "SPR": 80,
+        "CAP": 53,
+        "SAFE": 56,
+        "CTR": 63,
+        "DEN": 41,
+        "FLOW": 30,
+        "HOME": 50,
+        "FIN": 54
+      },
+      "description": "Sir/Mam <Finger Wagging>",
+      "updated_at": "2026-06-01T05:23:56.901238+00:00"
+    },
+    "dixie ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.7,
+        "RUN": 0.62,
+        "SPR": 0.67,
+        "CAP": 0.7,
+        "SAFE": 0.2,
+        "CTR": 0.89,
+        "DEN": 1.0,
+        "FLOW": 0.36,
+        "HOME": 0.59,
+        "FIN": 0.91
+      },
+      "trait_sliders": {
+        "DEP": 70,
+        "RUN": 62,
+        "SPR": 67,
+        "CAP": 70,
+        "SAFE": 8,
+        "CTR": 89,
+        "DEN": 100,
+        "FLOW": 36,
+        "HOME": 59,
+        "FIN": 91
+      },
+      "description": "GET ME.... I mean her",
+      "updated_at": "2026-06-01T05:42:12.090219+00:00"
+    },
+    "monty ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.4,
+        "RUN": 0.7,
+        "SPR": 0.28,
+        "CAP": 0.35,
+        "SAFE": 1.475,
+        "CTR": 0.2,
+        "DEN": 0.32,
+        "FLOW": 0.84,
+        "HOME": 0.58,
+        "FIN": 0.82
+      },
+      "trait_sliders": {
+        "DEP": 40,
+        "RUN": 70,
+        "SPR": 28,
+        "CAP": 35,
+        "SAFE": 59,
+        "CTR": 20,
+        "DEN": 32,
+        "FLOW": 84,
+        "HOME": 58,
+        "FIN": 82
+      },
+      "description": "Is it bedtime yet?",
+      "updated_at": "2026-06-01T05:24:09.584135+00:00"
+    }
+  }
+}

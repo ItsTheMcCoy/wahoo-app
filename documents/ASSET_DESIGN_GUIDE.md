@@ -58,7 +58,7 @@ Base zone spot color = primary color blended 52% toward board wood (`#917049`):
 | Ambient occlusion   | `#120d08`   | 12%     | Depth shadow under/around spots             |
 | Lane shadow         | `#170f0a`   | 16%     | Drop shadow alongside the track path        |
 
-The current board surface feels pretty plain.  Use the above as a general guide, but let's make the board surface look more realistic.  With visible wood grain.
+## Board Surface Notes: The current board surface feels pretty plain.  Use the above as a general guide, but let's make the board surface look more realistic.  With visible wood grain.
 
 ### Track Elements
 
