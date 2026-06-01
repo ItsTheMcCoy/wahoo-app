@@ -266,7 +266,6 @@ func _draw() -> void:
 
     _draw_player_areas()
     _draw_current_player_focus()
-    _draw_track_path()
     _draw_home_rows()
     _draw_track_cells()
     _draw_center()
