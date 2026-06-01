@@ -21,9 +21,15 @@ Implemented:
   - `ExpectimaxPlayer` (one-ply with reroll-aware lookahead)
   - `human_like` profile support (loaded from `wahoo/human_like_profile.json` when present)
   - `custom` profile support (loaded from `wahoo/custom_profile.json` when present)
+  - profile-manager config support (loaded from `wahoo/profiles_manager.json`)
   - 10-feature move scoring
-  - 8 named greedy profiles plus `human_like`, `random`, and `expectimax` in `PROFILES`
-- Test suites in `tests/test_wahoo.py` and `tests/test_ai.py`.
+  - default builtin profile set plus manager-defined aliases/custom profiles in `PROFILES`
+- Profile creator and manager tool in `wahoo/profile_creator.py`:
+  - desktop UI (`--ui`) and terminal/CLI workflows
+  - create/update/rename/disable/delete/restore profile operations
+  - disabled profile visibility in manager lists with `[DISABLED]` indicator
+  - preserved display casing via managed `display_name`
+- Test suites across `tests/` (rules, AI, selfplay, stats, profile creator, reasoning export, and human profile tooling).
 - AI scenario probes 1-6 in `tests/test_ai.py`:
   - win guardrail
   - center temptation
@@ -42,12 +48,13 @@ Phase 2a complete:
 
 - Godot 4 bootstrap under `godot/`: GDScript rules port, 27 parity smoke tests (all passing), HTML5 export validated on desktop and mobile browsers, mobile-friendly layout.
 
-Phase 2b complete:
+Phase 2b+ complete:
 
 - `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
 - `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, tap-to-move selection, lift-and-place movement animation, dynamic marble shadows, landing impact pulse, turn status, Roll button state, and a win overlay.
-- Phase 2b validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
+- Latest Godot smoke validation (June 1, 2026): `51/51 passed`.
+- Web export artifacts are current for recent profile-manager and setup-overlay updates.
 
 ## Requirements
 
@@ -195,7 +202,9 @@ Runtime behavior:
 
 - `wahoo/custom_profile.json` still controls the built-in `custom` profile.
 - `wahoo/profiles_manager.json` stores profile manager operations (aliases, disabled names, managed profiles).
-- At runtime, `wahoo/ai.py` applies manager config so renamed/removed/updated/added profiles are reflected in `PROFILES`.
+- At runtime, `wahoo/ai.py` applies manager config so renamed/disabled/restored/added profiles are reflected in `PROFILES`.
+- Managed profiles preserve user-facing casing through `display_name` while keeping normalized internal keys.
+- Builtin profiles are disable-able but not delete-able; `delete` is for managed/alias entries.
 
 AI player behavior:
 
@@ -313,6 +322,11 @@ python -m pytest tests/
 
 Test counts change as new coverage is added. Use the command output as the source of truth for the current pass count.
 
+Profile-manager note for reproducibility:
+
+- `wahoo/profiles_manager.json` can change which profile names exist at runtime.
+- If that file disables/replaces builtins, tests that assume default names (`balanced`, `random`, `expectimax`, etc.) may fail until the config is reset.
+
 You can still run the legacy rule/behavior test harness directly:
 
 ```powershell
@@ -337,7 +351,7 @@ Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smok
 
 Windows PATH note:
 
-- Add the folder (not the file) to PATH: `C:\Users\macwe\OneDrive\Documents\Gdot4`
+- Add your local Godot 4.6.3 folder (not the file) to PATH.
 - The stock Windows zip build executable name is `Godot_v4.6.3-stable_win64_console.exe`
 - If you configure a local `godot` alias/wrapper, you can also use `godot --headless --script res://scripts/run_smoke.gd`
 

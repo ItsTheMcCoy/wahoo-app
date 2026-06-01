@@ -136,36 +136,6 @@
       "description": "Is it bedtime yet?",
       "updated_at": "2026-06-01T06:04:10.760257+00:00"
     },
-    "mac": {
-      "base_profile": "balanced",
-      "weights": {
-        "DEP": 0.8,
-        "RUN": 0.34,
-        "SPR": 0.46,
-        "CAP": 0.68,
-        "SAFE": 1.175,
-        "CTR": 0.71,
-        "DEN": 0.68,
-        "FLOW": 0.78,
-        "HOME": 0.77,
-        "FIN": 0.43
-      },
-      "trait_sliders": {
-        "DEP": 80,
-        "RUN": 34,
-        "SPR": 46,
-        "CAP": 68,
-        "SAFE": 47,
-        "CTR": 71,
-        "DEN": 68,
-        "FLOW": 78,
-        "HOME": 77,
-        "FIN": 43
-      },
-      "display_name": "Mac",
-      "description": "I hate this fucking game",
-      "updated_at": "2026-06-01T06:03:07.685795+00:00"
-    },
     "mac ai": {
       "base_profile": "balanced",
       "weights": {
