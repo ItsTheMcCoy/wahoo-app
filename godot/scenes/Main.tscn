@@ -66,7 +66,7 @@ bbcode_enabled = true
 fit_content = false
 scroll_active = true
 text = "Ready"
-theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/normal_font_size = 24
 
 [node name="DieFrame" type="PanelContainer" parent="Root/SidePanel"]
 layout_mode = 2

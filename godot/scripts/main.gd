@@ -290,7 +290,7 @@ func _apply_visual_theme() -> void:
 	status_style.content_margin_bottom = 8
 	_status.add_theme_stylebox_override("normal", status_style)
 	_status.add_theme_color_override("default_color", Color(0.97, 0.92, 0.84))
-	_status.add_theme_font_size_override("normal_font_size", 20)
+	_status.add_theme_font_size_override("normal_font_size", 24)
 	_status.add_theme_constant_override("line_separation", 3)
 	_status.add_theme_constant_override("outline_size", 1)
 	_status.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.04, 0.90))
