@@ -13,6 +13,7 @@ from wahoo.profile_creator import (
     slider_to_weight,
     update_managed_profile,
     validate_selected_traits,
+    weight_to_slider,
 )
 
 
@@ -43,6 +44,16 @@ def test_parse_trait_overrides_rejects_invalid_slider():
 def test_slider_to_weight_uses_feature_max_scale():
     assert slider_to_weight("RUN", 80) == pytest.approx(0.8)
     assert slider_to_weight("SAFE", 40) == pytest.approx(1.0)
+
+
+def test_weight_to_slider_uses_feature_max_scale():
+    assert weight_to_slider("RUN", 0.8) == 80
+    assert weight_to_slider("SAFE", 1.0) == 40
+
+
+def test_weight_to_slider_rejects_out_of_range_value():
+    with pytest.raises(ValueError, match="must be between"):
+        weight_to_slider("RUN", 1.1)
 
 
 def test_build_profile_weights_applies_selected_trait_sliders():

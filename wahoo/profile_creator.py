@@ -126,6 +126,23 @@ def slider_to_weight(feature: str, slider_value: int) -> float:
     return round((slider_value / 100.0) * max_weight, 4)
 
 
+def weight_to_slider(feature: str, weight_value: float) -> int:
+    """Map a direct feature weight value back to slider units (0-100)."""
+    if feature not in FEATURE_KEYS:
+        raise ValueError(f"Unknown feature: {feature}")
+
+    max_weight = FEATURE_MAX_WEIGHTS[feature]
+    if max_weight <= 0.0:
+        return 0
+
+    if weight_value < 0 or weight_value > max_weight:
+        raise ValueError(
+            f"Weight for {feature} must be between 0 and {max_weight:.4f}"
+        )
+
+    return int(round((float(weight_value) / max_weight) * 100.0))
+
+
 def build_profile_weights(
     base_profile: str,
     trait_sliders: dict[str, int],
@@ -579,7 +596,7 @@ def _interactive_collect(base_profile: str) -> dict[str, int]:
 
 
 def _launch_profile_creator_ui(default_output: str) -> int:
-    """Launch a desktop UI for creating and saving profile presets."""
+    """Launch a desktop UI for creating, editing, and deleting profiles."""
     try:
         import tkinter as tk
         from tkinter import filedialog, messagebox, scrolledtext
@@ -589,27 +606,46 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     root = tk.Tk()
     root.title("Wahoo Profile Creator")
-    root.geometry("980x760")
-    root.minsize(900, 680)
+    root.geometry("1200x780")
+    root.minsize(1100, 700)
 
     header = tk.Label(
         root,
-        text="Create AI Profiles with Trait Sliders",
+        text="Profile Manager (Create / Edit / Delete)",
         font=("Segoe UI", 16, "bold"),
         anchor="w",
     )
     header.pack(fill="x", padx=12, pady=(12, 6))
 
-    form = tk.Frame(root)
-    form.pack(fill="x", padx=12, pady=(0, 8))
+    body = tk.Frame(root)
+    body.pack(fill="both", expand=True, padx=12, pady=(0, 8))
 
-    profile_name_var = tk.StringVar(value="custom")
+    list_panel = tk.LabelFrame(body, text="Profiles")
+    list_panel.pack(side="left", fill="y", padx=(0, 10))
+
+    editor_panel = tk.Frame(body)
+    editor_panel.pack(side="left", fill="both", expand=True)
+
+    profile_listbox = tk.Listbox(list_panel, width=34, height=26, exportselection=False)
+    profile_listbox.pack(side="left", fill="y", padx=(8, 0), pady=8)
+
+    list_scrollbar = tk.Scrollbar(list_panel, orient="vertical", command=profile_listbox.yview)
+    list_scrollbar.pack(side="left", fill="y", padx=(4, 8), pady=8)
+    profile_listbox.config(yscrollcommand=list_scrollbar.set)
+
+    list_actions = tk.Frame(list_panel)
+    list_actions.pack(fill="x", padx=8, pady=(0, 8))
+
+    profile_name_var = tk.StringVar(value="new_profile")
     base_options = sorted(PRESET_WEIGHTS.keys())
     base_profile_var = tk.StringVar(value="balanced")
     description_var = tk.StringVar(value="")
     output_var = tk.StringVar(value=default_output)
     overwrite_var = tk.BooleanVar(value=False)
-    status_var = tk.StringVar(value="Adjust sliders and review the generated profile.")
+    status_var = tk.StringVar(value="Select a profile or click Create New.")
+
+    form = tk.Frame(editor_panel)
+    form.pack(fill="x", pady=(0, 8))
 
     tk.Label(form, text="Profile name:").grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
     tk.Entry(form, textvariable=profile_name_var, width=28).grid(
@@ -648,42 +684,52 @@ def _launch_profile_creator_ui(default_output: str) -> int:
         row=3, column=0, columnspan=3, sticky="w", pady=(4, 2)
     )
 
-    sliders_container = tk.LabelFrame(root, text="Trait Sliders (0-100)")
-    sliders_container.pack(fill="x", padx=12, pady=(0, 8))
+    sliders_container = tk.LabelFrame(editor_panel, text="Trait Overrides (weight range per feature)")
+    sliders_container.pack(fill="x", pady=(0, 8))
 
-    slider_vars: dict[str, tk.IntVar] = {}
+    slider_vars: dict[str, tk.DoubleVar] = {}
+    override_vars: dict[str, tk.BooleanVar] = {}
     slider_value_labels: dict[str, tk.Label] = {}
 
     for idx, feature in enumerate(FEATURE_KEYS):
         row = idx // 2
-        col_base = (idx % 2) * 4
+        col_base = (idx % 2) * 5
+        max_weight = FEATURE_MAX_WEIGHTS[feature]
 
-        slider_vars[feature] = tk.IntVar(value=0)
+        override_vars[feature] = tk.BooleanVar(value=False)
+        slider_vars[feature] = tk.DoubleVar(value=float(PRESET_WEIGHTS["balanced"][feature]))
+
+        tk.Checkbutton(
+            sliders_container,
+            text="Override",
+            variable=override_vars[feature],
+            anchor="w",
+        ).grid(row=row, column=col_base, sticky="w", padx=(8, 6), pady=6)
 
         tk.Label(
             sliders_container,
-            text="%s: %s" % (feature, TRAIT_DESCRIPTIONS[feature]),
+            text="%s (%0.2f max): %s" % (feature, max_weight, TRAIT_DESCRIPTIONS[feature]),
             anchor="w",
-        ).grid(row=row, column=col_base, sticky="w", padx=(8, 6), pady=6)
+        ).grid(row=row, column=col_base + 1, sticky="w", padx=(0, 6), pady=6)
 
         scale = tk.Scale(
             sliders_container,
             from_=0,
-            to=100,
+            to=max_weight,
             orient="horizontal",
             variable=slider_vars[feature],
             showvalue=False,
             length=180,
-            resolution=1,
+            resolution=0.01,
         )
-        scale.grid(row=row, column=col_base + 1, sticky="we", padx=(0, 6), pady=6)
+        scale.grid(row=row, column=col_base + 2, sticky="we", padx=(0, 6), pady=6)
 
-        value_label = tk.Label(sliders_container, text="0", width=4)
-        value_label.grid(row=row, column=col_base + 2, sticky="w", padx=(0, 10), pady=6)
+        value_label = tk.Label(sliders_container, text="0.00", width=6)
+        value_label.grid(row=row, column=col_base + 3, sticky="w", padx=(0, 10), pady=6)
         slider_value_labels[feature] = value_label
 
-    preview_frame = tk.LabelFrame(root, text="Generated Payload Preview")
-    preview_frame.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+    preview_frame = tk.LabelFrame(editor_panel, text="Generated Payload Preview")
+    preview_frame.pack(fill="both", expand=True, pady=(0, 8))
     preview_text = scrolledtext.ScrolledText(preview_frame, wrap="none", font=("Consolas", 10))
     preview_text.pack(fill="both", expand=True, padx=8, pady=8)
     preview_text.configure(state="disabled")
@@ -694,13 +740,140 @@ def _launch_profile_creator_ui(default_output: str) -> int:
         side="left", fill="x", expand=True
     )
 
+    profile_rows: list[tuple[str, str]] = []
+
+    def _set_form_from_base(base_profile: str) -> None:
+        base_weights = PRESET_WEIGHTS[base_profile]
+        for feature in FEATURE_KEYS:
+            if not override_vars[feature].get():
+                slider_vars[feature].set(float(base_weights[feature]))
+
+    def _refresh_profile_list(select_name: str | None = None) -> None:
+        nonlocal profile_rows
+        config = load_manager_config()
+        profiles = effective_profile_index(config)
+        profile_rows = []
+        profile_listbox.delete(0, "end")
+
+        for name in sorted(profiles):
+            source = str(profiles[name].get("source", "unknown"))
+            profile_rows.append((name, source))
+            profile_listbox.insert("end", f"{name:<18} [{source}]")
+
+        if not profile_rows:
+            return
+
+        if select_name:
+            for idx, (name, _source) in enumerate(profile_rows):
+                if name == select_name:
+                    profile_listbox.selection_clear(0, "end")
+                    profile_listbox.selection_set(idx)
+                    profile_listbox.see(idx)
+                    return
+
+        profile_listbox.selection_clear(0, "end")
+        profile_listbox.selection_set(0)
+
     def _selected_trait_sliders() -> dict[str, int]:
         selected: dict[str, int] = {}
         for feature in FEATURE_KEYS:
-            value = int(slider_vars[feature].get())
-            if value > 0:
-                selected[feature] = value
+            if not override_vars[feature].get():
+                continue
+            weight_value = float(slider_vars[feature].get())
+            selected[feature] = weight_to_slider(feature, weight_value)
+        validate_selected_traits(list(selected.keys()))
         return selected
+
+    def _current_selection_name() -> str | None:
+        picked = profile_listbox.curselection()
+        if not picked:
+            return None
+        idx = int(picked[0])
+        if idx < 0 or idx >= len(profile_rows):
+            return None
+        return profile_rows[idx][0]
+
+    def _create_new_profile() -> None:
+        profile_name_var.set("new_profile")
+        base_profile_var.set("balanced")
+        description_var.set("")
+        overwrite_var.set(False)
+        for feature in FEATURE_KEYS:
+            override_vars[feature].set(False)
+        _set_form_from_base("balanced")
+        _refresh_preview()
+        status_var.set("Create New: set name, base, overrides, then Save Managed Profile.")
+
+    def _load_profile_into_editor(name: str) -> None:
+        config = load_manager_config()
+        profiles = effective_profile_index(config)
+        selected = profiles.get(name)
+        if selected is None:
+            status_var.set(f"Profile '{name}' no longer exists.")
+            return
+
+        profile_name_var.set(name)
+        overwrite_var.set(True)
+
+        custom = config.get("custom_profiles", {})
+        custom_payload = custom.get(name, {}) if isinstance(custom, dict) else {}
+
+        base_profile = "balanced"
+        trait_sliders: dict[str, int] = {}
+        description = ""
+
+        if isinstance(custom_payload, dict) and custom_payload:
+            base_candidate = str(custom_payload.get("base_profile", "balanced")).strip().lower()
+            if base_candidate in PRESET_WEIGHTS:
+                base_profile = base_candidate
+            sliders_raw = custom_payload.get("trait_sliders", {})
+            if isinstance(sliders_raw, dict):
+                for feature in FEATURE_KEYS:
+                    value = sliders_raw.get(feature)
+                    if isinstance(value, int) and 0 <= value <= 100:
+                        trait_sliders[feature] = value
+            description = str(custom_payload.get("description", "")).strip()
+        elif name in PRESET_WEIGHTS:
+            base_profile = name
+        elif str(selected.get("source", "")).startswith("alias:"):
+            target = str(selected.get("source", "")).split(":", 1)[1]
+            if target in PRESET_WEIGHTS:
+                base_profile = target
+        elif name in NON_TRAIT_BUILTIN_PROFILES:
+            base_profile = "balanced"
+
+        base_profile_var.set(base_profile)
+        description_var.set(description)
+
+        for feature in FEATURE_KEYS:
+            override_vars[feature].set(False)
+
+        _set_form_from_base(base_profile)
+
+        for feature, slider in trait_sliders.items():
+            override_vars[feature].set(True)
+            slider_vars[feature].set(slider_to_weight(feature, slider))
+
+        # Fallback: infer overrides from effective weights when trait sliders are not available.
+        if not trait_sliders and isinstance(selected.get("weights"), dict):
+            base_weights = PRESET_WEIGHTS[base_profile]
+            weights = selected["weights"]
+            for feature in FEATURE_KEYS:
+                candidate = weights.get(feature)
+                if not isinstance(candidate, (int, float)):
+                    continue
+                candidate_weight = max(0.0, min(float(candidate), FEATURE_MAX_WEIGHTS[feature]))
+                if abs(candidate_weight - float(base_weights[feature])) > 0.0001:
+                    override_vars[feature].set(True)
+                    slider_vars[feature].set(candidate_weight)
+
+        _refresh_preview()
+        if name in NON_TRAIT_BUILTIN_PROFILES:
+            status_var.set(
+                "Loaded '%s'. Saving will convert it to a trait-driven managed profile." % name
+            )
+        else:
+            status_var.set("Loaded '%s' into editor." % name)
 
     def _build_payload_for_ui() -> tuple[dict, dict[str, int], dict[str, float]]:
         profile_name = profile_name_var.get().strip()
@@ -740,14 +913,12 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     def _refresh_preview(*_args) -> None:
         for feature in FEATURE_KEYS:
-            slider_value_labels[feature].configure(text=str(int(slider_vars[feature].get())))
+            slider_value_labels[feature].configure(text=f"{float(slider_vars[feature].get()):0.2f}")
 
         try:
             payload, sliders, _weights = _build_payload_for_ui()
             _set_preview(payload)
-            status_var.set(
-                "Ready: %d trait override(s) selected." % len(sliders)
-            )
+            status_var.set("Ready: %d trait override(s) selected." % len(sliders))
         except ValueError as exc:
             status_var.set(f"Validation error: {exc}")
 
@@ -766,6 +937,7 @@ def _launch_profile_creator_ui(default_output: str) -> int:
                 overwrite=bool(overwrite_var.get()),
             )
             save_manager_config(config)
+            _refresh_profile_list(select_name=profile_name.strip().lower())
             status_var.set("Saved managed profile '%s'." % profile_name.strip().lower())
             messagebox.showinfo("Profile Saved", "Managed profile saved to profiles_manager.json")
         except ValueError as exc:
@@ -793,9 +965,58 @@ def _launch_profile_creator_ui(default_output: str) -> int:
             messagebox.showerror("Export Failed", str(exc))
 
     def _reset_sliders() -> None:
+        base_profile = base_profile_var.get().strip().lower()
+        if base_profile not in PRESET_WEIGHTS:
+            base_profile = "balanced"
         for feature in FEATURE_KEYS:
-            slider_vars[feature].set(0)
+            override_vars[feature].set(False)
+        _set_form_from_base(base_profile)
         _refresh_preview()
+
+    def _delete_selected_profile() -> None:
+        selected_name = _current_selection_name()
+        if not selected_name:
+            messagebox.showwarning("Delete Profile", "Select a profile to delete.")
+            return
+
+        confirmed = messagebox.askyesno(
+            "Delete Profile",
+            "Remove '%s' from in-game availability?" % selected_name,
+        )
+        if not confirmed:
+            return
+
+        config = load_manager_config()
+        remove_managed_profile(config, name=selected_name)
+        save_manager_config(config)
+        _refresh_profile_list()
+        status_var.set("Deleted '%s' from in-game availability." % selected_name)
+
+    def _edit_selected_profile() -> None:
+        selected_name = _current_selection_name()
+        if not selected_name:
+            messagebox.showwarning("Edit Profile", "Select a profile to edit.")
+            return
+        _load_profile_into_editor(selected_name)
+
+    def _on_base_changed(*_args) -> None:
+        base_profile = base_profile_var.get().strip().lower()
+        if base_profile not in PRESET_WEIGHTS:
+            return
+        _set_form_from_base(base_profile)
+        _refresh_preview()
+
+    def _on_profile_click(_event) -> None:
+        selected_name = _current_selection_name()
+        if selected_name:
+            _load_profile_into_editor(selected_name)
+
+    tk.Button(list_actions, text="Create New", command=_create_new_profile).pack(fill="x", pady=(0, 6))
+    tk.Button(list_actions, text="Edit Selected", command=_edit_selected_profile).pack(fill="x", pady=(0, 6))
+    tk.Button(list_actions, text="Delete Selected", command=_delete_selected_profile).pack(
+        fill="x", pady=(0, 6)
+    )
+    tk.Button(list_actions, text="Refresh", command=_refresh_profile_list).pack(fill="x")
 
     action_bar = tk.Frame(root)
     action_bar.pack(fill="x", padx=12, pady=(0, 12))
@@ -806,12 +1027,16 @@ def _launch_profile_creator_ui(default_output: str) -> int:
     tk.Button(action_bar, text="Export JSON", command=_export_json).pack(side="left", padx=(0, 8))
     tk.Button(action_bar, text="Close", command=root.destroy).pack(side="right")
 
-    base_profile_var.trace_add("write", _refresh_preview)
+    profile_listbox.bind("<<ListboxSelect>>", _on_profile_click)
+
+    base_profile_var.trace_add("write", _on_base_changed)
     profile_name_var.trace_add("write", _refresh_preview)
     description_var.trace_add("write", _refresh_preview)
     for feature in FEATURE_KEYS:
         slider_vars[feature].trace_add("write", _refresh_preview)
+        override_vars[feature].trace_add("write", _refresh_preview)
 
+    _refresh_profile_list()
     _refresh_preview()
     root.mainloop()
     return 0
