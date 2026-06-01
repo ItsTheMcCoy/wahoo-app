@@ -2,27 +2,27 @@
   <defs>
     <radialGradient id="marbleRed" cx="35%" cy="28%" r="72%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity=".75"/>
-      <stop offset="18%" stop-color="#c52d26" stop-opacity="1"/>
-      <stop offset="72%" stop-color="#c52d26" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#741915"/>
+      <stop offset="18%" stop-color="#b32721" stop-opacity="1"/>
+      <stop offset="72%" stop-color="#b32721" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#63130f"/>
     </radialGradient>
     <radialGradient id="marbleGreen" cx="35%" cy="28%" r="72%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity=".70"/>
-      <stop offset="18%" stop-color="#23813a" stop-opacity="1"/>
-      <stop offset="72%" stop-color="#23813a" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#134721"/>
+      <stop offset="18%" stop-color="#1f7032" stop-opacity="1"/>
+      <stop offset="72%" stop-color="#1f7032" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#103b1b"/>
     </radialGradient>
     <radialGradient id="marbleYellow" cx="35%" cy="28%" r="72%">
       <stop offset="0%" stop-color="#fffdf0" stop-opacity=".82"/>
-      <stop offset="18%" stop-color="#d6aa26" stop-opacity="1"/>
-      <stop offset="74%" stop-color="#d6aa26" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#876713"/>
+      <stop offset="18%" stop-color="#c49722" stop-opacity="1"/>
+      <stop offset="74%" stop-color="#c49722" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#73570f"/>
     </radialGradient>
     <radialGradient id="marbleBlue" cx="35%" cy="28%" r="72%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity=".70"/>
-      <stop offset="18%" stop-color="#2449a8" stop-opacity="1"/>
-      <stop offset="74%" stop-color="#2449a8" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#14295f"/>
+      <stop offset="18%" stop-color="#203f90" stop-opacity="1"/>
+      <stop offset="74%" stop-color="#203f90" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#10214f"/>
     </radialGradient>
     <linearGradient id="ivoryBody" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff"/>
