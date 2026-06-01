@@ -2,7 +2,17 @@
   "disabled_profiles": [
     "tortoise",
     "custom",
-    "balanced"
+    "balanced",
+    "swarm",
+    "sprinter",
+    "random",
+    "human_like",
+    "gatekeeper",
+    "engineer",
+    "expectimax",
+    "gambler",
+    "assassin",
+    "human like"
   ],
   "aliases": {},
   "custom_profiles": {
@@ -10,8 +20,8 @@
       "base_profile": "balanced",
       "weights": {
         "DEP": 0.4,
-        "RUN": 0.5,
-        "SPR": 0.6,
+        "RUN": 0.36,
+        "SPR": 0.37,
         "CAP": 0.8,
         "SAFE": 1.0,
         "CTR": 0.4,
@@ -22,6 +32,8 @@
       },
       "trait_sliders": {
         "DEP": 40,
+        "RUN": 36,
+        "SPR": 37,
         "CAP": 80,
         "SAFE": 40,
         "CTR": 40,
@@ -30,8 +42,9 @@
         "HOME": 76,
         "FIN": 30
       },
-      "description": "Will ALWAYS caputre Mac",
-      "updated_at": "2026-06-01T05:42:46.414810+00:00"
+      "display_name": "Nikki AI",
+      "description": "Ooopsie",
+      "updated_at": "2026-06-01T06:05:27.677086+00:00"
     },
     "lauren ai": {
       "base_profile": "balanced",
@@ -59,8 +72,9 @@
         "HOME": 50,
         "FIN": 54
       },
+      "display_name": "Lauren AI",
       "description": "Sir/Mam <Finger Wagging>",
-      "updated_at": "2026-06-01T05:23:56.901238+00:00"
+      "updated_at": "2026-06-01T06:03:32.253668+00:00"
     },
     "dixie ai": {
       "base_profile": "balanced",
@@ -88,8 +102,9 @@
         "HOME": 59,
         "FIN": 91
       },
+      "display_name": "Dixie AI",
       "description": "GET ME.... I mean her",
-      "updated_at": "2026-06-01T05:42:12.090219+00:00"
+      "updated_at": "2026-06-01T06:03:20.278060+00:00"
     },
     "monty ai": {
       "base_profile": "balanced",
@@ -117,8 +132,69 @@
         "HOME": 58,
         "FIN": 82
       },
+      "display_name": "Monty AI",
       "description": "Is it bedtime yet?",
-      "updated_at": "2026-06-01T05:24:09.584135+00:00"
+      "updated_at": "2026-06-01T06:04:10.760257+00:00"
+    },
+    "mac": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.8,
+        "RUN": 0.34,
+        "SPR": 0.46,
+        "CAP": 0.68,
+        "SAFE": 1.175,
+        "CTR": 0.71,
+        "DEN": 0.68,
+        "FLOW": 0.78,
+        "HOME": 0.77,
+        "FIN": 0.43
+      },
+      "trait_sliders": {
+        "DEP": 80,
+        "RUN": 34,
+        "SPR": 46,
+        "CAP": 68,
+        "SAFE": 47,
+        "CTR": 71,
+        "DEN": 68,
+        "FLOW": 78,
+        "HOME": 77,
+        "FIN": 43
+      },
+      "display_name": "Mac",
+      "description": "I hate this fucking game",
+      "updated_at": "2026-06-01T06:03:07.685795+00:00"
+    },
+    "mac ai": {
+      "base_profile": "balanced",
+      "weights": {
+        "DEP": 0.8,
+        "RUN": 0.34,
+        "SPR": 0.46,
+        "CAP": 0.68,
+        "SAFE": 1.175,
+        "CTR": 0.71,
+        "DEN": 0.68,
+        "FLOW": 0.78,
+        "HOME": 0.77,
+        "FIN": 0.43
+      },
+      "trait_sliders": {
+        "DEP": 80,
+        "RUN": 34,
+        "SPR": 46,
+        "CAP": 68,
+        "SAFE": 47,
+        "CTR": 71,
+        "DEN": 68,
+        "FLOW": 78,
+        "HOME": 77,
+        "FIN": 43
+      },
+      "display_name": "Mac AI",
+      "description": "I hate this fucking game",
+      "updated_at": "2026-06-01T06:03:41.530818+00:00"
     }
   }
 }
