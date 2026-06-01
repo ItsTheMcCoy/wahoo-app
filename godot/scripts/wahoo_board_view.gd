@@ -510,11 +510,11 @@ func _seat_label_anchor(player: int) -> Vector2:
         Vector2(1.0, 0.0),
     ]
     var offset_dirs := inward_dirs.duplicate()
-    # Yellow (player 2) is on the top edge; nudging upward keeps the name above the base cluster.
+    # Yellow (player 2) is on the bottom edge; give it a small extra lift so the text clears the base row.
     offset_dirs[2] = Vector2(0.0, -1.0)
     var offset_units := 0.72
     if player == 2:
-        offset_units = 1.48
+        offset_units = 0.98
     return base_center + offset_dirs[player] * (_cell_size * offset_units)
 
 func _base_cluster_center(player: int) -> Vector2:
