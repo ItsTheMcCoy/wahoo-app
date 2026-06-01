@@ -4,6 +4,9 @@ __pycache__/
 .venv/
 venv/
 
+# Node
+node_modules/
+
 # Godot (for Phase 2)
 .godot/
 .import/
