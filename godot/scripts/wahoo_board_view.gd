@@ -572,6 +572,12 @@ func _grid_to_cell_origin(coord: Vector2i) -> Vector2:
 func _lightened(color: Color, amount: float) -> Color:
     return color.lerp(Color.WHITE, amount)
 
+func _marble_display_color(player: int) -> Color:
+    var color: Color = PLAYER_COLORS[player]
+    if player == 0 or player == 1 or player == 3:
+        return color.darkened(0.12)
+    return color
+
 func _on_resized() -> void:
     queue_redraw()
     _refresh_marble_nodes()
@@ -593,7 +599,7 @@ func _ensure_marble_nodes() -> void:
                 add_child(token)
             token.set_meta("player", player)
             token.set_meta("marble_id", marble_id)
-            token.set_color(PLAYER_COLORS[player])
+            token.set_color(_marble_display_color(player))
             token.set_marble_texture(_marble_texture)
             player_nodes.append(token)
         _marble_nodes.append(player_nodes)
@@ -613,6 +619,7 @@ func _refresh_marble_nodes() -> void:
             token.size = Vector2(token_side, token_side)
             token.pivot_offset = token.size * 0.5
             token.position = _token_position_for_location(loc, player, marble_id)
+            token.set_color(_marble_display_color(player))
             token.scale = Vector2.ONE
             token.set_shadow_profile(
                 _style_float("shadow_alpha_ground", 0.24),
