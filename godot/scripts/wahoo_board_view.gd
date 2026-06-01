@@ -514,7 +514,7 @@ func _seat_label_anchor(player: int) -> Vector2:
     offset_dirs[2] = Vector2(0.0, -1.0)
     var offset_units := 0.72
     if player == 2:
-        offset_units = 2.10
+        offset_units = 1.48
     return base_center + offset_dirs[player] * (_cell_size * offset_units)
 
 func _base_cluster_center(player: int) -> Vector2:
