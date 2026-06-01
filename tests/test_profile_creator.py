@@ -5,6 +5,7 @@ import pytest
 from wahoo.profile_creator import (
     add_managed_profile,
     build_profile_weights,
+    delete_managed_profile,
     disable_managed_profile,
     effective_profile_index,
     parse_trait_overrides,
@@ -148,3 +149,25 @@ def test_remove_alias_still_disables_profile_name():
 
     remove_managed_profile(config, name="swarm")
     assert "swarm" not in effective_profile_index(config)
+
+
+def test_delete_managed_profile_removes_it_from_index():
+    config = _empty_config()
+
+    add_managed_profile(
+        config,
+        name="to_delete",
+        base_profile="balanced",
+        trait_sliders={"RUN": 70},
+    )
+    assert "to_delete" in effective_profile_index(config)
+
+    delete_managed_profile(config, name="to_delete")
+    assert "to_delete" not in effective_profile_index(config, include_disabled=True)
+
+
+def test_delete_builtin_profile_is_rejected():
+    config = _empty_config()
+
+    with pytest.raises(ValueError, match="builtin and cannot be deleted"):
+        delete_managed_profile(config, name="sprinter")

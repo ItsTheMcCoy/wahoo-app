@@ -2,7 +2,7 @@
 
 Capabilities:
   - Create a trait-slider profile payload (legacy single-file output mode)
-    - Manage in-game profiles (list/add/update/rename/disable/restore)
+    - Manage in-game profiles (list/add/update/rename/disable/delete/restore)
 
 Examples:
     python -m wahoo.profile_creator --ui
@@ -577,6 +577,39 @@ def disable_managed_profile(config: dict, *, name: str) -> None:
         disabled.append(profile_name)
 
 
+def delete_managed_profile(config: dict, *, name: str) -> None:
+    """Permanently delete a managed/alias profile from config.
+
+    Builtin profiles are not deletable and should be disabled instead.
+    """
+    profile_name = _normalize_profile_name(name)
+    existing = effective_profile_index(config, include_disabled=True)
+    if profile_name not in existing:
+        raise ValueError(f"Unknown profile '{profile_name}'")
+
+    custom = config.setdefault("custom_profiles", {})
+    aliases = config.setdefault("aliases", {})
+    disabled = config.setdefault("disabled_profiles", [])
+
+    if isinstance(custom, dict) and profile_name in custom:
+        custom.pop(profile_name, None)
+        if isinstance(aliases, dict):
+            aliases.pop(profile_name, None)
+        if isinstance(disabled, list):
+            config["disabled_profiles"] = [n for n in disabled if n != profile_name]
+        return
+
+    if isinstance(aliases, dict) and profile_name in aliases:
+        aliases.pop(profile_name, None)
+        if isinstance(disabled, list):
+            config["disabled_profiles"] = [n for n in disabled if n != profile_name]
+        return
+
+    raise ValueError(
+        f"Profile '{profile_name}' is builtin and cannot be deleted. Use disable instead."
+    )
+
+
 def remove_managed_profile(config: dict, *, name: str) -> None:
     """Compatibility alias for disable_managed_profile()."""
     disable_managed_profile(config, name=name)
@@ -641,7 +674,7 @@ def _interactive_collect(base_profile: str) -> dict[str, int]:
 
 
 def _launch_profile_creator_ui(default_output: str) -> int:
-    """Launch a desktop UI for creating, editing, and disabling profiles."""
+    """Launch a desktop UI for creating, editing, disabling, and deleting profiles."""
     try:
         import tkinter as tk
         from tkinter import filedialog, messagebox, scrolledtext
@@ -656,7 +689,7 @@ def _launch_profile_creator_ui(default_output: str) -> int:
 
     header = tk.Label(
         root,
-        text="Profile Manager (Create / Edit / Disable)",
+        text="Profile Manager (Create / Edit / Disable / Delete)",
         font=("Segoe UI", 16, "bold"),
         anchor="w",
     )
@@ -1053,6 +1086,31 @@ def _launch_profile_creator_ui(default_output: str) -> int:
         _refresh_profile_list()
         status_var.set("Disabled '%s' (hidden from in-game profile lists)." % selected_name)
 
+    def _delete_selected_profile() -> None:
+        selected_name = _current_selection_name()
+        if not selected_name:
+            messagebox.showwarning("Delete Profile", "Select a profile to delete.")
+            return
+
+        confirmed = messagebox.askyesno(
+            "Delete Profile",
+            "Permanently delete '%s' from profile manager config?" % selected_name,
+        )
+        if not confirmed:
+            return
+
+        config = load_manager_config()
+        try:
+            delete_managed_profile(config, name=selected_name)
+        except ValueError as exc:
+            messagebox.showerror("Delete Failed", str(exc))
+            status_var.set(f"Delete failed: {exc}")
+            return
+
+        save_manager_config(config)
+        _refresh_profile_list()
+        status_var.set("Deleted '%s' from profile manager config." % selected_name)
+
     def _edit_selected_profile() -> None:
         selected_name = _current_selection_name()
         if not selected_name:
@@ -1075,6 +1133,9 @@ def _launch_profile_creator_ui(default_output: str) -> int:
     tk.Button(list_actions, text="Create New", command=_create_new_profile).pack(fill="x", pady=(0, 6))
     tk.Button(list_actions, text="Edit Selected", command=_edit_selected_profile).pack(fill="x", pady=(0, 6))
     tk.Button(list_actions, text="Disable Selected", command=_disable_selected_profile).pack(
+        fill="x", pady=(0, 6)
+    )
+    tk.Button(list_actions, text="Delete Selected", command=_delete_selected_profile).pack(
         fill="x", pady=(0, 6)
     )
     tk.Button(list_actions, text="Refresh", command=_refresh_profile_list).pack(fill="x")
@@ -1204,6 +1265,12 @@ def _build_parser() -> argparse.ArgumentParser:
     restore_parser = subparsers.add_parser("restore", help="restore a removed/disabled profile name")
     restore_parser.add_argument("--name", required=True, help="profile name")
 
+    delete_parser = subparsers.add_parser(
+        "delete",
+        help="permanently delete a managed/alias profile from config",
+    )
+    delete_parser.add_argument("--name", required=True, help="profile name")
+
     return parser
 
 
@@ -1277,6 +1344,12 @@ def _handle_management_command(args: argparse.Namespace) -> int:
             restore_managed_profile(config, name=args.name)
             save_manager_config(config)
             print(f"Restored profile name '{args.name.strip().lower()}'.")
+            return 0
+
+        if args.command == "delete":
+            delete_managed_profile(config, name=args.name)
+            save_manager_config(config)
+            print(f"Deleted managed profile '{args.name.strip().lower()}' from config.")
             return 0
     except ValueError as exc:
         print(f"Error: {exc}")

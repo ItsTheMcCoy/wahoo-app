@@ -178,6 +178,7 @@ python -m wahoo.profile_creator add --name my_style --base balanced --trait CAP=
 python -m wahoo.profile_creator update --name my_style --trait RUN=80 --description "Aggressive runner"
 python -m wahoo.profile_creator rename --name sprinter --new-name blitz
 python -m wahoo.profile_creator disable --name swarm
+python -m wahoo.profile_creator delete --name my_style
 python -m wahoo.profile_creator restore --name swarm
 ```
 
@@ -188,6 +189,7 @@ Useful options:
 - `--trait FEATURE=SLIDER` sets slider `0..100`; repeat as needed.
 - `add` and `rename` support `--overwrite`.
 - `list` includes disabled profiles with a `[DISABLED]` indicator.
+- `disable` hides a profile from in-game selection; `delete` permanently removes a managed/alias profile from manager config.
 
 Runtime behavior:
 
