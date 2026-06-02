@@ -26,6 +26,7 @@ test("create, join, configure AI seats, and start a room", () => {
   room.configureSeat(host, { seat: 2, seatType: "ai", aiProfile: "sprinter" });
   room.configureSeat(host, { seat: 3, seatType: "ai", aiProfile: "random" });
   room.startGame(host);
+  const gameStarted = host.messages.find((message) => message.type === "game_started");
 
   assert.equal(room.status, "playing");
   assert.equal(room.seats[0].name, "Alex");
@@ -33,6 +34,9 @@ test("create, join, configure AI seats, and start a room", () => {
   assert.equal(room.seats[2].type, "ai");
   assert.equal(host.messages.some((message) => message.type === "game_started"), true);
   assert.equal(guest.messages.some((message) => message.type === "game_started"), true);
+  assert.equal(Array.isArray(gameStarted.openingRollRounds), true);
+  assert.equal(gameStarted.openingRollRounds.length > 0, true);
+  assert.equal(gameStarted.currentPlayer, 0);
 });
 
 test("spectators receive chat but cannot roll", () => {

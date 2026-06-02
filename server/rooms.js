@@ -26,7 +26,7 @@ class RoomManager {
 
   createRoom(ws, hostName) {
     const gameId = this.generateGameId();
-    const room = new Room(gameId, this.now);
+    const room = new Room(gameId, this.now, this.rng);
     this.rooms.set(gameId, room);
     room.attachHost(ws, cleanName(hostName, "Host"));
     this.clientRooms.set(ws.clientId, gameId);
@@ -145,7 +145,7 @@ class RoomManager {
 }
 
 class Room {
-  constructor(gameId, now = () => Date.now()) {
+  constructor(gameId, now = () => Date.now(), rng = () => Math.random()) {
     this.gameId = gameId;
     this.status = "waiting";
     this.hostClientId = null;
@@ -165,6 +165,7 @@ class Room {
     this.createdAt = now();
     this.lastActivityAt = this.createdAt;
     this.now = now;
+    this.rng = rng;
     this.lastRollLegalMoves = [];
   }
 
@@ -311,16 +312,52 @@ class Room {
     }
 
     this.status = "playing";
-    this.currentPlayer = 0;
+    const opening = this.resolveOpeningPlayer();
+    this.currentPlayer = opening.player;
     this.pendingRoll = null;
     this.lastRollLegalMoves = [];
     this.gameState = newGameState(this.currentPlayer);
     this.broadcast("game_started", {
       gameState: cloneState(this.gameState),
       currentPlayer: this.currentPlayer,
+      openingRollRounds: opening.rounds,
       seats: this.publicSeats(),
       spectatorCount: this.spectatorCount(),
     });
+  }
+
+  rollDie() {
+    return Math.floor(this.rng() * 6) + 1;
+  }
+
+  resolveOpeningPlayer() {
+    let contenders = [0, 1, 2, 3];
+    const rounds = [];
+    let safety = 0;
+
+    while (contenders.length > 1) {
+      let highest = 0;
+      const rolls = contenders.map((player) => {
+        const roll = this.rollDie();
+        highest = Math.max(highest, roll);
+        return { player, roll };
+      });
+      contenders = rolls.filter((entry) => entry.roll === highest).map((entry) => entry.player);
+      rounds.push({
+        rolls,
+        leaders: [...contenders],
+      });
+
+      safety += 1;
+      if (safety >= 20 && contenders.length > 1) {
+        contenders = [contenders[0]];
+      }
+    }
+
+    return {
+      player: contenders[0],
+      rounds,
+    };
   }
 
   rollRequest(ws) {

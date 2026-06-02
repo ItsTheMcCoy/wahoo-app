@@ -4,7 +4,6 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
-@onready var _subtitle: Label           = $MainCenter/HomePanel/Content/Subtitle
 @onready var _play_solo_btn: Button     = $MainCenter/HomePanel/Content/PlaySoloButton
 @onready var _host_game_btn: Button     = $MainCenter/HomePanel/Content/HostGameButton
 @onready var _join_btn: Button          = $MainCenter/HomePanel/Content/JoinButton
@@ -318,6 +317,3 @@ func _apply_theme() -> void:
 	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
 		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
 		field.add_theme_color_override("font_placeholder_color", Color(0.62, 0.58, 0.52))
-
-	_subtitle.add_theme_color_override("font_color", Color(0.78, 0.71, 0.61))
-	_subtitle.add_theme_font_size_override("font_size", 20)

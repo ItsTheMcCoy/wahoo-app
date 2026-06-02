@@ -39,6 +39,12 @@ layout_mode = 2
 custom_minimum_size = Vector2(500, 0)
 theme_override_constants/separation = 16
 
+[node name="BrandTitle" type="TextureRect" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 130)
+expand_mode = 1
+stretch_mode = 5
+
 [node name="CodeRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
 layout_mode = 2
 

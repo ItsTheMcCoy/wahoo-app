@@ -1,5 +1,7 @@
 extends Control
 
+const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+
 const PLAYER_COLORS := [
 	Color(0.86, 0.20, 0.17),
 	Color(0.16, 0.60, 0.27),
@@ -24,6 +26,7 @@ const BUILTIN_PROFILE_LABELS := {
 }
 
 @onready var _code_value: Label               = $ScrollContainer/Center/LobbyPanel/Content/CodeRow/GameCodeValue
+@onready var _brand_title: TextureRect        = $ScrollContainer/Center/LobbyPanel/Content/BrandTitle
 @onready var _host_code_buttons: HBoxContainer = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons
 @onready var _copy_code_btn: Button           = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons/CopyCodeBtn
 @onready var _copy_link_btn: Button           = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons/CopyLinkBtn
@@ -67,6 +70,9 @@ func _ready() -> void:
 		_seats = ctx_seats.duplicate(true)
 
 	_rebuild_ai_profile_catalog()
+	_brand_title.texture = WORDMARK_TEXTURE
+	_brand_title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_brand_title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 	_apply_theme()
 	_setup_ui()
@@ -398,6 +404,7 @@ func _on_game_started(payload: Dictionary) -> void:
 	Network.ctx["my_seat"]        = _my_seat
 	Network.ctx["my_name"]        = _my_name
 	Network.ctx["role"]           = _role
+	Network.ctx["opening_roll_rounds"] = payload.get("openingRollRounds", [])
 	get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 # --- Host actions ---

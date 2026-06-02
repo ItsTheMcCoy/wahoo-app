@@ -1037,6 +1037,7 @@ func _enter_multiplayer_mode() -> void:
 	_state = _mp_deserialize_state(Network.ctx.get("game_state", {}))
 	var current_player := int(Network.ctx.get("current_player", 0))
 	_state.current_player = current_player
+	var opening_roll_rounds: Array = Network.ctx.get("opening_roll_rounds", [])
 
 	_win_overlay.visible = false
 	_setup_overlay.visible = false
@@ -1055,6 +1056,9 @@ func _enter_multiplayer_mode() -> void:
 	Network.disconnected_from_server.connect(_mp_on_server_disconnected)
 
 	_mp_set_turn(current_player)
+	var opening_summary := _mp_format_opening_roll_summary(opening_roll_rounds)
+	if not opening_summary.is_empty():
+		_set_status_text(opening_summary + "\n\n" + _status.text)
 
 func _mp_deserialize_state(gs: Dictionary) -> WahooState:
 	var s := WahooState.new()
@@ -1064,6 +1068,34 @@ func _mp_deserialize_state(gs: Dictionary) -> WahooState:
 	s.center_occupant = gs.get("center_occupant", null)
 	s.next_base_exit_marble = gs.get("next_base_exit_marble", [0, 0, 0, 0]).duplicate(true)
 	return s
+
+func _mp_format_opening_roll_summary(rounds: Array) -> String:
+	if rounds.is_empty():
+		return ""
+	var lines: PackedStringArray = ["Opening roll:"]
+	for round_raw in rounds:
+		if not (round_raw is Dictionary):
+			continue
+		var round: Dictionary = round_raw
+		var rolls: Array = round.get("rolls", [])
+		var roll_parts: PackedStringArray = []
+		for entry_raw in rolls:
+			if not (entry_raw is Dictionary):
+				continue
+			var entry: Dictionary = entry_raw
+			var player := int(entry.get("player", 0))
+			var roll := int(entry.get("roll", 0))
+			roll_parts.append("%s %d" % [_player_label(player), roll])
+		if not roll_parts.is_empty():
+			lines.append(", ".join(roll_parts))
+		var leaders: Array = round.get("leaders", [])
+		if leaders.size() > 1:
+			var leader_names: PackedStringArray = []
+			for leader_raw in leaders:
+				leader_names.append(_player_label(int(leader_raw)))
+			lines.append("Tie - reroll: %s" % ", ".join(leader_names))
+	lines.append("%s starts." % _player_label(_state.current_player))
+	return "\n".join(lines)
 
 func _mp_set_turn(player: int) -> void:
 	_state.current_player = player

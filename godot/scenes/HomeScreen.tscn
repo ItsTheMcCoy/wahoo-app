@@ -36,14 +36,9 @@ theme_override_constants/separation = 20
 
 [node name="BrandTitle" type="TextureRect" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 250)
 expand_mode = 1
 stretch_mode = 5
-
-[node name="Subtitle" type="Label" parent="MainCenter/HomePanel/Content"]
-layout_mode = 2
-text = "marble race board game"
-horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
