@@ -897,14 +897,8 @@ func _exit_to_setup() -> void:
 	_pending_moves = []
 	_pending_roll = null
 	_ai_busy = false
-	_win_overlay.visible = false
-	_setup_overlay.visible = true
-	_board.clear_legal_moves()
-	_set_roll_ready(false)
-	_roll_button.text = "Roll"
-	_die_label.text = "–"
-	_refresh_setup_name_fields()
 	_opening_roll_pressed.emit()  # unblock any awaiting starting-roll coroutine
+	get_tree().change_scene_to_file("res://scenes/HomeScreen.tscn")
 
 func _save_game() -> void:
 	if _state == null or _setup_overlay.visible:

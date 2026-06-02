@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/home_screen.gd" id="1_hs001"]
+
+[node name="HomeScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hs001")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.10, 0.08, 0.06, 1.0)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HomePanel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Center/HomePanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(440, 0)
+theme_override_constants/separation = 20
+
+[node name="BrandTitle" type="TextureRect" parent="Center/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Subtitle" type="Label" parent="Center/HomePanel/Content"]
+layout_mode = 2
+text = "marble race board game"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Center/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+
+[node name="PlaySoloButton" type="Button" parent="Center/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+text = "PLAY SOLO"
+
+[node name="HostGameButton" type="Button" parent="Center/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+text = "HOST GAME"
+
+[node name="JoinButton" type="Button" parent="Center/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+text = "JOIN / SPECTATE"
