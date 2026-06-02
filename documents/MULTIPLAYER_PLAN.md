@@ -17,7 +17,7 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Cloudflare DNS status | Required A and CNAME records configured for Netlify |
 | Domain verification status | Netlify domain management complete; `wahulo.com` test passed |
 | Backend relay status | Deployed to Render at `https://wahulo.onrender.com`; `configure_seat` bug fixed; `npm test` passes `9/9` |
-| Current next step | Home screen scene and lobby scene (network.gd complete, relay live) |
+| Current next step | Phase 4d: re-export Godot web build and deploy to Netlify for end-to-end test |
 | Netlify status | Active static host; root `netlify.toml` declares `godot/build/web` as publish directory and rewrites deep links to `/index.html` |
 
 ---
@@ -298,7 +298,14 @@ No chat history is stored on the server — messages are fire-and-forget. A clie
 
 ## Phase 4b — Godot Client: Home Screen, Lobby & Game UI
 
-**Current status (2026-06-01): `network.gd` complete. Home screen and lobby are next.**
+**Current status (2026-06-01): Complete.** HomeScreen, Lobby, and multiplayer game flow all implemented and pushed.
+
+Implemented in `godot/`:
+
+- `scenes/HomeScreen.tscn` + `scripts/home_screen.gd` — entry point with Play Solo, Host Game, Join/Spectate buttons; host and join prompt overlays built into the scene; full connection flow (connect → create/join room → store `Network.ctx` → navigate to Lobby); deep-link `/join/<code>` detection on web builds
+- `scenes/Lobby.tscn` + `scripts/lobby.gd` — lobby scene shared by all roles; host view shows game code, copy-code/copy-link buttons, per-seat AI profile dropdowns, spectator count, START GAME button (enabled only when all seats filled); guest/spectator view shows read-only seat list and waiting label; chat works for all roles; `seat_updated`, `spectator_count`, `player_disconnected/reconnected`, and `game_started` signals all handled; `Leave` returns to HomeScreen
+
+`network.gd` gained a `ctx: Dictionary` property used to pass lobby data (role, game_id, seat, display_name, seats, spectator_count, game_state, current_player, my_seat) to the next scene without coupling scenes directly.
 
 `godot/scripts/network.gd` is implemented as an autoload singleton (registered in `project.godot` as `Network`). It manages the WebSocket lifecycle via `_process()` polling, exposes typed send methods for every client→server message (`send_create_room`, `send_join_room`, `send_join_as_spectator`, `send_configure_seat`, `send_start_game`, `send_roll_request`, `send_submit_move`, `send_chat_message`), and emits a dedicated signal for every server→client message type. A 30-second ping keepalive prevents relay timeouts. The `RELAY_URL` constant defaults to `ws://localhost:8080` for development; switch to `RELAY_URL_PROD` before a production export.
 
@@ -366,7 +373,7 @@ Clicking "Play Solo" opens the existing seat-configuration overlay unchanged. Th
 └────────────────────────────────────────┘
 ```
 
-- Seat dropdown options: "Wait for player" | "Random AI" | each named profile (easiest → hardest)
+- Seat dropdown options: "Wait for player" | "Random AI" | each enabled profile
 - "START GAME" is enabled only when no seat is set to "Wait for player"
 - Game code and shareable link displayed prominently with copy buttons
 - Spectator count shown below the seat list
@@ -464,6 +471,19 @@ Spectators see the full board and side panel but with these differences:
 ---
 
 ## Phase 4c — Online Game Flow
+
+**Current status (2026-06-01): Complete.** `Main.tscn`/`main.gd` now doubles as the multiplayer game scene.
+
+`_ready()` checks `Network.ctx` for `game_state`; if present, `_enter_multiplayer_mode()` runs instead of showing the setup overlay. Key points:
+
+- Roll button sends `roll_request` to server; move taps send `submit_move`. Clients never apply state locally.
+- `_mp_on_roll_result`: plays die animation, sets legal moves for human's turn, or auto-runs AI (host only) with 1.5 s delay then `send_submit_move`.
+- `_mp_on_state_update`: deserializes server `gameState`, renders board, advances turn. Empty-legal-moves case handled by server auto-advance (`noLegalMoves: true` flag).
+- `_mp_on_game_over`: shows win screen; win screen "New Game" disconnects and returns to HomeScreen.
+- `_mp_on_player_disconnected/reconnected`: status message + Roll disabled/re-enabled.
+- `_mp_on_server_disconnected`: marks game over, shows disconnect message.
+- Save/Load/Restart menu items are disabled in multiplayer. Exit To Setup disconnects from relay and clears `Network.ctx` before returning to HomeScreen.
+- Solo play is completely unchanged (no `Network.ctx.game_state` → shows setup overlay).
 
 ### Turn Structure (Server-Driven)
 
