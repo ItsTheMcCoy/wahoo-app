@@ -284,7 +284,7 @@ func _on_game_started(payload: Dictionary) -> void:
 	Network.ctx["my_seat"]        = _my_seat
 	Network.ctx["my_name"]        = _my_name
 	Network.ctx["role"]           = _role
-	# TODO Phase 4c: get_tree().change_scene_to_file("res://scenes/MultiplayerGame.tscn")
+	get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 # --- Host actions ---
 

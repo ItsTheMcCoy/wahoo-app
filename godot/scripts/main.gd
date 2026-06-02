@@ -90,6 +90,9 @@ var _ai_busy := false
 var _show_smoke_summary := false
 var _starting_phase := false
 var _awaiting_human_starting_roll := false
+var _is_multiplayer := false
+var _mp_role := ""     # "host" | "player" | "spectator"
+var _mp_my_seat := -1
 
 func _ready() -> void:
 	_rng.randomize()
@@ -108,9 +111,12 @@ func _ready() -> void:
 	_populate_dropdowns()
 	_wire_setup_inputs()
 	_refresh_setup_name_fields()
-	_setup_overlay.visible = true
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
 	_status.scroll_following = true
+	if Network.ctx.has("game_state"):
+		_enter_multiplayer_mode()
+	else:
+		_setup_overlay.visible = true
 
 func _normalize_profile_name(name: String) -> String:
 	return name.strip_edges().to_lower()
@@ -509,6 +515,12 @@ func _on_start_pressed() -> void:
 	_new_game()
 
 func _on_new_game_from_win() -> void:
+	if _is_multiplayer:
+		_mp_disconnect_signals()
+		Network.disconnect_from_relay()
+		Network.ctx = {}
+		get_tree().change_scene_to_file("res://scenes/HomeScreen.tscn")
+		return
 	_win_overlay.visible = false
 	_setup_overlay.visible = true
 	_refresh_setup_name_fields()
@@ -547,6 +559,11 @@ func _on_roll_pressed() -> void:
 	if not _pending_moves.is_empty():
 		return
 
+	if _is_multiplayer:
+		_roll_button.disabled = true
+		Network.send_roll_request()
+		return
+
 	_roll_button.disabled = true
 	_board.clear_legal_moves()
 	_pending_moves = []
@@ -581,6 +598,13 @@ func _on_roll_pressed() -> void:
 
 func _on_board_move_selected(move: Dictionary) -> void:
 	if _game_over or _starting_phase or _pending_moves.is_empty() or _pending_roll == null or _ai_busy:
+		return
+	if _is_multiplayer:
+		_board.clear_legal_moves()
+		_pending_moves = []
+		_pending_roll = null
+		Network.send_submit_move(move)
+		_render_status("Move submitted...")
 		return
 	var player := _state.current_player
 	var roll := int(_pending_roll)
@@ -698,6 +722,8 @@ func _turn_announcement(action: String) -> String:
 	return "Turn %d: %s\n%s" % [_turn_number, _player_label(_state.current_player), action]
 
 func _player_label(player: int) -> String:
+	if _is_multiplayer and player < _seat_display_names.size():
+		return _seat_display_names[player]
 	return "%s Player" % PLAYER_NAMES[player]
 
 func _advance_to_next_player() -> void:
@@ -707,7 +733,7 @@ func _set_roll_ready(ready: bool) -> void:
 	_roll_button.disabled = not ready
 	_roll_button.text = "Roll"
 	_end_turn_button.disabled = true
-	if ready and not _game_over and not _ai_busy and not _starting_phase:
+	if ready and not _game_over and not _ai_busy and not _starting_phase and not _is_multiplayer:
 		_maybe_ai_turn()
 
 func _set_end_turn_ready() -> void:
@@ -872,6 +898,8 @@ func _setup_game_menu() -> void:
 	popup.add_item("Quit App", MENU_QUIT_APP)
 
 func _on_game_menu_id_pressed(id: int) -> void:
+	if _is_multiplayer and id in [MENU_SAVE_GAME, MENU_LOAD_GAME, MENU_RESTART_GAME]:
+		return
 	match id:
 		MENU_SAVE_GAME:
 			_save_game()
@@ -898,6 +926,10 @@ func _exit_to_setup() -> void:
 	_pending_roll = null
 	_ai_busy = false
 	_opening_roll_pressed.emit()  # unblock any awaiting starting-roll coroutine
+	if _is_multiplayer:
+		_mp_disconnect_signals()
+		Network.disconnect_from_relay()
+		Network.ctx = {}
 	get_tree().change_scene_to_file("res://scenes/HomeScreen.tscn")
 
 func _save_game() -> void:
@@ -983,3 +1015,175 @@ func _play_roll_visual(final_roll: int) -> void:
 	tween.tween_property(_die_label, "scale", Vector2(1.30, 1.30), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_die_label, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	await tween.finished
+
+# ─── Multiplayer (Phase 4c) ───────────────────────────────────────────────────
+
+func _enter_multiplayer_mode() -> void:
+	_is_multiplayer = true
+	_mp_role    = str(Network.ctx.get("role", "spectator"))
+	_mp_my_seat = int(Network.ctx.get("my_seat", -1))
+
+	var seats: Array = Network.ctx.get("seats", [])
+	for i in range(4):
+		if i < seats.size():
+			var seat: Dictionary = seats[i]
+			_seat_display_names[i] = str(seat.get("name", PLAYER_NAMES[i]))
+			var t: String = str(seat.get("type", "human"))
+			if t == "ai":
+				_seat_types[i] = str(seat.get("aiProfile", "random"))
+			else:
+				_seat_types[i] = "human"
+
+	_state = _mp_deserialize_state(Network.ctx.get("game_state", {}))
+	var current_player := int(Network.ctx.get("current_player", 0))
+	_state.current_player = current_player
+
+	_win_overlay.visible = false
+	_setup_overlay.visible = false
+	_board.set_turn_focus_enabled(true)
+	_board.set_state(_state)
+	_board.set_seat_labels(_seat_display_names)
+	_board.clear_legal_moves()
+	_die_label.text = "–"
+	_turn_number = 1
+
+	Network.roll_result.connect(_mp_on_roll_result)
+	Network.state_update.connect(_mp_on_state_update)
+	Network.game_over_received.connect(_mp_on_game_over)
+	Network.player_disconnected.connect(_mp_on_player_disconnected)
+	Network.player_reconnected.connect(_mp_on_player_reconnected)
+	Network.disconnected_from_server.connect(_mp_on_server_disconnected)
+
+	_mp_set_turn(current_player)
+
+func _mp_deserialize_state(gs: Dictionary) -> WahooState:
+	var s := WahooState.new()
+	s.marbles = gs.get("marbles", []).duplicate(true)
+	s.current_player = int(gs.get("current_player", 0))
+	s.pending_roll = gs.get("pending_roll", null)
+	s.center_occupant = gs.get("center_occupant", null)
+	s.next_base_exit_marble = gs.get("next_base_exit_marble", [0, 0, 0, 0]).duplicate(true)
+	return s
+
+func _mp_set_turn(player: int) -> void:
+	_state.current_player = player
+	_board.set_state(_state)
+	_board.clear_legal_moves()
+	_pending_moves = []
+	_pending_roll = null
+
+	var is_ai_seat: bool = (_seat_types[player] != "human")
+	var is_my_turn: bool = (_mp_role != "spectator" and player == _mp_my_seat)
+	var host_acts: bool  = (_mp_role == "host" and is_ai_seat)
+
+	if is_my_turn or host_acts:
+		var who: String = _player_label(player) + (" (AI)" if host_acts else "")
+		_render_status("%s — click Roll" % who)
+		_set_roll_ready(true)
+	else:
+		var msg: String
+		if _mp_role == "spectator":
+			msg = "Spectating — %s's turn" % _player_label(player)
+		else:
+			msg = "Waiting for %s to roll..." % _player_label(player)
+		_render_status(msg)
+		_set_roll_ready(false)
+
+func _mp_on_roll_result(payload: Dictionary) -> void:
+	var player    := int(payload.get("player", 0))
+	var roll      := int(payload.get("roll", 1))
+	var legal_raw: Array = payload.get("legalMoves", [])
+	var is_ai: bool = bool(payload.get("isAI", false))
+
+	_state.current_player = player
+	await _play_roll_visual(roll)
+
+	var label: String = _player_label(player) + (" (AI)" if is_ai else "")
+	var line: String  = "%s rolled %d\n%s" % [label, roll, _legal_moves_status_text(legal_raw)]
+
+	if legal_raw.is_empty():
+		_render_status(line + "\nNo legal moves — advancing...")
+		return
+
+	var is_my_turn: bool = (_mp_role != "spectator" and player == _mp_my_seat)
+	var host_acts: bool  = (_mp_role == "host" and is_ai)
+
+	if host_acts:
+		_mp_do_ai_turn(player, roll, legal_raw)
+		_render_status(line + "\n%s (AI) is thinking..." % _player_label(player))
+	elif is_my_turn:
+		_pending_moves = legal_raw.duplicate(true)
+		_pending_roll  = roll
+		_board.set_legal_moves(_pending_moves, player)
+		_render_status(line + "\nSelect a marble to move")
+	else:
+		_render_status(line + "\nWaiting for %s to move..." % _player_label(player))
+
+func _mp_on_state_update(payload: Dictionary) -> void:
+	var gs: Dictionary    = payload.get("gameState", {})
+	var current_player    := int(payload.get("currentPlayer", 0))
+	var no_legal: bool    = bool(payload.get("noLegalMoves", false))
+
+	_state = _mp_deserialize_state(gs)
+	_die_label.text = "–"
+
+	if no_legal:
+		_set_status_text("No legal moves — %s's turn" % _player_label(current_player))
+
+	_turn_number += 1
+	_mp_set_turn(current_player)
+
+func _mp_on_game_over(payload: Dictionary) -> void:
+	_game_over = true
+	_mp_disconnect_signals()
+	var winner      := int(payload.get("winner", 0))
+	var winner_name := str(payload.get("winnerName", _player_label(winner)))
+	_win_title.text = "%s Wins!" % winner_name
+	_win_title.self_modulate = PLAYER_COLORS[winner]
+	_win_subtitle.text = "Game finished on turn %d" % _turn_number
+	_win_overlay.visible = true
+
+func _mp_on_player_disconnected(payload: Dictionary) -> void:
+	var name: String = str(payload.get("name", "A player"))
+	_set_status_text("[color=#c09080]%s disconnected — waiting for reconnect...[/color]" % name)
+	_set_roll_ready(false)
+
+func _mp_on_player_reconnected(payload: Dictionary) -> void:
+	var name: String = str(payload.get("name", "A player"))
+	_set_status_text("%s reconnected." % name)
+	_mp_set_turn(_state.current_player)
+
+func _mp_on_server_disconnected() -> void:
+	_game_over = true
+	_set_roll_ready(false)
+	_roll_button.text = "Disconnected"
+	_set_status_text("Disconnected from server.")
+
+func _mp_do_ai_turn(player: int, roll: int, legal_moves: Array) -> void:
+	_ai_busy = true
+	await get_tree().create_timer(1.5).timeout
+	if _game_over:
+		_ai_busy = false
+		return
+	var profile_key: String = _seat_types[player]
+	var ai_player = _profiles.get(profile_key, null)
+	if ai_player == null:
+		ai_player = _profiles.get("random", _profiles.values()[0])
+	var move: Dictionary = ai_player.choose_move(_state, player, roll, legal_moves)
+	_ai_busy = false
+	Network.send_submit_move(move)
+
+func _mp_disconnect_signals() -> void:
+	var pairs := [
+		[Network.roll_result,              Callable(self, "_mp_on_roll_result")],
+		[Network.state_update,             Callable(self, "_mp_on_state_update")],
+		[Network.game_over_received,       Callable(self, "_mp_on_game_over")],
+		[Network.player_disconnected,      Callable(self, "_mp_on_player_disconnected")],
+		[Network.player_reconnected,       Callable(self, "_mp_on_player_reconnected")],
+		[Network.disconnected_from_server, Callable(self, "_mp_on_server_disconnected")],
+	]
+	for pair: Array in pairs:
+		var sig: Signal = pair[0]
+		var cb: Callable = pair[1]
+		if sig.is_connected(cb):
+			sig.disconnect(cb)
