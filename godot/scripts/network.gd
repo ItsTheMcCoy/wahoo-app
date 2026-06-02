@@ -1,9 +1,10 @@
 extends Node
 
-# Switch RELAY_URL to RELAY_URL_PROD before exporting for production.
+# Relay URL is resolved automatically: web builds use production by default,
+# desktop/native builds use localhost for local development.
 const RELAY_URL_DEV  := "ws://localhost:8080"
 const RELAY_URL_PROD := "wss://wahulo.onrender.com"
-const RELAY_URL      := RELAY_URL_DEV
+var _relay_url := ""
 
 const PING_INTERVAL_SEC := 30.0
 
@@ -72,7 +73,9 @@ func connect_to_relay() -> void:
 		return
 	_active = true
 	_ping_timer = 0.0
-	var err := _socket.connect_to_url(RELAY_URL)
+	if _relay_url.is_empty():
+		_relay_url = _resolve_relay_url()
+	var err := _socket.connect_to_url(_relay_url)
 	if err != OK:
 		_active = false
 		connection_failed.emit()
@@ -154,3 +157,13 @@ func _dispatch(msg: Dictionary) -> void:
 		"player_reconnected":  player_reconnected.emit(msg)
 		"error":               server_error.emit(msg)
 		"pong":                pass  # keepalive ack, no action needed
+
+func _resolve_relay_url() -> String:
+	if OS.has_feature("web"):
+		# Optional test override in browser console:
+		# window.WAHULO_RELAY_URL = "wss://your-relay.example.com"
+		var custom_url: Variant = JavaScriptBridge.eval("window.WAHULO_RELAY_URL || ''")
+		if custom_url is String and not String(custom_url).strip_edges().is_empty():
+			return String(custom_url).strip_edges()
+		return RELAY_URL_PROD
+	return RELAY_URL_DEV
