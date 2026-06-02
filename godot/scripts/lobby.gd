@@ -292,7 +292,7 @@ func _on_seat_option_selected(option_idx: int, seat_index: int) -> void:
 	if option_idx == 0:
 		Network.send_configure_seat(seat_index, "empty")
 	else:
-		var profile_key := AI_PROFILE_ORDER[option_idx - 1]
+		var profile_key: String = AI_PROFILE_ORDER[option_idx - 1]
 		Network.send_configure_seat(seat_index, "ai", profile_key)
 
 func _on_start_game() -> void:
