@@ -7,11 +7,11 @@ const PLAYER_COLORS := [
 	Color(0.17, 0.34, 0.78),
 ]
 
-const AI_PROFILE_ORDER := [
+const BUILTIN_PROFILE_ORDER := [
 	"random", "swarm", "tortoise", "engineer",
 	"balanced", "assassin", "gatekeeper", "gambler", "sprinter",
 ]
-const AI_PROFILE_LABELS := {
+const BUILTIN_PROFILE_LABELS := {
 	"random":     "Random",
 	"swarm":      "Swarm",
 	"tortoise":   "Tortoise",
@@ -45,6 +45,8 @@ var _my_seat := -1
 var _my_name := ""
 var _seats: Array = []
 var _spectator_count := 0
+var _ai_profile_order: Array = []
+var _ai_profile_labels: Dictionary = {}
 
 func _ready() -> void:
 	_role            = str(Network.ctx.get("role", "spectator"))
@@ -64,9 +66,119 @@ func _ready() -> void:
 	else:
 		_seats = ctx_seats.duplicate(true)
 
+	_rebuild_ai_profile_catalog()
+
 	_apply_theme()
 	_setup_ui()
 	_connect_signals()
+
+func _normalize_profile_name(name: String) -> String:
+	return name.strip_edges().to_lower()
+
+func _load_profiles_manager_config() -> Dictionary:
+	var default_config := {
+		"disabled_profiles": [],
+		"aliases": {},
+		"custom_profiles": {},
+	}
+	var path_candidates := [
+		ProjectSettings.globalize_path("res://profiles_manager.json"),
+		ProjectSettings.globalize_path("res://../wahoo/profiles_manager.json"),
+		ProjectSettings.globalize_path("res://wahoo/profiles_manager.json"),
+		"profiles_manager.json",
+		"wahoo/profiles_manager.json",
+	]
+
+	for candidate in path_candidates:
+		if not FileAccess.file_exists(candidate):
+			continue
+		var file := FileAccess.open(candidate, FileAccess.READ)
+		if file == null:
+			continue
+		var parsed = JSON.parse_string(file.get_as_text())
+		if parsed is Dictionary:
+			return parsed
+
+	return default_config
+
+func _titleize_profile_name(profile_key: String) -> String:
+	var words := profile_key.split(" ")
+	for i in range(words.size()):
+		if words[i].length() > 0:
+			words[i] = words[i].substr(0, 1).to_upper() + words[i].substr(1)
+	return " ".join(words)
+
+func _display_profile_label(profile_key: String, custom_profiles: Dictionary) -> String:
+	if custom_profiles.has(profile_key):
+		var payload = custom_profiles[profile_key]
+		if payload is Dictionary:
+			var display_name := String(payload.get("display_name", "")).strip_edges()
+			if not display_name.is_empty():
+				return display_name
+	if BUILTIN_PROFILE_LABELS.has(profile_key):
+		return String(BUILTIN_PROFILE_LABELS[profile_key])
+	return _titleize_profile_name(profile_key)
+
+func _rebuild_ai_profile_catalog() -> void:
+	var config := _load_profiles_manager_config()
+	var disabled: Dictionary = {}
+	var disabled_raw = config.get("disabled_profiles", [])
+	if disabled_raw is Array:
+		for raw in disabled_raw:
+			var key := _normalize_profile_name(String(raw))
+			if not key.is_empty():
+				disabled[key] = true
+
+	var custom_profiles = config.get("custom_profiles", {})
+	if not (custom_profiles is Dictionary):
+		custom_profiles = {}
+
+	var aliases = config.get("aliases", {})
+	if not (aliases is Dictionary):
+		aliases = {}
+
+	var names: Dictionary = {}
+	for key in BUILTIN_PROFILE_ORDER:
+		var normalized := _normalize_profile_name(String(key))
+		if normalized.is_empty() or disabled.has(normalized):
+			continue
+		names[normalized] = true
+
+	for key in custom_profiles.keys():
+		var normalized := _normalize_profile_name(String(key))
+		if normalized.is_empty() or disabled.has(normalized):
+			continue
+		names[normalized] = true
+
+	for key in aliases.keys():
+		var alias_name := _normalize_profile_name(String(key))
+		var target_name := _normalize_profile_name(String(aliases[key]))
+		if alias_name.is_empty() or target_name.is_empty() or disabled.has(alias_name):
+			continue
+		if names.has(target_name):
+			names[alias_name] = true
+
+	var ordered: Array = []
+	for key in BUILTIN_PROFILE_ORDER:
+		var normalized := _normalize_profile_name(String(key))
+		if names.has(normalized) and not ordered.has(normalized):
+			ordered.append(normalized)
+
+	var extras: Array = []
+	for key in names.keys():
+		if not ordered.has(key):
+			extras.append(key)
+	extras.sort()
+	for key in extras:
+		ordered.append(key)
+
+	if ordered.is_empty():
+		ordered = BUILTIN_PROFILE_ORDER.duplicate(true)
+
+	_ai_profile_order = ordered
+	_ai_profile_labels = {}
+	for profile_key in _ai_profile_order:
+		_ai_profile_labels[profile_key] = _display_profile_label(String(profile_key), custom_profiles)
 
 func _setup_ui() -> void:
 	_code_value.text = _game_id
@@ -157,7 +269,7 @@ func _refresh_seat_list() -> void:
 					tag_lbl.add_theme_color_override("font_color", Color(0.88, 0.82, 0.65))
 			"ai":
 				var profile: String = str(seat.get("aiProfile", ""))
-				var label: String = AI_PROFILE_LABELS.get(profile, profile.capitalize())
+				var label: String = str(_ai_profile_labels.get(profile, _titleize_profile_name(profile)))
 				name_lbl.text = label + " AI"
 				name_lbl.add_theme_color_override("font_color", Color(0.72, 0.66, 0.58))
 			_:
@@ -200,12 +312,14 @@ func _refresh_host_controls() -> void:
 		opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		opt.custom_minimum_size = Vector2(0, 44)
 		opt.add_item("Wait for player", 0)
-		for j in range(AI_PROFILE_ORDER.size()):
-			opt.add_item(AI_PROFILE_LABELS[AI_PROFILE_ORDER[j]] + " AI", j + 1)
+		for j in range(_ai_profile_order.size()):
+			var profile_key: String = _ai_profile_order[j]
+			var label: String = str(_ai_profile_labels.get(profile_key, _titleize_profile_name(profile_key)))
+			opt.add_item(label + " AI", j + 1)
 
 		var current_profile: String = str(seat.get("aiProfile", ""))
 		if seat_type == "ai" and not current_profile.is_empty():
-			var idx := AI_PROFILE_ORDER.find(current_profile)
+			var idx := _ai_profile_order.find(current_profile)
 			opt.select(idx + 1 if idx >= 0 else 0)
 		else:
 			opt.select(0)
@@ -292,7 +406,7 @@ func _on_seat_option_selected(option_idx: int, seat_index: int) -> void:
 	if option_idx == 0:
 		Network.send_configure_seat(seat_index, "empty")
 	else:
-		var profile_key: String = AI_PROFILE_ORDER[option_idx - 1]
+		var profile_key: String = _ai_profile_order[option_idx - 1]
 		Network.send_configure_seat(seat_index, "ai", profile_key)
 
 func _on_start_game() -> void:
