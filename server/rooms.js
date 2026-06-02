@@ -162,6 +162,7 @@ class Room {
     this.gameState = null;
     this.currentPlayer = 0;
     this.pendingRoll = null;
+    this.awaitingOpeningRoll = false;
     this.createdAt = now();
     this.lastActivityAt = this.createdAt;
     this.now = now;
@@ -312,15 +313,16 @@ class Room {
     }
 
     this.status = "playing";
-    const opening = this.resolveOpeningPlayer();
-    this.currentPlayer = opening.player;
+    this.currentPlayer = 0;
     this.pendingRoll = null;
+    this.awaitingOpeningRoll = true;
     this.lastRollLegalMoves = [];
     this.gameState = newGameState(this.currentPlayer);
     this.broadcast("game_started", {
       gameState: cloneState(this.gameState),
       currentPlayer: this.currentPlayer,
-      openingRollRounds: opening.rounds,
+      awaitingOpeningRoll: true,
+      openingRollRounds: [],
       seats: this.publicSeats(),
       spectatorCount: this.spectatorCount(),
     });
@@ -365,6 +367,26 @@ class Room {
       this.send(ws, "error", { code: "NOT_PLAYING", message: "Game is not in progress." });
       return;
     }
+
+    if (this.awaitingOpeningRoll) {
+      if (!this.isHost(ws)) {
+        this.send(ws, "error", { code: "HOST_ONLY", message: "Host rolls to determine first player." });
+        return;
+      }
+      const opening = this.resolveOpeningPlayer();
+      this.awaitingOpeningRoll = false;
+      this.currentPlayer = opening.player;
+      this.gameState.current_player = this.currentPlayer;
+      this.broadcast("state_update", {
+        gameState: cloneState(this.gameState),
+        currentPlayer: this.currentPlayer,
+        lastMove: null,
+        openingResolved: true,
+        openingRollRounds: opening.rounds,
+      });
+      return;
+    }
+
     if (this.pendingRoll !== null) {
       this.send(ws, "error", { code: "ROLL_PENDING", message: "A roll is already pending." });
       return;
@@ -406,6 +428,10 @@ class Room {
   submitMove(ws, message) {
     if (this.status !== "playing") {
       this.send(ws, "error", { code: "NOT_PLAYING", message: "Game is not in progress." });
+      return;
+    }
+    if (this.awaitingOpeningRoll) {
+      this.send(ws, "error", { code: "OPENING_PENDING", message: "Determine first player before moving." });
       return;
     }
     if (this.pendingRoll === null) {

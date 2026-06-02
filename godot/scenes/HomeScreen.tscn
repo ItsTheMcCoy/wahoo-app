@@ -36,7 +36,7 @@ theme_override_constants/separation = 20
 
 [node name="BrandTitle" type="TextureRect" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 250)
+custom_minimum_size = Vector2(0, 375)
 expand_mode = 1
 stretch_mode = 5
 

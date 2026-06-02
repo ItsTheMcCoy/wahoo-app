@@ -125,6 +125,12 @@ func _display_profile_label(profile_key: String, custom_profiles: Dictionary) ->
 		return String(BUILTIN_PROFILE_LABELS[profile_key])
 	return _titleize_profile_name(profile_key)
 
+func _format_ai_profile_label(label: String) -> String:
+	var trimmed := label.strip_edges()
+	if trimmed.to_lower().ends_with(" ai"):
+		return trimmed
+	return trimmed + " AI"
+
 func _rebuild_ai_profile_catalog() -> void:
 	var config := _load_profiles_manager_config()
 	var disabled: Dictionary = {}
@@ -276,7 +282,7 @@ func _refresh_seat_list() -> void:
 			"ai":
 				var profile: String = str(seat.get("aiProfile", ""))
 				var label: String = str(_ai_profile_labels.get(profile, _titleize_profile_name(profile)))
-				name_lbl.text = label + " AI"
+				name_lbl.text = _format_ai_profile_label(label)
 				name_lbl.add_theme_color_override("font_color", Color(0.72, 0.66, 0.58))
 			_:
 				name_lbl.text = "[Waiting...]"
@@ -321,7 +327,7 @@ func _refresh_host_controls() -> void:
 		for j in range(_ai_profile_order.size()):
 			var profile_key: String = _ai_profile_order[j]
 			var label: String = str(_ai_profile_labels.get(profile_key, _titleize_profile_name(profile_key)))
-			opt.add_item(label + " AI", j + 1)
+			opt.add_item(_format_ai_profile_label(label), j + 1)
 
 		var current_profile: String = str(seat.get("aiProfile", ""))
 		if seat_type == "ai" and not current_profile.is_empty():
@@ -404,6 +410,7 @@ func _on_game_started(payload: Dictionary) -> void:
 	Network.ctx["my_seat"]        = _my_seat
 	Network.ctx["my_name"]        = _my_name
 	Network.ctx["role"]           = _role
+	Network.ctx["awaiting_opening_roll"] = bool(payload.get("awaitingOpeningRoll", false))
 	Network.ctx["opening_roll_rounds"] = payload.get("openingRollRounds", [])
 	get_tree().change_scene_to_file("res://scenes/Main.tscn")
 

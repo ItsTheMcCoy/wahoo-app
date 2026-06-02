@@ -34,9 +34,17 @@ test("create, join, configure AI seats, and start a room", () => {
   assert.equal(room.seats[2].type, "ai");
   assert.equal(host.messages.some((message) => message.type === "game_started"), true);
   assert.equal(guest.messages.some((message) => message.type === "game_started"), true);
+  assert.equal(gameStarted.awaitingOpeningRoll, true);
   assert.equal(Array.isArray(gameStarted.openingRollRounds), true);
-  assert.equal(gameStarted.openingRollRounds.length > 0, true);
+  assert.equal(gameStarted.openingRollRounds.length, 0);
   assert.equal(gameStarted.currentPlayer, 0);
+
+  room.rollRequest(host);
+  const openingState = host.messages.at(-1);
+  assert.equal(openingState.type, "state_update");
+  assert.equal(openingState.openingResolved, true);
+  assert.equal(Array.isArray(openingState.openingRollRounds), true);
+  assert.equal(openingState.openingRollRounds.length > 0, true);
 });
 
 test("spectators receive chat but cannot roll", () => {
@@ -77,6 +85,7 @@ test("submitted moves must match legal moves", () => {
   room.configureSeat(host, { seat: 2, seatType: "ai", aiProfile: "random" });
   room.configureSeat(host, { seat: 3, seatType: "ai", aiProfile: "random" });
   room.startGame(host);
+  room.awaitingOpeningRoll = false;
 
   room.pendingRoll = 1;
   room.gameState.pending_roll = 1;

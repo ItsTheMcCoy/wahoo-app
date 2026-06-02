@@ -50,6 +50,10 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _status: RichTextLabel = $Root/SidePanel/Status
 @onready var _roll_button: Button = $Root/SidePanel/RollButton
 @onready var _end_turn_button: Button = $Root/SidePanel/EndTurnButton
+@onready var _chat_section: VBoxContainer = $Root/SidePanel/ChatSection
+@onready var _chat_log: RichTextLabel = $Root/SidePanel/ChatSection/ChatLog
+@onready var _chat_input: LineEdit = $Root/SidePanel/ChatSection/ChatInputRow/ChatInput
+@onready var _chat_send_btn: Button = $Root/SidePanel/ChatSection/ChatInputRow/ChatSendBtn
 @onready var _win_overlay: ColorRect = $WinOverlay
 @onready var _win_brand_title: TextureRect = $WinOverlay/WinPanel/WinContent/BrandTitle
 @onready var _win_title: Label = $WinOverlay/WinPanel/WinContent/WinTitle
@@ -93,11 +97,14 @@ var _awaiting_human_starting_roll := false
 var _is_multiplayer := false
 var _mp_role := ""     # "host" | "player" | "spectator"
 var _mp_my_seat := -1
+var _mp_waiting_for_opening_roll := false
 
 func _ready() -> void:
 	_rng.randomize()
 	_roll_button.pressed.connect(_on_roll_pressed)
 	_end_turn_button.pressed.connect(_on_end_turn_pressed)
+	_chat_send_btn.pressed.connect(_on_chat_send)
+	_chat_input.text_submitted.connect(func(_t): _on_chat_send())
 	_new_game_button.pressed.connect(_on_new_game_from_win)
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
@@ -113,6 +120,7 @@ func _ready() -> void:
 	_refresh_setup_name_fields()
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
 	_status.scroll_following = true
+	_chat_section.visible = false
 	if Network.ctx.has("game_state"):
 		_enter_multiplayer_mode()
 	else:
@@ -301,6 +309,17 @@ func _apply_visual_theme() -> void:
 	_status.add_theme_constant_override("outline_size", 1)
 	_status.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.04, 0.90))
 
+	var chat_style := status_style.duplicate()
+	chat_style.content_margin_left = 8
+	chat_style.content_margin_top = 6
+	chat_style.content_margin_right = 8
+	chat_style.content_margin_bottom = 6
+	_chat_log.add_theme_stylebox_override("normal", chat_style)
+	_chat_log.add_theme_color_override("default_color", Color(0.92, 0.87, 0.78))
+	_chat_log.add_theme_font_size_override("normal_font_size", 18)
+	_chat_input.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
+	_chat_input.add_theme_color_override("font_placeholder_color", Color(0.62, 0.58, 0.52))
+
 	_turn_label.add_theme_color_override("font_color", Color(0.98, 0.95, 0.88))
 	_turn_label.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.05, 0.92))
 	_turn_label.add_theme_constant_override("outline_size", 3)
@@ -344,6 +363,7 @@ func _apply_visual_theme() -> void:
 	var action_buttons: Array = [
 		_roll_button,
 		_end_turn_button,
+		_chat_send_btn,
 		_new_game_button,
 		_start_button,
 		_game_menu_button,
@@ -573,7 +593,7 @@ func _on_roll_pressed() -> void:
 	await _play_roll_visual(roll)
 	var player := _state.current_player
 	var legal := WahooRules.legal_moves(_state, player, roll)
-	var line := "%s rolled %d\n%s" % [_player_label(player), roll, _legal_moves_status_text(legal)]
+	var line := "%s rolled %d" % [_player_label(player), roll]
 	if legal.size() > 0:
 		_pending_moves = legal.duplicate(true)
 		_pending_roll = roll
@@ -668,7 +688,7 @@ func _ai_take_turn() -> void:
 	var player := _state.current_player
 	var legal := WahooRules.legal_moves(_state, player, roll)
 	var label := _player_label(player) + " (AI)"
-	var line := "%s rolled %d\n%s" % [label, roll, _legal_moves_status_text(legal)]
+	var line := "%s rolled %d" % [label, roll]
 
 	if legal.is_empty():
 		if roll != 6:
@@ -859,20 +879,8 @@ func _show_win_screen(player: int) -> void:
 	_win_subtitle.text = "Game finished on turn %d" % _turn_number
 	_win_overlay.visible = true
 
-func _legal_moves_status_text(legal: Array) -> String:
-	if legal.is_empty():
-		return "No legal moves"
-
-	var all_exit_base := true
-	for move in legal:
-		if String(move.get("kind", "")) != "exit_base":
-			all_exit_base = false
-			break
-
-	if all_exit_base:
-		return "Exit base available"
-
-	return "Legal moves found: %d" % legal.size()
+func _legal_moves_status_text(_legal: Array) -> String:
+	return ""
 
 func _build_smoke_summary() -> String:
 	var result := WahooRulesSmoke.run()
@@ -888,7 +896,16 @@ func _build_smoke_summary() -> String:
 func _setup_game_menu() -> void:
 	var popup := _game_menu_button.get_popup()
 	popup.clear()
-	popup.id_pressed.connect(_on_game_menu_id_pressed)
+	if not popup.id_pressed.is_connected(_on_game_menu_id_pressed):
+		popup.id_pressed.connect(_on_game_menu_id_pressed)
+	if OS.has_feature("web"):
+		if _is_multiplayer:
+			popup.add_item("Leave Match", MENU_EXIT_TO_SETUP)
+		else:
+			popup.add_item("New Game", MENU_RESTART_GAME)
+			popup.add_item("Return Home", MENU_EXIT_TO_SETUP)
+		return
+
 	popup.add_item("Save Game", MENU_SAVE_GAME)
 	popup.add_item("Load Saved Game", MENU_LOAD_GAME)
 	popup.add_separator()
@@ -1022,6 +1039,8 @@ func _enter_multiplayer_mode() -> void:
 	_is_multiplayer = true
 	_mp_role    = str(Network.ctx.get("role", "spectator"))
 	_mp_my_seat = int(Network.ctx.get("my_seat", -1))
+	_mp_waiting_for_opening_roll = bool(Network.ctx.get("awaiting_opening_roll", false))
+	_setup_game_menu()
 
 	var seats: Array = Network.ctx.get("seats", [])
 	for i in range(4):
@@ -1047,9 +1066,13 @@ func _enter_multiplayer_mode() -> void:
 	_board.clear_legal_moves()
 	_die_label.text = "–"
 	_turn_number = 1
+	_chat_section.visible = true
+	_chat_log.clear()
+	_chat_input.text = ""
 
 	Network.roll_result.connect(_mp_on_roll_result)
 	Network.state_update.connect(_mp_on_state_update)
+	Network.chat_received.connect(_mp_on_chat_received)
 	Network.game_over_received.connect(_mp_on_game_over)
 	Network.player_disconnected.connect(_mp_on_player_disconnected)
 	Network.player_reconnected.connect(_mp_on_player_reconnected)
@@ -1104,6 +1127,18 @@ func _mp_set_turn(player: int) -> void:
 	_pending_moves = []
 	_pending_roll = null
 
+	if _mp_waiting_for_opening_roll:
+		if _mp_role == "host":
+			_set_status_text("Opening roll phase - click Roll to determine who starts.")
+			_set_roll_ready(true)
+		elif _mp_role == "spectator":
+			_set_status_text("Spectating - waiting for host to roll for opening player...")
+			_set_roll_ready(false)
+		else:
+			_set_status_text("Waiting for host to roll for opening player...")
+			_set_roll_ready(false)
+		return
+
 	var is_ai_seat: bool = (_seat_types[player] != "human")
 	var is_my_turn: bool = (_mp_role != "spectator" and player == _mp_my_seat)
 	var host_acts: bool  = (_mp_role == "host" and is_ai_seat)
@@ -1131,7 +1166,7 @@ func _mp_on_roll_result(payload: Dictionary) -> void:
 	await _play_roll_visual(roll)
 
 	var label: String = _player_label(player) + (" (AI)" if is_ai else "")
-	var line: String  = "%s rolled %d\n%s" % [label, roll, _legal_moves_status_text(legal_raw)]
+	var line: String  = "%s rolled %d" % [label, roll]
 
 	if legal_raw.is_empty():
 		_render_status(line + "\nNo legal moves — advancing...")
@@ -1155,15 +1190,44 @@ func _mp_on_state_update(payload: Dictionary) -> void:
 	var gs: Dictionary    = payload.get("gameState", {})
 	var current_player    := int(payload.get("currentPlayer", 0))
 	var no_legal: bool    = bool(payload.get("noLegalMoves", false))
+	var opening_resolved: bool = bool(payload.get("openingResolved", false))
+	var opening_rounds: Array = payload.get("openingRollRounds", [])
 
 	_state = _mp_deserialize_state(gs)
 	_die_label.text = "–"
+	if opening_resolved:
+		_mp_waiting_for_opening_roll = false
 
 	if no_legal:
 		_set_status_text("No legal moves — %s's turn" % _player_label(current_player))
 
 	_turn_number += 1
 	_mp_set_turn(current_player)
+	if opening_resolved:
+		var summary := _mp_format_opening_roll_summary(opening_rounds)
+		if not summary.is_empty():
+			_set_status_text(summary + "\n\n" + _status.text)
+
+func _mp_on_chat_received(payload: Dictionary) -> void:
+	if not _is_multiplayer:
+		return
+	var sender: String = str(payload.get("senderName", "?"))
+	var text: String = str(payload.get("text", ""))
+	var sender_type: String = str(payload.get("senderType", "player"))
+	if sender_type == "spectator":
+		_chat_log.append_text("[color=#a09080]👁 %s:[/color] %s\n" % [sender.xml_escape(), text.xml_escape()])
+	else:
+		_chat_log.append_text("[color=#d8c090]%s:[/color] %s\n" % [sender.xml_escape(), text.xml_escape()])
+
+func _on_chat_send() -> void:
+	if not _is_multiplayer:
+		return
+	var text := _chat_input.text.strip_edges()
+	if text.is_empty():
+		return
+	Network.send_chat_message(text)
+	_chat_input.text = ""
+	_chat_input.grab_focus()
 
 func _mp_on_game_over(payload: Dictionary) -> void:
 	_game_over = true
@@ -1209,6 +1273,7 @@ func _mp_disconnect_signals() -> void:
 	var pairs := [
 		[Network.roll_result,              Callable(self, "_mp_on_roll_result")],
 		[Network.state_update,             Callable(self, "_mp_on_state_update")],
+		[Network.chat_received,            Callable(self, "_mp_on_chat_received")],
 		[Network.game_over_received,       Callable(self, "_mp_on_game_over")],
 		[Network.player_disconnected,      Callable(self, "_mp_on_player_disconnected")],
 		[Network.player_reconnected,       Callable(self, "_mp_on_player_reconnected")],
