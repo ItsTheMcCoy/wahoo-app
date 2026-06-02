@@ -164,7 +164,7 @@ Result: `9/9` Node tests pass.
 Remaining 4a work:
 
 - ✅ Deploy the service to Render (`https://wahulo.onrender.com`)
-- Verify `/healthz` from the deployed URL
+- ✅ Verify `/healthz` from the deployed URL — returns `{"ok":true,"rooms":0}`
 - Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://wahulo.onrender.com` for production
 - Add any server gaps discovered during real client integration
 
