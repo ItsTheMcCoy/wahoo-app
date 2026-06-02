@@ -2,7 +2,7 @@ extends Node
 
 # Switch RELAY_URL to RELAY_URL_PROD before exporting for production.
 const RELAY_URL_DEV  := "ws://localhost:8080"
-const RELAY_URL_PROD := "wss://relay.wahulo.com"
+const RELAY_URL_PROD := "wss://wahulo.onrender.com"
 const RELAY_URL      := RELAY_URL_DEV
 
 const PING_INTERVAL_SEC := 30.0

@@ -16,8 +16,8 @@ This document covers the full plan for taking Wahoo from a local hot-seat game t
 | Current Netlify URL | `www.wahulo.netlify.app` |
 | Cloudflare DNS status | Required A and CNAME records configured for Netlify |
 | Domain verification status | Netlify domain management complete; `wahulo.com` test passed |
-| Backend relay status | Local implementation complete in `server/`; `configure_seat` bug fixed; `npm test` passes `9/9` |
-| Current next step | Home screen scene and lobby scene (network.gd complete) |
+| Backend relay status | Deployed to Render at `https://wahulo.onrender.com`; `configure_seat` bug fixed; `npm test` passes `9/9` |
+| Current next step | Home screen scene and lobby scene (network.gd complete, relay live) |
 | Netlify status | Active static host; root `netlify.toml` declares `godot/build/web` as publish directory and rewrites deep links to `/index.html` |
 
 ---
@@ -140,7 +140,7 @@ Safe alphabet: `BCDFGHJKMNPQRSTVWXYZ23456789` (28 characters)
 
 ## Phase 4a — Backend Relay Server
 
-**Current status (2026-06-01): Local implementation complete.**
+**Current status (2026-06-01): Deployed to Render at `https://wahulo.onrender.com`. `RELAY_URL_PROD` in `network.gd` updated to `wss://wahulo.onrender.com`.**
 
 Implemented in `server/`:
 
@@ -163,9 +163,9 @@ Result: `9/9` Node tests pass.
 
 Remaining 4a work:
 
-- Deploy the service to Render
+- ✅ Deploy the service to Render (`https://wahulo.onrender.com`)
 - Verify `/healthz` from the deployed URL
-- Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://<relay-host>` for production
+- Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://wahulo.onrender.com` for production
 - Add any server gaps discovered during real client integration
 
 Phase 4b is now the main active work: build the home screen, lobby, and server-authoritative game flow in Godot.
@@ -287,12 +287,12 @@ No chat history is stored on the server — messages are fire-and-forget. A clie
 
 ### Deployment to Render
 
-1. Push the `server/` directory to the existing GitHub repo
-2. Sign up at [render.com](https://render.com) (free account)
-3. Dashboard → New → Web Service → connect GitHub repo
-4. Set root directory: `server`; Build command: `npm install`; Start command: `node index.js`; Runtime: Node
-5. Deploy. Render gives you a URL like `wahoo-relay.onrender.com`
-6. Free tier sleeps after 15 minutes of inactivity; first request after sleep takes ~30 seconds to wake. Acceptable for a hobby game. Upgrade to the $7/month Starter tier if the wakeup delay becomes annoying.
+1. Push the `server/` directory to the existing GitHub repo **Done**
+2. Sign up at [render.com](https://render.com) (free account) **Done**
+3. Dashboard → New → Web Service → connect GitHub repo **Done**
+4. Set root directory: `server`; Build command: `npm install`; Start command: `node index.js`; Runtime: Node **Done**
+5. Deploy. Render gives you a URL like `https://wahulo.onrender.com` **Done**
+6. Free tier sleeps after 15 minutes of inactivity; first request after sleep takes ~30 seconds to wake. Acceptable for a hobby game. Upgrade to the $7/month Starter tier if the wakeup delay becomes annoying. **Acknowledged**
 
 ---
 
