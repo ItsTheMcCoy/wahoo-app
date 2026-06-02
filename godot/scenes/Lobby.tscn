@@ -1,0 +1,159 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/lobby.gd" id="1_lob01"]
+
+[node name="Lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lob01")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.10, 0.08, 0.06, 1.0)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LobbyPanel" type="PanelContainer" parent="ScrollContainer/Center"]
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="ScrollContainer/Center/LobbyPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(500, 0)
+theme_override_constants/separation = 16
+
+[node name="CodeRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+
+[node name="CodeLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content/CodeRow"]
+layout_mode = 2
+text = "Game Code:"
+theme_override_font_sizes/font_size = 20
+
+[node name="GameCodeValue" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content/CodeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "------"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.98, 0.92, 0.72, 1.0)
+
+[node name="HostCodeButtons" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 8
+
+[node name="CopyCodeBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 44)
+text = "Copy Code"
+
+[node name="CopyLinkBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 44)
+text = "Copy Link"
+
+[node name="ShareLinkLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+visible = false
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.62, 0.58, 0.52, 1.0)
+
+[node name="SeatListLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+text = "Players"
+theme_override_font_sizes/font_size = 20
+
+[node name="SeatList" type="VBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SpectatorCountLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.72, 0.66, 0.58, 1.0)
+
+[node name="HostControlsSection" type="VBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 10
+
+[node name="HostControlsLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content/HostControlsSection"]
+layout_mode = 2
+text = "Configure empty seats:"
+theme_override_font_sizes/font_size = 18
+
+[node name="HostSeatControls" type="VBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content/HostControlsSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WaitingLabel" type="Label" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+visible = false
+text = "Waiting for host to start the game..."
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.72, 0.66, 0.58, 1.0)
+
+[node name="ChatSection" type="VBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChatLog" type="RichTextLabel" parent="ScrollContainer/Center/LobbyPanel/Content/ChatSection"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 140)
+bbcode_enabled = true
+fit_content = false
+scroll_active = true
+
+[node name="ChatInputRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content/ChatSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChatInput" type="LineEdit" parent="ScrollContainer/Center/LobbyPanel/Content/ChatSection/ChatInputRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+placeholder_text = "Type a message..."
+max_length = 140
+
+[node name="ChatSendBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/ChatSection/ChatInputRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(60, 48)
+text = "→"
+
+[node name="ActionRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LeaveBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/ActionRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 60)
+text = "Leave"
+
+[node name="StartGameBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/ActionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 60)
+visible = false
+disabled = true
+text = "START GAME"

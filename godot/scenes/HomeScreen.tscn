@@ -18,7 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.10, 0.08, 0.06, 1.0)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="MainCenter" type="CenterContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,40 +26,196 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HomePanel" type="PanelContainer" parent="Center"]
+[node name="HomePanel" type="PanelContainer" parent="MainCenter"]
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="Center/HomePanel"]
+[node name="Content" type="VBoxContainer" parent="MainCenter/HomePanel"]
 layout_mode = 2
 custom_minimum_size = Vector2(440, 0)
 theme_override_constants/separation = 20
 
-[node name="BrandTitle" type="TextureRect" parent="Center/HomePanel/Content"]
+[node name="BrandTitle" type="TextureRect" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 180)
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Subtitle" type="Label" parent="Center/HomePanel/Content"]
+[node name="Subtitle" type="Label" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 text = "marble race board game"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="Center/HomePanel/Content"]
+[node name="Spacer" type="Control" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 20)
 
-[node name="PlaySoloButton" type="Button" parent="Center/HomePanel/Content"]
+[node name="PlaySoloButton" type="Button" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 72)
 text = "PLAY SOLO"
 
-[node name="HostGameButton" type="Button" parent="Center/HomePanel/Content"]
+[node name="HostGameButton" type="Button" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 72)
 text = "HOST GAME"
 
-[node name="JoinButton" type="Button" parent="Center/HomePanel/Content"]
+[node name="JoinButton" type="Button" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 72)
 text = "JOIN / SPECTATE"
+
+[node name="HostPromptLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+
+[node name="DimBg" type="ColorRect" parent="HostPromptLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0, 0.0, 0.0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="HostPromptLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HostPanel" type="PanelContainer" parent="HostPromptLayer/Center"]
+layout_mode = 2
+
+[node name="HostContent" type="VBoxContainer" parent="HostPromptLayer/Center/HostPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(380, 0)
+theme_override_constants/separation = 16
+
+[node name="HostTitle" type="Label" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+layout_mode = 2
+text = "Host a Game"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="HostNameLabel" type="Label" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+layout_mode = 2
+text = "Your display name:"
+
+[node name="HostNameField" type="LineEdit" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 52)
+placeholder_text = "Enter your name"
+max_length = 20
+
+[node name="HostErrorLabel" type="Label" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+layout_mode = 2
+visible = false
+text = ""
+theme_override_colors/font_color = Color(0.90, 0.30, 0.25, 1.0)
+
+[node name="HostButtons" type="HBoxContainer" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HostCancelBtn" type="Button" parent="HostPromptLayer/Center/HostPanel/HostContent/HostButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Cancel"
+
+[node name="HostCreateBtn" type="Button" parent="HostPromptLayer/Center/HostPanel/HostContent/HostButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Create Room"
+
+[node name="JoinPromptLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+
+[node name="DimBg" type="ColorRect" parent="JoinPromptLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0, 0.0, 0.0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="JoinPromptLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="JoinPanel" type="PanelContainer" parent="JoinPromptLayer/Center"]
+layout_mode = 2
+
+[node name="JoinContent" type="VBoxContainer" parent="JoinPromptLayer/Center/JoinPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(380, 0)
+theme_override_constants/separation = 16
+
+[node name="JoinTitle" type="Label" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+text = "Join a Game"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="JoinCodeLabel" type="Label" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+text = "Game code:"
+
+[node name="JoinCodeField" type="LineEdit" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 52)
+placeholder_text = "e.g. J7WKBC"
+max_length = 6
+
+[node name="JoinNameLabel" type="Label" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+text = "Your display name:"
+
+[node name="JoinNameField" type="LineEdit" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 52)
+placeholder_text = "Enter your name"
+max_length = 20
+
+[node name="JoinErrorLabel" type="Label" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+visible = false
+text = ""
+theme_override_colors/font_color = Color(0.90, 0.30, 0.25, 1.0)
+
+[node name="JoinButtons" type="HBoxContainer" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="JoinCancelBtn" type="Button" parent="JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Cancel"
+
+[node name="JoinAsPlayerBtn" type="Button" parent="JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Join"
+
+[node name="JoinAsSpectatorBtn" type="Button" parent="JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Watch"

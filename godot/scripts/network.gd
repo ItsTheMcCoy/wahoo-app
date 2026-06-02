@@ -28,6 +28,9 @@ signal player_disconnected(payload: Dictionary)
 signal player_reconnected(payload: Dictionary)
 signal server_error(payload: Dictionary)
 
+# Set before navigating to Lobby.tscn; read by lobby.gd on _ready().
+var ctx: Dictionary = {}
+
 var _socket    := WebSocketPeer.new()
 var _state     := WebSocketPeer.STATE_CLOSED
 var _active    := false
