@@ -600,7 +600,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_roll_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
 	_end_turn_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
 	if _compact_layout and mobile_portrait:
-		var action_width := round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
+		var action_width: float = round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
 		_roll_button.custom_minimum_size.x = action_width
 		_end_turn_button.custom_minimum_size.x = action_width
 		_roll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
