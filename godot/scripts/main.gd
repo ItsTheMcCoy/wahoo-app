@@ -525,14 +525,33 @@ func _refresh_setup_name_fields() -> void:
 			field.text = ""
 
 func _on_viewport_resized() -> void:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size := _effective_window_size()
 	var compact := viewport_size.x <= COMPACT_LAYOUT_BREAKPOINT or viewport_size.x < viewport_size.y * COMPACT_LAYOUT_ASPECT_THRESHOLD
 	_compact_layout = compact
 	_apply_responsive_layout(viewport_size)
 
+func _effective_window_size() -> Vector2:
+	if OS.has_feature("web"):
+		var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+		var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+		if web_width > 0.0 and web_height > 0.0:
+			return Vector2(web_width, web_height)
+	var win_size := Vector2(DisplayServer.window_get_size())
+	if win_size.x > 0.0 and win_size.y > 0.0:
+		return win_size
+	return get_viewport_rect().size
+
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var short_side := minf(viewport_size.x, viewport_size.y)
+	var mobile_landscape := short_side <= 600.0 and viewport_size.x > viewport_size.y
 	var mobile_portrait := short_side <= 600.0 and viewport_size.y > viewport_size.x
+	var frame_margin := 12.0
+	if mobile_landscape:
+		frame_margin = 6.0
+	_root_container.offset_left = frame_margin
+	_root_container.offset_top = frame_margin
+	_root_container.offset_right = -frame_margin
+	_root_container.offset_bottom = -frame_margin
 	var portrait_scale := 1.0
 	if _compact_layout and mobile_portrait:
 		portrait_scale = 1.24
@@ -542,6 +561,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var desktop_ui_scale := 1.0
 	if not _compact_layout:
 		desktop_ui_scale = clampf(viewport_size.y / 980.0, 0.72, 1.0)
+		if mobile_landscape:
+			desktop_ui_scale = minf(desktop_ui_scale, 0.62)
 
 	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(350.0 * desktop_ui_scale, 0)
 	_side_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _compact_layout else Control.SIZE_SHRINK_BEGIN
