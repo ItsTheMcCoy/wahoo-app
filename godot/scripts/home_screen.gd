@@ -51,6 +51,8 @@ func _ready() -> void:
 	_join_spectator_btn.pressed.connect(_on_join_as_spectator)
 	_host_name_field.text_submitted.connect(func(_t): _on_host_create())
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
+	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+		field.focus_entered.connect(func(): _on_text_field_focus(field))
 
 	_apply_theme()
 	get_viewport().size_changed.connect(_on_viewport_resized)
@@ -149,7 +151,7 @@ func _on_host_game() -> void:
 	_host_error.visible = false
 	_host_name_field.text = ""
 	_host_layer.visible = true
-	_host_name_field.grab_focus()
+	_focus_text_field(_host_name_field)
 
 func _on_join() -> void:
 	_open_join_prompt("")
@@ -160,9 +162,23 @@ func _open_join_prompt(prefill_code: String) -> void:
 	_join_name_field.text = ""
 	_join_layer.visible = true
 	if prefill_code.is_empty():
-		_join_code_field.grab_focus()
+		_focus_text_field(_join_code_field)
 	else:
-		_join_name_field.grab_focus()
+		_focus_text_field(_join_name_field)
+
+func _focus_text_field(field: LineEdit) -> void:
+	field.grab_focus.call_deferred()
+	_ensure_web_canvas_focus.call_deferred()
+
+func _on_text_field_focus(field: LineEdit) -> void:
+	if not field.editable:
+		return
+	_ensure_web_canvas_focus.call_deferred()
+
+func _ensure_web_canvas_focus() -> void:
+	if not OS.has_feature("web"):
+		return
+	JavaScriptBridge.eval("(function(){const c=document.getElementById('canvas'); if(c){ c.focus(); }})();")
 
 # --- Host flow ---
 
