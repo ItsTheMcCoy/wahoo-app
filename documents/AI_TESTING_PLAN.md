@@ -1,6 +1,6 @@
 # AI Testing Plan
 
-Detailed step-by-step protocol for evaluating Wahoo AI profiles with the existing self-play and benchmark tooling.
+Detailed step-by-step protocol for evaluating Wahulo AI profiles with the existing self-play and benchmark tooling.
 
 This plan is designed to answer the practical question:
 

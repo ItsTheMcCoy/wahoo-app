@@ -1,6 +1,6 @@
 # AI Player Build Plan
 
-Concrete implementation spec for computer opponents in the Wahoo Python prototype. This document drives the code in `wahoo/ai.py`, `wahoo/selfplay.py`, and `tests/test_ai.py`. It is grounded in the design framework in `AI_Strategy_Spec.md` and the rules in `RULES.md`.
+Concrete implementation spec for computer opponents in the Wahulo Python prototype. This document drives the code in `wahoo/ai.py`, `wahoo/selfplay.py`, and `tests/test_ai.py`. It is grounded in the design framework in `AI_Strategy_Spec.md` and the rules in `RULES.md`.
 
 ---
 

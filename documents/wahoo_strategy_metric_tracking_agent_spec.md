@@ -1,10 +1,10 @@
-# Wahoo Strategy Metric Tracking Plan — Agent Build Specification
+# Wahulo Strategy Metric Tracking Plan — Agent Build Specification
 
 ## Purpose
 
-Create a metric tracking plan for evaluating which Wahoo gameplay strategies improve the chance of winning.
+Create a metric tracking plan for evaluating which Wahulo gameplay strategies improve the chance of winning.
 
-This document is intended to be provided to an LLM agent. The agent should use it to design a practical, repeatable system for collecting, analyzing, and comparing Wahoo gameplay data across multiple games.
+This document is intended to be provided to an LLM agent. The agent should use it to design a practical, repeatable system for collecting, analyzing, and comparing Wahulo gameplay data across multiple games.
 
 The goal is not just to track who wins. The goal is to identify which decisions, board states, and strategy patterns are associated with winning more often.
 
@@ -12,7 +12,7 @@ The goal is not just to track who wins. The goal is to identify which decisions,
 
 ## Game Context
 
-Use the attached Wahoo rules as the source of truth for gameplay mechanics. The strategy tracking plan must account for the following rules and mechanics:
+Use the attached Wahulo rules as the source of truth for gameplay mechanics. The strategy tracking plan must account for the following rules and mechanics:
 
 - Each player has 4 marbles.
 - The goal is to be the first player to get all 4 marbles into the home row.

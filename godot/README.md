@@ -105,8 +105,9 @@ Phase 4a backend status:
 
 - Initial Node.js WebSocket relay implementation exists under `../server/`
 - Relay supports room creation/joining, host-only AI seat configuration, spectator joins, chat, server-side rolls, legal-move validation, state broadcasts, basic reconnect handling, room expiry, and Render deployment config
-- Server tests pass locally with `npm test` from `../server/` (`8/8` passing)
-- Next Godot work is Phase 4b: add a network client script, home screen, host/join/spectate lobby, and online mode that updates from server broadcasts instead of local move application
+- Server tests pass locally with `npm test` from `../server/` (`9/9` passing)
+- Phase 4b/4c Godot multiplayer flow is implemented: `network.gd` autoload, `HomeScreen.tscn`, `Lobby.tscn`, and server-driven online turns in `Main.tscn`
+- Current next steps are Phase 4d/4e work: re-export/redeploy web build and multiplayer polish
 
 Current Godot state:
 
@@ -139,5 +140,5 @@ Current status:
 - Mobile browser validation: complete (Roll interaction and state updates verified over HTTPS).
 - Mobile text readability: fixed (responsive full-viewport layout, 22 px title, 16 px status, 60 px tap target for Roll).
 - Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
-- Latest verification (June 1, 2026): Godot smoke checks `51/51 passed`.
-- Latest Python-suite snapshot (June 1, 2026): `100 collected`, `20 failed`, `80 passed`; current failures are tied to profile-name expectations when `wahoo/profiles_manager.json` overrides builtin profile keys.
+- Latest verification (June 3, 2026): Godot smoke checks `51/51 passed`.
+- Latest Python-suite snapshot (June 3, 2026): `100 collected`, `20 failed`, `80 passed`; current failures are tied to profile-name expectations when `wahoo/profiles_manager.json` overrides builtin profile keys.

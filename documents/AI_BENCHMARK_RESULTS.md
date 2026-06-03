@@ -1,6 +1,6 @@
 # AI Benchmark Results
 
-Protocol and results log for evaluating Wahoo AI profile strength with the benchmark mode in `wahoo/selfplay.py`.
+Protocol and results log for evaluating Wahulo AI profile strength with the benchmark mode in `wahoo/selfplay.py`.
 
 ## Companion Plan
 

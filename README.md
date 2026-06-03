@@ -1,13 +1,13 @@
 # Wahulo: Marble Mayham
 
-Console-based Python prototype plus Godot 4 browser port for Wahulo (a Wahoo-style marble race). Single-device hot-seat play with configurable AI seats is complete; internet multiplayer is in progress, with the Node.js WebSocket relay implemented locally and the Godot client/lobby integration next.
+Console-based Python prototype plus Godot 4 browser port for Wahulo (a Wahoo-style marble race). Single-device hot-seat play is complete, and internet multiplayer core flow is implemented (relay + home screen + lobby + multiplayer scene), with deployment/polish work still in progress.
 
 ## Current State
 
 Implemented:
 
 - Package layout under `wahoo/` with `game_state.py`, `rules.py`, `play.py`, and `ai.py`.
-- 4-player Wahoo rules engine with legal move generation and move application.
+- 4-player Wahulo rules engine with legal move generation and move application.
 - Console game loop with ASCII board rendering.
 - Human pass-and-play mode.
 - Per-seat player configuration in `wahoo/play.py`, with each slot set to `human` or a named AI profile.
@@ -38,14 +38,18 @@ Implemented:
   - center denial
   - threat escape
 - Stage 2 baseline benchmark cycle completed across seeds `20260526`-`20260530` with Stage 3 candidates selected as `sprinter`, `gambler`, and `expectimax` (see `documents/AI_BENCHMARK_RESULTS.md`).
-- Initial Phase 4a multiplayer relay under `server/`:
+- Phase 4a multiplayer relay under `server/`:
   - Node.js + `ws` WebSocket service
   - room creation/joining with short game codes
   - host-only AI seat configuration
   - spectator joins and chat relay
   - server-side rolls, legal-move validation, and state broadcasts
   - Render deployment config
-  - local Node test suite passing (`8/8`)
+  - local Node test suite passing (`9/9`)
+- Phase 4b/4c Godot multiplayer client flow under `godot/`:
+  - `HomeScreen.tscn` entry flow (Play Solo, Host Game, Join/Spectate)
+  - `Lobby.tscn` room/lobby management with seat config and chat
+  - `Main.tscn` server-driven multiplayer turn flow via `network.gd`
 - Netlify static hosting config in `netlify.toml`:
   - publishes `godot/build/web`
   - rewrites deep links such as `/join/<code>` to `/index.html`
@@ -65,7 +69,7 @@ Phase 2b+ complete:
 - `godot/scripts/wahoo_layout.gd` maps abstract rules locations (`BASE`, `TRACK`, `HOME`, `CENTER`) to normalized visual board coordinates.
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
 - `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, tap-to-move selection, lift-and-place movement animation, dynamic marble shadows, landing impact pulse, turn status, Roll button state, and a win overlay.
-- Latest Godot smoke validation (June 1, 2026): `51/51 passed`.
+- Latest Godot smoke validation (June 3, 2026): `51/51 passed`.
 - Web export artifacts are current for recent profile-manager and setup-overlay updates.
 
 ## Requirements
@@ -334,7 +338,7 @@ python -m pytest tests/
 
 Test counts change as new coverage is added. Use the command output as the source of truth for the current pass count.
 
-Current snapshot (June 1, 2026): full suite reports `100 collected`, `20 failed`, `80 passed`.
+Current snapshot (June 3, 2026): full suite reports `100 collected`, `20 failed`, `80 passed`.
 
 Profile-manager note for reproducibility:
 

@@ -1,6 +1,6 @@
 # Graphics Upgrade Plan
 
-This document defines the practical path to move Wahoo from a clean prototype look to a more realistic tabletop presentation while keeping gameplay code unchanged.
+This document defines the practical path to move Wahulo from a clean prototype look to a more realistic tabletop presentation while keeping gameplay code unchanged.
 
 ## Best Upgrade Path
 

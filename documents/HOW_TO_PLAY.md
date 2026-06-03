@@ -1,4 +1,4 @@
-# How to Play Wahoo
+# How to Play Wahulo
 
 ## Goal
 

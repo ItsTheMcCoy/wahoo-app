@@ -1,6 +1,6 @@
 # Wahulo Multiplayer & Hosting Plan
 
-This document covers the full plan for taking Wahoo from a local hot-seat game to a publicly hosted web game playable online with friends. It spans backend architecture, Godot client changes, room/lobby design, deployment, and domain setup including a step-by-step domain purchase guide.
+This document covers the full plan for taking Wahulo from a local hot-seat game to a publicly hosted web game playable online with friends. It spans backend architecture, Godot client changes, room/lobby design, deployment, and domain setup including a step-by-step domain purchase guide.
 
 ## Confirmed Design Decisions
 
@@ -66,7 +66,7 @@ This section is the source of truth for tasks that require the project owner to 
 - Re-export Godot Web artifacts to `godot/build/web` before any production deploy that changes client behavior.
 - Update this owner task list whenever new Netlify, Render, Cloudflare, or domain information changes what the owner must do.
 
-**Owner tasks on Netlify, current as of 2026-06-01 after checking Netlify docs:**
+**Owner tasks on Netlify, current as of 2026-06-03 after checking Netlify docs:**
 
 1. Confirm the Netlify site is connected to the GitHub repo and production branch that should publish `wahulo.com`.  **Confirmed**
    - In Netlify, open the Wahulo project.
@@ -88,7 +88,7 @@ This section is the source of truth for tasks that require the project owner to 
 4. Confirm deep-link joining after the next deploy.
    - After `netlify.toml` is deployed, open `https://wahulo.com/join/ABC123`.
    - Expected result: Netlify serves the Godot app instead of a 404.
-   - Before Phase 4b is implemented, the app may ignore the code. Once Phase 4b lands, the app should read `/join/ABC123` and pre-fill or skip the room-code prompt.
+   - The app should route through the Godot client and read `/join/ABC123` to pre-fill or skip the room-code prompt.
 
 5. No Netlify environment variable is currently required for multiplayer.
    - If a future implementation uses a build-time variable such as `WAHULO_RELAY_URL`, add it in Netlify rather than committing secrets or `.env` files.
@@ -140,13 +140,13 @@ Safe alphabet: `BCDFGHJKMNPQRSTVWXYZ23456789` (28 characters)
 
 ## Phase 4a — Backend Relay Server
 
-**Current status (2026-06-01): Deployed to Render at `https://wahulo.onrender.com`. `RELAY_URL_PROD` in `network.gd` updated to `wss://wahulo.onrender.com`.**
+**Current status (2026-06-03): Deployed to Render at `https://wahulo.onrender.com`. `RELAY_URL_PROD` in `network.gd` updated to `wss://wahulo.onrender.com`.**
 
 Implemented in `server/`:
 
 - `index.js` starts the HTTP/WebSocket service and exposes `/healthz`
 - `rooms.js` manages room codes, host/player/spectator membership, seat configuration, chat relay, rolls, move submission, broadcasts, reconnect markers, host promotion, and room expiry
-- `wahoo_rules.js` ports the Wahoo state/rules logic needed for server-side legal-move validation and move application
+- `wahoo_rules.js` ports the Wahulo state/rules logic needed for server-side legal-move validation and move application
 - `server/test/*.test.js` covers room creation/joining, AI seat configuration via WebSocket routing, spectators/chat, move validation, and key rules behavior
 - `.render.yaml` is present for Render deployment
 
@@ -168,7 +168,7 @@ Remaining 4a work:
 - Verify a local or exported Godot client can connect over `ws://localhost:8080` for development and `wss://wahulo.onrender.com` for production
 - Add any server gaps discovered during real client integration
 
-Phase 4b is now the main active work: build the home screen, lobby, and server-authoritative game flow in Godot.
+Phase 4a is complete and integrated with the Godot multiplayer client flow. Main active work is Phase 4d/4e deployment verification and polish.
 
 ### Goal
 
@@ -298,7 +298,7 @@ No chat history is stored on the server — messages are fire-and-forget. A clie
 
 ## Phase 4b — Godot Client: Home Screen, Lobby & Game UI
 
-**Current status (2026-06-01): Complete.** HomeScreen, Lobby, and multiplayer game flow all implemented and pushed.
+**Current status (2026-06-03): Complete.** HomeScreen, Lobby, and multiplayer game flow all implemented and pushed.
 
 Implemented in `godot/`:
 
@@ -315,7 +315,7 @@ A new `HomeScreen.tscn` replaces the current setup overlay as the entry point:
 
 ```
 ┌──────────────────────────────────┐
-│            W A H O O             │
+│           W A H U L O            │
 │       marble race board game     │
 │                                  │
 │  ┌──────────────────────────┐   │
@@ -472,7 +472,7 @@ Spectators see the full board and side panel but with these differences:
 
 ## Phase 4c — Online Game Flow
 
-**Current status (2026-06-01): Complete.** `Main.tscn`/`main.gd` now doubles as the multiplayer game scene.
+**Current status (2026-06-03): Complete.** `Main.tscn`/`main.gd` now doubles as the multiplayer game scene.
 
 `_ready()` checks `Network.ctx` for `game_state`; if present, `_enter_multiplayer_mode()` runs instead of showing the setup overlay. Key points:
 
@@ -640,7 +640,7 @@ Owner checklist in Netlify:
    - `https://wahulo.com/join/J7WKBC`
    - `https://www.wahulo.com/` if `www` is configured
 
-Reference docs checked on 2026-06-01:
+Reference docs checked on 2026-06-03:
 
 - Netlify build settings and publish directory: `https://docs.netlify.com/build/configure-builds/overview/`
 - Netlify production branches/deploy contexts: `https://docs.netlify.com/deploy/deploy-overview/`

@@ -1,12 +1,12 @@
-# Wahoo — Game Specification
+# Wahulo — Game Specification
 
-This document is the authoritative reference for the rules, board, and data model of the Wahoo app. It is intended as input to AI coding assistants (Cowork, Claude Code, etc.) building game logic and computer opponents. If this document and the code disagree, **this document wins** — fix the code.
+This document is the authoritative reference for the rules, board, and data model of the Wahulo app. It is intended as input to AI coding assistants (Cowork, Claude Code, etc.) building game logic and computer opponents. If this document and the code disagree, **this document wins** — fix the code.
 
 ---
 
 ## 1. Game Overview
 
-Wahoo is a turn-based race game for **4 players**. Each player controls **4 marbles** that begin in the player's *base* (start pen) and must travel around a shared track and into the player's own *home* row. The first player to get all 4 marbles into home wins.
+Wahulo is a turn-based race game for **4 players**. Each player controls **4 marbles** that begin in the player's *base* (start pen) and must travel around a shared track and into the player's own *home* row. The first player to get all 4 marbles into home wins.
 
 Movement is driven by **one six-sided die**, with frequent opportunities to capture opponents and one risky high-value shortcut through the center of the board.
 
@@ -319,7 +319,7 @@ Suggested progression of AI strength:
 - The reference `wahoo/rules.py` is the canonical source for what is and isn't legal. AI authors should call `legal_moves()` rather than re-implementing move generation.
 - `GameState.clone()` exists specifically to support simulation. It's a shallow clone of the marbles list-of-lists; locations are immutable tuples so sharing is safe.
 - The current implementation does not separate "current player turn" from "roll outcome." For expectimax, an AI author may need to extend the API to support "given state, what's the distribution of (resulting_state, next_player) across the 6 dice outcomes?" — including correctly threading re-rolls.
-- There is no hidden information. Wahoo is a perfect-information game (modulo the upcoming die roll). All evaluation and search can operate on fully visible state.
+- There is no hidden information. Wahulo is a perfect-information game (modulo the upcoming die roll). All evaluation and search can operate on fully visible state.
 
 ---
 

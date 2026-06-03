@@ -1,8 +1,8 @@
-# Wahoo Game Project
+# Wahulo Game Project
 
 ## Project Goal
 
-Browser-based board game implementing Wahoo (marble race), playable on any device via a shared URL. Live at wahulo.com. Phases 1, 1b, 2a, 2b, 3a–3g are complete: Python rules engine and AI, full Godot visual board with AI opponents, branded loading screen, and all launch assets. Next major phase is internet multiplayer (Phase 4).
+Browser-based board game implementing Wahulo (a Wahoo-style marble race), playable on any device via a shared URL. Live at wahulo.com. Phases 1, 1b, 2a, 2b, 3a–3g are complete: Python rules engine and AI, full Godot visual board with AI opponents, branded loading screen, and all launch assets. Next major phase is internet multiplayer (Phase 4).
 
 ## Codebase Overview
 
@@ -62,7 +62,7 @@ documents/
 Run tests with: `python -m pytest tests/`
 Run the game with: `python -m wahoo.play`
 
-Current verified test snapshot (June 1, 2026): `100 collected`, `20 failed`, `80 passed` under `python -m pytest tests/`.
+Current verified test snapshot (June 3, 2026): `100 collected`, `20 failed`, `80 passed` under `python -m pytest tests/`.
 
 Failure context: the committed `wahoo/profiles_manager.json` currently replaces builtin profile names with managed names (for example `nikki ai`, `mac ai`, `monty ai`). Several AI/self-play/play tests still assert builtin names like `balanced`, `random`, and `expectimax`, which causes those failures in the current checked-in configuration.
 

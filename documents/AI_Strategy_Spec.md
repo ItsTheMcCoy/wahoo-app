@@ -1,8 +1,8 @@
-# Playable AI Strategy Space for Virtual Wahoo
+# Playable AI Strategy Space for Virtual Wahulo
 
 ## Executive summary
 
-Wahoo is not a deep hidden-information game, but it is not strategically empty either. Under the uploaded rules, most meaningful turns reduce to a small set of repeated tensions: deploy another marble or push a current runner, attack or reduce exposure, take the center shortcut or avoid its volatility, and convert toward home or keep disrupting opponents. Because the rules also force a move whenever one is legal, style should be inferred from *opportunity-conditioned* choices rather than raw move counts. fileciteturn0file0
+Wahulo is not a deep hidden-information game, but it is not strategically empty either. Under the uploaded rules, most meaningful turns reduce to a small set of repeated tensions: deploy another marble or push a current runner, attack or reduce exposure, take the center shortcut or avoid its volatility, and convert toward home or keep disrupting opponents. Because the rules also force a move whenever one is legal, style should be inferred from *opportunity-conditioned* choices rather than raw move counts. fileciteturn0file0
 
 Blocking exists in this baseline. Stacking does not. The uploaded rules say you cannot land on or pass over your own marbles, so the practical control tactic is traffic shaping: keeping your start square, outer lane, and home row from clogging each other. That is the real analogue of “blocking/stacking” for this ruleset. fileciteturn0file0
 

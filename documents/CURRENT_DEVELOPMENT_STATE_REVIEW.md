@@ -1,14 +1,14 @@
 # Current Development State Review
 
-Review date: June 1, 2026
+Review date: June 3, 2026
 
 This review summarizes the verified current state of playability, structure, and implementation quality.
 
 ## Verification Performed
 
-- Python profile creator suite: `py -m pytest tests/test_profile_creator.py` -> `20 passed`.
-- Godot smoke suite: `Godot_v4.6.3-stable_win64_console.exe --headless --script res://scripts/run_smoke.gd` -> `51/51 passed`.
-- Full Python suite: `py -m pytest tests/` -> `100 collected`, `20 failed`, `80 passed`.
+- Server suite: `cd server && npm test` -> `9/9 passed`.
+- Godot smoke suite: `Launch-Godot-Wahoo.bat smoke` -> `51/51 passed`.
+- Full Python suite: `python -m pytest tests/` -> `100 collected`, `20 failed`, `80 passed`.
 
 Important context for full-suite failures:
 
