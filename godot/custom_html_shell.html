@@ -178,6 +178,7 @@ html, body {
 	<script>
 const GODOT_CONFIG = $GODOT_CONFIG;
 GODOT_CONFIG.executable = "/index";
+GODOT_CONFIG.mainPack = "/index.pck?v=" + String(Date.now());
 const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
 const engine = new Engine(GODOT_CONFIG);
 
