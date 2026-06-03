@@ -4,6 +4,7 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
+@onready var _brand_spacer: Control      = $MainCenter/HomePanel/Content/Spacer
 @onready var _home_content: VBoxContainer = $MainCenter/HomePanel/Content
 @onready var _play_solo_btn: Button     = $MainCenter/HomePanel/Content/PlaySoloButton
 @onready var _host_game_btn: Button     = $MainCenter/HomePanel/Content/HostGameButton
@@ -96,16 +97,19 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		home_width = minf(viewport_size.x * 0.56, 330.0)
 	home_width *= ui_scale
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
+	_home_content.add_theme_constant_override("separation", int(round((12.0 if _compact_layout else 16.0) * ui_scale)))
 
-	var brand_height := 280
-	if mobile_landscape:
-		brand_height = 190
-	elif mobile_portrait:
-		brand_height = int(clampf(viewport_size.y * 0.34, 300.0, 460.0))
-	else:
-		brand_height = 240
-	brand_height = int(round(float(brand_height) * ui_scale))
+	var wordmark_aspect := 1400.0 / 520.0
+	if _brand_title.texture != null:
+		var tex_size := _brand_title.texture.get_size()
+		if tex_size.y > 0.0:
+			wordmark_aspect = tex_size.x / tex_size.y
+	var horizontal_padding := (8.0 if _compact_layout else 12.0) * ui_scale
+	var target_wordmark_height := maxf(1.0, home_width - horizontal_padding) / wordmark_aspect
+	var vertical_padding := (8.0 if _compact_layout else 12.0) * ui_scale
+	var brand_height := int(round(clampf(target_wordmark_height + vertical_padding, 120.0, 260.0)))
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
+	_brand_spacer.custom_minimum_size = Vector2(0, int(round((8.0 if _compact_layout else 12.0) * ui_scale)))
 
 	var main_button_height := 60
 	var main_button_font := 21
