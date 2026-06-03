@@ -2,6 +2,7 @@ class_name WahooLayoutSmoke
 extends RefCounted
 
 const WahooLayout = preload("res://scripts/wahoo_layout.gd")
+const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WahooState = preload("res://scripts/wahoo_state.gd")
 
 static func run() -> Dictionary:
@@ -16,6 +17,8 @@ static func run() -> Dictionary:
         _test_base_clusters_are_consistently_placed_from_exits,
         _test_location_lookup_needs_owner_for_owned_areas,
         _test_all_normalized_coordinates_are_in_unit_square,
+        _test_main_scene_uses_compact_layout_for_mobile_landscape,
+        _test_main_scene_uses_short_landscape_sizing_for_wide_short_viewports,
     ]:
         total += 1
         var result: Dictionary = test.call()
@@ -143,4 +146,20 @@ static func _test_all_normalized_coordinates_are_in_unit_square() -> Dictionary:
         if normalized.x <= 0.0 or normalized.x >= 1.0 or normalized.y <= 0.0 or normalized.y >= 1.0:
             return _fail(name, "coordinate %s normalized out of bounds as %s" % [str(coord), str(normalized)])
 
+    return _ok(name)
+
+static func _test_main_scene_uses_compact_layout_for_mobile_landscape() -> Dictionary:
+    var name := "main scene uses compact layout for mobile landscape viewports"
+    if not WahooResponsiveLayout.is_main_scene_compact(Vector2(844, 390)):
+        return _fail(name, "expected 844x390 viewport to use compact layout")
+    if WahooResponsiveLayout.is_main_scene_compact(Vector2(1366, 768)):
+        return _fail(name, "expected 1366x768 viewport to remain in two-column layout")
+    return _ok(name)
+
+static func _test_main_scene_uses_short_landscape_sizing_for_wide_short_viewports() -> Dictionary:
+    var name := "main scene slims side panel for wide short landscape viewports"
+    if not WahooResponsiveLayout.is_short_landscape(Vector2(1024, 600)):
+        return _fail(name, "expected 1024x600 viewport to use short-landscape side-panel sizing")
+    if WahooResponsiveLayout.is_short_landscape(Vector2(1366, 900)):
+        return _fail(name, "expected 1366x900 viewport to keep full desktop side-panel sizing")
     return _ok(name)
