@@ -27,10 +27,12 @@ const BUILTIN_PROFILE_LABELS := {
 
 @onready var _code_value: Label               = $ScrollContainer/Center/LobbyPanel/Content/CodeRow/GameCodeValue
 @onready var _brand_title: TextureRect        = $ScrollContainer/Center/LobbyPanel/Content/BrandTitle
-@onready var _host_code_buttons: HBoxContainer = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons
+@onready var _host_code_buttons: BoxContainer = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons
 @onready var _copy_code_btn: Button           = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons/CopyCodeBtn
 @onready var _copy_link_btn: Button           = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons/CopyLinkBtn
+@onready var _host_code_buttons_row: BoxContainer = $ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons
 @onready var _share_link_label: Label         = $ScrollContainer/Center/LobbyPanel/Content/ShareLinkLabel
+@onready var _content: VBoxContainer          = $ScrollContainer/Center/LobbyPanel/Content
 @onready var _seat_list: VBoxContainer        = $ScrollContainer/Center/LobbyPanel/Content/SeatList
 @onready var _spectator_count_label: Label    = $ScrollContainer/Center/LobbyPanel/Content/SpectatorCountLabel
 @onready var _host_controls_section: VBoxContainer = $ScrollContainer/Center/LobbyPanel/Content/HostControlsSection
@@ -41,6 +43,7 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _chat_send_btn: Button           = $ScrollContainer/Center/LobbyPanel/Content/ChatSection/ChatInputRow/ChatSendBtn
 @onready var _start_game_btn: Button          = $ScrollContainer/Center/LobbyPanel/Content/ActionRow/StartGameBtn
 @onready var _leave_btn: Button               = $ScrollContainer/Center/LobbyPanel/Content/ActionRow/LeaveBtn
+@onready var _action_row: BoxContainer        = $ScrollContainer/Center/LobbyPanel/Content/ActionRow
 
 var _role := ""
 var _game_id := ""
@@ -50,6 +53,7 @@ var _seats: Array = []
 var _spectator_count := 0
 var _ai_profile_order: Array = []
 var _ai_profile_labels: Dictionary = {}
+var _compact_layout := false
 
 func _ready() -> void:
 	_role            = str(Network.ctx.get("role", "spectator"))
@@ -75,8 +79,31 @@ func _ready() -> void:
 	_brand_title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 	_apply_theme()
+	get_viewport().size_changed.connect(_on_viewport_resized)
 	_setup_ui()
 	_connect_signals()
+	_on_viewport_resized()
+
+func _on_viewport_resized() -> void:
+	var viewport_size := get_viewport_rect().size
+	_compact_layout = viewport_size.x <= 920.0 or viewport_size.x < viewport_size.y * 1.04
+	_apply_responsive_layout(viewport_size)
+
+func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	var panel_width := minf(viewport_size.x * 0.96, 500.0)
+	_content.custom_minimum_size = Vector2(panel_width, 0)
+	_brand_title.custom_minimum_size = Vector2(0, 150 if _compact_layout else 195)
+
+	_host_code_buttons_row.vertical = _compact_layout
+	_host_code_buttons_row.add_theme_constant_override("separation", 8)
+	_action_row.vertical = _compact_layout
+	_action_row.add_theme_constant_override("separation", 10 if _compact_layout else 12)
+
+	var action_height := 54 if _compact_layout else 60
+	_leave_btn.custom_minimum_size = Vector2(100, action_height)
+	_start_game_btn.custom_minimum_size = Vector2(0, action_height)
+	_chat_log.custom_minimum_size = Vector2(0, 148 if _compact_layout else 192)
+	_chat_send_btn.custom_minimum_size = Vector2(74 if _compact_layout else 60, 48)
 
 func _normalize_profile_name(name: String) -> String:
 	return name.strip_edges().to_lower()

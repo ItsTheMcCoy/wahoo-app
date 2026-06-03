@@ -19,6 +19,8 @@ const MENU_LOAD_GAME := 1
 const MENU_RESTART_GAME := 2
 const MENU_EXIT_TO_SETUP := 3
 const MENU_QUIT_APP := 4
+const COMPACT_LAYOUT_BREAKPOINT := 980.0
+const COMPACT_LAYOUT_ASPECT_THRESHOLD := 1.12
 
 # Profile keys in easiest→hardest order for builtin profiles.
 const BUILTIN_PROFILE_ORDER := [
@@ -43,7 +45,9 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _die_label: Label = $Root/SidePanel/DieFrame/DieLabel
 @onready var _game_menu_button: MenuButton = $Root/SidePanel/GameMenuButton
 @onready var _board_frame: PanelContainer = $Root/BoardFrame
+@onready var _root_container: BoxContainer = $Root
 @onready var _side_panel: VBoxContainer = $Root/SidePanel
+@onready var _side_spacer: Control = $Root/SidePanel/Spacer
 @onready var _die_frame: PanelContainer = $Root/SidePanel/DieFrame
 @onready var _board = $Root/BoardFrame/BoardView
 @onready var _side_panel_title: TextureRect = $Root/SidePanel/GameTitle
@@ -60,6 +64,7 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _win_subtitle: Label = $WinOverlay/WinPanel/WinContent/WinSubtitle
 @onready var _new_game_button: Button = $WinOverlay/WinPanel/WinContent/NewGameButton
 @onready var _setup_overlay: ColorRect = $SetupOverlay
+@onready var _setup_panel: PanelContainer = $SetupOverlay/SetupPanel
 @onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupContent/BrandTitle
 @onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupContent/StartButton
 @onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Option
@@ -95,6 +100,7 @@ var _show_smoke_summary := false
 var _starting_phase := false
 var _awaiting_human_starting_roll := false
 var _is_multiplayer := false
+var _compact_layout := false
 var _mp_role := ""     # "host" | "player" | "spectator"
 var _mp_my_seat := -1
 var _mp_waiting_for_opening_roll := false
@@ -118,6 +124,8 @@ func _ready() -> void:
 	_populate_dropdowns()
 	_wire_setup_inputs()
 	_refresh_setup_name_fields()
+	get_viewport().size_changed.connect(_on_viewport_resized)
+	_on_viewport_resized()
 	_board.modulate = Color(1.0, 1.0, 1.0, 0.96)
 	_status.scroll_following = true
 	_chat_section.visible = false
@@ -515,6 +523,66 @@ func _refresh_setup_name_fields() -> void:
 		else:
 			field.visible = false
 			field.text = ""
+
+func _on_viewport_resized() -> void:
+	var viewport_size := get_viewport_rect().size
+	var compact := viewport_size.x <= COMPACT_LAYOUT_BREAKPOINT or viewport_size.x < viewport_size.y * COMPACT_LAYOUT_ASPECT_THRESHOLD
+	_compact_layout = compact
+	_apply_responsive_layout(viewport_size)
+
+func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	_root_container.vertical = _compact_layout
+	_root_container.add_theme_constant_override("separation", 12 if _compact_layout else 16)
+
+	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(350, 0)
+	_side_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _compact_layout else Control.SIZE_SHRINK_BEGIN
+	_side_panel.size_flags_vertical = Control.SIZE_FILL
+
+	_board_frame.size_flags_stretch_ratio = 1.0 if _compact_layout else 3.0
+	_side_spacer.visible = not _compact_layout
+	_side_panel_title.visible = not _compact_layout
+
+	_game_menu_button.custom_minimum_size = Vector2(0, 48 if _compact_layout else 52)
+	_game_menu_button.add_theme_font_size_override("font_size", 18 if _compact_layout else 20)
+
+	_status.custom_minimum_size = Vector2(0, 108 if _compact_layout else 172)
+	_status.add_theme_font_size_override("normal_font_size", 18 if _compact_layout else 24)
+
+	_die_frame.custom_minimum_size = Vector2(112, 112) if _compact_layout else Vector2(152, 152)
+	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
+	_die_label.add_theme_font_size_override("font_size", 74 if _compact_layout else 96)
+	_turn_label.add_theme_font_size_override("font_size", 24 if _compact_layout else 30)
+
+	_roll_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else 80)
+	_end_turn_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else 80)
+	_roll_button.add_theme_font_size_override("font_size", 22 if _compact_layout else 26)
+	_end_turn_button.add_theme_font_size_override("font_size", 22 if _compact_layout else 26)
+
+	if _chat_section.visible:
+		_chat_log.custom_minimum_size = Vector2(0, 100 if _compact_layout else 150)
+
+	var setup_size := Vector2(
+		minf(viewport_size.x * 0.94, 560.0),
+		minf(viewport_size.y * 0.92, 600.0)
+	)
+	_setup_panel.offset_left = -setup_size.x * 0.5
+	_setup_panel.offset_right = setup_size.x * 0.5
+	_setup_panel.offset_top = -setup_size.y * 0.5
+	_setup_panel.offset_bottom = setup_size.y * 0.5
+
+	var win_panel := $WinOverlay/WinPanel as PanelContainer
+	if win_panel != null:
+		var win_size := Vector2(
+			minf(viewport_size.x * 0.86, 420.0),
+			minf(viewport_size.y * 0.56, 320.0)
+		)
+		win_panel.offset_left = -win_size.x * 0.5
+		win_panel.offset_right = win_size.x * 0.5
+		win_panel.offset_top = -win_size.y * 0.5
+		win_panel.offset_bottom = win_size.y * 0.5
+
+	_setup_brand_title.custom_minimum_size = Vector2(0, 140 if _compact_layout else 204)
+	_win_brand_title.custom_minimum_size = Vector2(0, 112 if _compact_layout else 162)
 
 func _on_start_pressed() -> void:
 	var opts := _seat_options()

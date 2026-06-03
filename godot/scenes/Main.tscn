@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ukqg8")
 
-[node name="Root" type="HBoxContainer" parent="."]
+[node name="Root" type="BoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,6 +24,7 @@ offset_right = -12.0
 offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
+vertical = false
 theme_override_constants/separation = 16
 
 [node name="BoardFrame" type="PanelContainer" parent="Root"]

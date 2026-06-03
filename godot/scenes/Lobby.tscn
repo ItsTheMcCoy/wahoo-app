@@ -61,10 +61,11 @@ horizontal_alignment = 2
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.98, 0.92, 0.72, 1.0)
 
-[node name="HostCodeButtons" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+[node name="HostCodeButtons" type="BoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
 layout_mode = 2
 visible = false
 theme_override_constants/separation = 8
+vertical = false
 
 [node name="CopyCodeBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/HostCodeButtons"]
 layout_mode = 2
@@ -147,9 +148,10 @@ layout_mode = 2
 custom_minimum_size = Vector2(60, 48)
 text = "→"
 
-[node name="ActionRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
+[node name="ActionRow" type="BoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
 layout_mode = 2
 theme_override_constants/separation = 12
+vertical = false
 
 [node name="LeaveBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/ActionRow"]
 layout_mode = 2

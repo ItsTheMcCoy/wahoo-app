@@ -113,9 +113,10 @@ visible = false
 text = ""
 theme_override_colors/font_color = Color(0.90, 0.30, 0.25, 1.0)
 
-[node name="HostButtons" type="HBoxContainer" parent="HostPromptLayer/Center/HostPanel/HostContent"]
+[node name="HostButtons" type="BoxContainer" parent="HostPromptLayer/Center/HostPanel/HostContent"]
 layout_mode = 2
 theme_override_constants/separation = 12
+vertical = false
 
 [node name="HostCancelBtn" type="Button" parent="HostPromptLayer/Center/HostPanel/HostContent/HostButtons"]
 layout_mode = 2
@@ -193,9 +194,10 @@ visible = false
 text = ""
 theme_override_colors/font_color = Color(0.90, 0.30, 0.25, 1.0)
 
-[node name="JoinButtons" type="HBoxContainer" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
+[node name="JoinButtons" type="BoxContainer" parent="JoinPromptLayer/Center/JoinPanel/JoinContent"]
 layout_mode = 2
 theme_override_constants/separation = 12
+vertical = false
 
 [node name="JoinCancelBtn" type="Button" parent="JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons"]
 layout_mode = 2

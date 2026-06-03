@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 	<base href="/">
 	<meta name="theme-color" content="#1e160e">
 	<meta property="og:title" content="Wahulo: Marble Mayham">
@@ -17,16 +17,22 @@ html, body {
 	margin: 0;
 	padding: 0;
 	border: 0;
+	width: 100%;
+	height: 100%;
 	background-color: #070503;
 	background-image: url('background_felt_tile_512.svg');
 	background-repeat: repeat;
 	background-size: 512px 512px;
 	overflow: hidden;
-	touch-action: none;
+	overscroll-behavior: none;
 }
 
 #canvas {
 	display: block;
+	width: 100vw;
+	height: 100vh;
+	height: 100dvh;
+	touch-action: none;
 }
 
 #canvas:focus {
@@ -112,6 +118,35 @@ html, body {
 	text-align: center;
 	white-space: pre-wrap;
 }
+
+#fullscreen-btn {
+	position: fixed;
+	right: max(12px, env(safe-area-inset-right));
+	bottom: max(12px, env(safe-area-inset-bottom));
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 14px;
+	border: 1px solid rgba(235, 186, 92, 0.72);
+	border-radius: 10px;
+	background: rgba(21, 14, 9, 0.88);
+	color: #f3ddad;
+	font: 600 13px/1.1 'Segoe UI', Tahoma, sans-serif;
+	letter-spacing: 0.04em;
+	cursor: pointer;
+	backdrop-filter: blur(2px);
+	z-index: 180;
+}
+
+#fullscreen-btn:active {
+	transform: translateY(1px);
+}
+
+@media (pointer: coarse) {
+	#fullscreen-btn {
+		display: inline-flex;
+	}
+}
 	</style>
 	<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
@@ -139,9 +174,11 @@ html, body {
 		<div id="error-box"></div>
 	</div>
 
+	<button id="fullscreen-btn" type="button" aria-label="Enter fullscreen">Fullscreen</button>
+
 	<script src="index.js"></script>
 	<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":2637204,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":2652212,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 GODOT_CONFIG.executable = "/index";
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
@@ -151,6 +188,47 @@ const engine = new Engine(GODOT_CONFIG);
 	const progressFill = document.getElementById('progress-fill');
 	const errorOverlay = document.getElementById('error-overlay');
 	const errorBox = document.getElementById('error-box');
+	const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+	function updateCanvasHeight() {
+		const vh = window.innerHeight;
+		document.documentElement.style.setProperty('--app-height', `${vh}px`);
+		const canvas = document.getElementById('canvas');
+		if (canvas) {
+			canvas.style.height = `${vh}px`;
+		}
+	}
+
+	function isFullscreen() {
+		return !!document.fullscreenElement;
+	}
+
+	function updateFullscreenButton() {
+		if (!fullscreenBtn) {
+			return;
+		}
+		fullscreenBtn.textContent = isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen';
+	}
+
+	if (fullscreenBtn) {
+		fullscreenBtn.addEventListener('click', async () => {
+			try {
+				if (isFullscreen()) {
+					await document.exitFullscreen();
+				} else {
+					await document.documentElement.requestFullscreen();
+				}
+			} catch (_err) {
+				/* Ignore unsupported fullscreen requests. */
+			}
+			updateFullscreenButton();
+		});
+	}
+
+	window.addEventListener('resize', updateCanvasHeight);
+	document.addEventListener('fullscreenchange', updateFullscreenButton);
+	updateCanvasHeight();
+	updateFullscreenButton();
 
 	function showError(err) {
 		console.error(err);

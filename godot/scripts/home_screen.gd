@@ -4,6 +4,7 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
+@onready var _home_content: VBoxContainer = $MainCenter/HomePanel/Content
 @onready var _play_solo_btn: Button     = $MainCenter/HomePanel/Content/PlaySoloButton
 @onready var _host_game_btn: Button     = $MainCenter/HomePanel/Content/HostGameButton
 @onready var _join_btn: Button          = $MainCenter/HomePanel/Content/JoinButton
@@ -14,6 +15,8 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 @onready var _host_error: Label         = $HostPromptLayer/Center/HostPanel/HostContent/HostErrorLabel
 @onready var _host_cancel_btn: Button   = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons/HostCancelBtn
 @onready var _host_create_btn: Button   = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons/HostCreateBtn
+@onready var _host_buttons: BoxContainer = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons
+@onready var _host_content: VBoxContainer = $HostPromptLayer/Center/HostPanel/HostContent
 
 # Join prompt
 @onready var _join_layer: Control           = $JoinPromptLayer
@@ -23,6 +26,10 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 @onready var _join_cancel_btn: Button       = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinCancelBtn
 @onready var _join_player_btn: Button       = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinAsPlayerBtn
 @onready var _join_spectator_btn: Button    = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinAsSpectatorBtn
+@onready var _join_buttons: BoxContainer    = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons
+@onready var _join_content: VBoxContainer   = $JoinPromptLayer/Center/JoinPanel/JoinContent
+
+var _compact_layout := false
 
 var _pending_action := ""   # "host" | "join_player" | "join_spectator"
 var _pending_name   := ""
@@ -45,7 +52,34 @@ func _ready() -> void:
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
 
 	_apply_theme()
+	get_viewport().size_changed.connect(_on_viewport_resized)
+	_on_viewport_resized()
 	_check_deep_link()
+
+func _on_viewport_resized() -> void:
+	var viewport_size := get_viewport_rect().size
+	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04
+	_apply_responsive_layout(viewport_size)
+
+func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	var home_width := minf(viewport_size.x * 0.92, 440.0)
+	_home_content.custom_minimum_size = Vector2(home_width, 0)
+	_brand_title.custom_minimum_size = Vector2(0, 250 if _compact_layout else 375)
+
+	var main_button_height := 62 if _compact_layout else 72
+	var main_button_font := 22 if _compact_layout else 26
+	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
+		btn.custom_minimum_size = Vector2(0, main_button_height)
+		btn.add_theme_font_size_override("font_size", main_button_font)
+
+	var prompt_width := minf(viewport_size.x * 0.90, 380.0)
+	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
+	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
+
+	_host_buttons.vertical = _compact_layout
+	_join_buttons.vertical = _compact_layout
+	_host_buttons.add_theme_constant_override("separation", 10 if _compact_layout else 12)
+	_join_buttons.add_theme_constant_override("separation", 10 if _compact_layout else 12)
 
 # --- Main button handlers ---
 
