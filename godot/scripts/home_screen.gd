@@ -95,7 +95,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if mobile_landscape:
 		brand_height = 190
 	elif mobile_portrait:
-		brand_height = 400
+		brand_height = int(clampf(viewport_size.y * 0.34, 300.0, 460.0))
 	else:
 		brand_height = 240
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
@@ -106,8 +106,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		main_button_height = 54
 		main_button_font = 18
 	elif mobile_portrait:
-		main_button_height = 78
-		main_button_font = 27
+		main_button_height = int(clampf(viewport_size.y * 0.095, 64.0, 92.0))
+		main_button_font = int(clampf(float(main_button_height) * 0.34, 22.0, 30.0))
 	else:
 		main_button_height = 56
 		main_button_font = 19
