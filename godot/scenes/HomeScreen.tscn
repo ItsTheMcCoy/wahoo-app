@@ -36,13 +36,9 @@ theme_override_constants/separation = 20
 
 [node name="BrandTitle" type="TextureRect" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 375)
+custom_minimum_size = Vector2(0, 123)
 expand_mode = 1
 stretch_mode = 5
-
-[node name="Spacer" type="Control" parent="MainCenter/HomePanel/Content"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 20)
 
 [node name="PlaySoloButton" type="Button" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2

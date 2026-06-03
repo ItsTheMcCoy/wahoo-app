@@ -1,6 +1,7 @@
 extends Control
 
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
@@ -95,14 +96,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	home_width *= ui_scale
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 
-	var brand_height := 280
-	if mobile_landscape:
-		brand_height = 190
-	elif mobile_portrait:
-		brand_height = int(clampf(viewport_size.y * 0.34, 300.0, 460.0))
-	else:
-		brand_height = 240
-	brand_height = int(round(float(brand_height) * ui_scale))
+	var brand_height := int(round(home_width / WORDMARK_ASPECT_RATIO))
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
 
 	var main_button_height := 60
