@@ -61,7 +61,7 @@ func _on_viewport_resized() -> void:
 	var viewport_size := _effective_window_size()
 	var short_side := minf(viewport_size.x, viewport_size.y)
 	var long_side := maxf(viewport_size.x, viewport_size.y)
-	_mobile_like_layout = short_side <= 560.0 and long_side <= 1400.0
+	_mobile_like_layout = short_side <= 600.0 and long_side <= 2200.0
 	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04 or _mobile_like_layout
 	_apply_responsive_layout(viewport_size)
 
@@ -83,7 +83,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	elif mobile_portrait:
 		home_width = minf(viewport_size.x * 0.97, 500.0)
 	elif not _compact_layout:
-		home_width = minf(viewport_size.x * 0.68, 390.0)
+		home_width = minf(viewport_size.x * 0.62, 360.0)
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 
 	var brand_height := 250 if _compact_layout else 375
@@ -92,7 +92,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	elif mobile_portrait:
 		brand_height = 340
 	elif not _compact_layout:
-		brand_height = 300
+		brand_height = 280
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
 
 	var main_button_height := 62 if _compact_layout else 72
@@ -104,8 +104,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		main_button_height = 72
 		main_button_font = 25
 	elif not _compact_layout:
-		main_button_height = 64
-		main_button_font = 22
+		main_button_height = 60
+		main_button_font = 21
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
@@ -116,7 +116,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	elif mobile_portrait:
 		prompt_width = minf(viewport_size.x * 0.95, 430.0)
 	elif not _compact_layout:
-		prompt_width = minf(viewport_size.x * 0.72, 360.0)
+		prompt_width = minf(viewport_size.x * 0.66, 340.0)
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
