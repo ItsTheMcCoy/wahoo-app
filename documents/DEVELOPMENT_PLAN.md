@@ -131,6 +131,15 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 
 **Web deployment hygiene.** Whenever Godot gameplay or UI files change (`godot/scenes/*.tscn`, `godot/scripts/*.gd`, or relevant assets), perform a fresh Web export to `godot/build/web` and commit those export artifacts before pushing. Netlify deploys from `godot/build/web`, so missing re-exports can cause hosted behavior to lag behind local behavior.
 
+**Known-good Godot Web re-export workflow (2026-06-03).**
+1. Start from a clean status check: `git status --short --branch`.
+2. Use the repo wrapper instead of assuming `godot` is on PATH: `powershell -ExecutionPolicy Bypass -File scripts\launch_godot.ps1 export`.
+   - This resolves `Godot_v4.6.3-stable_win64_console.exe` from PATH or the local fallback in `scripts/launch_godot.ps1`.
+   - It runs the headless smoke suite before export, then exports preset `Web` to `godot/build/web/index.html`.
+3. Treat any GDScript warning printed as an error during export as a real blocker, even if the process exits 0 and writes files. Godot has `warnings_as_errors` behavior here; fix the script warning and rerun the export before committing. Example encountered: replace inferred `:=` on `round(clampf(...))` results with an explicit type such as `var action_width: float = ...`.
+4. After a clean run, inspect `git status --short` and `git diff --stat`. Expected export files are usually `godot/build/web/index.html` and `godot/build/web/index.pck`; Godot may also create source-adjacent `.uid` metadata sidecars for scripts. Commit those `.uid` files when they live beside tracked Godot source files.
+5. Commit only the source fix, required Godot metadata, and regenerated export artifacts, then push: `git add <files>`, `git commit -m "Re-export Godot web build"`, `git push origin main`.
+
 ## File Inventory
 
 | File | Purpose | Status |
