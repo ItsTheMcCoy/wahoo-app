@@ -45,6 +45,7 @@ theme_override_constants/separation = 10
 
 [node name="GameTitle" type="TextureRect" parent="Root/SidePanel"]
 layout_mode = 2
+size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 138)
 texture = ExtResource("3_0dv5w")
 expand_mode = 1
