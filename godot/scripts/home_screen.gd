@@ -30,6 +30,7 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 @onready var _join_content: VBoxContainer   = $JoinPromptLayer/Center/JoinPanel/JoinContent
 
 var _compact_layout := false
+var _mobile_like_layout := false
 
 var _pending_action := ""   # "host" | "join_player" | "join_spectator"
 var _pending_name   := ""
@@ -58,12 +59,15 @@ func _ready() -> void:
 
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size
-	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04
+	var short_side := minf(viewport_size.x, viewport_size.y)
+	var long_side := maxf(viewport_size.x, viewport_size.y)
+	_mobile_like_layout = short_side <= 560.0 and long_side <= 1400.0
+	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04 or _mobile_like_layout
 	_apply_responsive_layout(viewport_size)
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var is_landscape := viewport_size.x > viewport_size.y
-	var is_mobile := minf(viewport_size.x, viewport_size.y) <= 500.0
+	var is_mobile := _mobile_like_layout
 	var mobile_landscape := is_mobile and is_landscape
 	var mobile_portrait := is_mobile and not is_landscape
 
