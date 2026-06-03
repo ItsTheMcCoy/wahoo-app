@@ -66,6 +66,11 @@ func _on_viewport_resized() -> void:
 	_apply_responsive_layout(viewport_size)
 
 func _effective_window_size() -> Vector2:
+	if OS.has_feature("web"):
+		var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+		var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+		if web_width > 0.0 and web_height > 0.0:
+			return Vector2(web_width, web_height)
 	var win_size := Vector2(DisplayServer.window_get_size())
 	if win_size.x > 0.0 and win_size.y > 0.0:
 		return win_size
