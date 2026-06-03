@@ -391,6 +391,25 @@ func _apply_theme() -> void:
 	btn_disabled.bg_color = Color(0.19, 0.15, 0.12, 0.74)
 	btn_disabled.border_color = Color(0.41, 0.34, 0.28, 0.74)
 
+	var field_normal := StyleBoxFlat.new()
+	field_normal.bg_color = Color(0.15, 0.11, 0.08, 0.98)
+	field_normal.border_color = Color(0.52, 0.39, 0.27, 0.95)
+	field_normal.border_width_left = 2
+	field_normal.border_width_top = 2
+	field_normal.border_width_right = 2
+	field_normal.border_width_bottom = 2
+	field_normal.corner_radius_top_left = 9
+	field_normal.corner_radius_top_right = 9
+	field_normal.corner_radius_bottom_left = 9
+	field_normal.corner_radius_bottom_right = 9
+	field_normal.content_margin_left = 14
+	field_normal.content_margin_top = 10
+	field_normal.content_margin_right = 14
+	field_normal.content_margin_bottom = 10
+
+	var field_focus := field_normal.duplicate()
+	field_focus.border_color = Color(0.85, 0.65, 0.45, 0.98)
+
 	var all_buttons: Array = [
 		_play_solo_btn, _host_game_btn, _join_btn,
 		_host_cancel_btn, _host_create_btn,
@@ -408,5 +427,10 @@ func _apply_theme() -> void:
 		btn.add_theme_font_size_override("font_size", 26)
 
 	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+		field.add_theme_stylebox_override("normal", field_normal)
+		field.add_theme_stylebox_override("focus", field_focus)
+		field.add_theme_stylebox_override("read_only", field_normal)
 		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
 		field.add_theme_color_override("font_placeholder_color", Color(0.62, 0.58, 0.52))
+		field.add_theme_color_override("caret_color", Color(0.96, 0.92, 0.82))
+		field.add_theme_color_override("selection_color", Color(0.55, 0.40, 0.25, 0.85))
