@@ -4,6 +4,7 @@ const WahooState = preload("res://scripts/wahoo_state.gd")
 const WahooRules = preload("res://scripts/wahoo_rules.gd")
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
+const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
@@ -19,9 +20,6 @@ const MENU_LOAD_GAME := 1
 const MENU_RESTART_GAME := 2
 const MENU_EXIT_TO_SETUP := 3
 const MENU_QUIT_APP := 4
-const COMPACT_LAYOUT_BREAKPOINT := 980.0
-const COMPACT_LAYOUT_ASPECT_THRESHOLD := 1.12
-
 # Profile keys in easiest→hardest order for builtin profiles.
 const BUILTIN_PROFILE_ORDER := [
 	"human", "random", "swarm", "tortoise", "engineer",
@@ -525,38 +523,40 @@ func _refresh_setup_name_fields() -> void:
 			field.text = ""
 
 func _on_viewport_resized() -> void:
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x <= COMPACT_LAYOUT_BREAKPOINT or viewport_size.x < viewport_size.y * COMPACT_LAYOUT_ASPECT_THRESHOLD
-	_compact_layout = compact
+	var viewport_size := _effective_window_size()
+	_compact_layout = WahooResponsiveLayout.is_main_scene_compact(viewport_size)
 	_apply_responsive_layout(viewport_size)
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	var short_landscape := not _compact_layout and WahooResponsiveLayout.is_short_landscape(viewport_size)
 	_root_container.vertical = _compact_layout
 	_root_container.add_theme_constant_override("separation", 12 if _compact_layout else 16)
 
-	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(350, 0)
+	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(320 if short_landscape else 350, 0)
 	_side_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _compact_layout else Control.SIZE_SHRINK_BEGIN
 	_side_panel.size_flags_vertical = Control.SIZE_FILL
+	_side_panel.add_theme_constant_override("separation", 8 if short_landscape else 10)
 
 	_board_frame.size_flags_stretch_ratio = 1.0 if _compact_layout else 3.0
-	_side_spacer.visible = not _compact_layout
+	_side_spacer.visible = not _compact_layout and not short_landscape
 	_side_panel_title.visible = not _compact_layout
+	_side_panel_title.custom_minimum_size = Vector2(0, 110 if short_landscape else 138)
 
-	_game_menu_button.custom_minimum_size = Vector2(0, 48 if _compact_layout else 52)
-	_game_menu_button.add_theme_font_size_override("font_size", 18 if _compact_layout else 20)
+	_game_menu_button.custom_minimum_size = Vector2(0, 48 if _compact_layout else (46 if short_landscape else 52))
+	_game_menu_button.add_theme_font_size_override("font_size", 18 if _compact_layout else (17 if short_landscape else 20))
 
-	_status.custom_minimum_size = Vector2(0, 108 if _compact_layout else 172)
-	_status.add_theme_font_size_override("normal_font_size", 18 if _compact_layout else 24)
+	_status.custom_minimum_size = Vector2(0, 108 if _compact_layout else (92 if short_landscape else 172))
+	_status.add_theme_font_size_override("normal_font_size", 18 if _compact_layout else (17 if short_landscape else 24))
 
-	_die_frame.custom_minimum_size = Vector2(112, 112) if _compact_layout else Vector2(152, 152)
+	_die_frame.custom_minimum_size = Vector2(112, 112) if _compact_layout else (Vector2(126, 126) if short_landscape else Vector2(152, 152))
 	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
-	_die_label.add_theme_font_size_override("font_size", 74 if _compact_layout else 96)
-	_turn_label.add_theme_font_size_override("font_size", 24 if _compact_layout else 30)
+	_die_label.add_theme_font_size_override("font_size", 74 if _compact_layout else (82 if short_landscape else 96))
+	_turn_label.add_theme_font_size_override("font_size", 24 if _compact_layout else (22 if short_landscape else 30))
 
-	_roll_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else 80)
-	_end_turn_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else 80)
-	_roll_button.add_theme_font_size_override("font_size", 22 if _compact_layout else 26)
-	_end_turn_button.add_theme_font_size_override("font_size", 22 if _compact_layout else 26)
+	_roll_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else (58 if short_landscape else 80))
+	_end_turn_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else (58 if short_landscape else 80))
+	_roll_button.add_theme_font_size_override("font_size", 22 if _compact_layout else (20 if short_landscape else 26))
+	_end_turn_button.add_theme_font_size_override("font_size", 22 if _compact_layout else (20 if short_landscape else 26))
 
 	if _chat_section.visible:
 		_chat_log.custom_minimum_size = Vector2(0, 100 if _compact_layout else 150)
@@ -583,6 +583,17 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 
 	_setup_brand_title.custom_minimum_size = Vector2(0, 140 if _compact_layout else 204)
 	_win_brand_title.custom_minimum_size = Vector2(0, 112 if _compact_layout else 162)
+
+func _effective_window_size() -> Vector2:
+	if OS.has_feature("web"):
+		var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+		var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+		if web_width > 0.0 and web_height > 0.0:
+			return Vector2(web_width, web_height)
+	var win_size := Vector2(DisplayServer.window_get_size())
+	if win_size.x > 0.0 and win_size.y > 0.0:
+		return win_size
+	return get_viewport_rect().size
 
 func _on_start_pressed() -> void:
 	var opts := _seat_options()
