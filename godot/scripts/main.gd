@@ -4,6 +4,7 @@ const WahooState = preload("res://scripts/wahoo_state.gd")
 const WahooRules = preload("res://scripts/wahoo_rules.gd")
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
+const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
@@ -19,9 +20,6 @@ const MENU_LOAD_GAME := 1
 const MENU_RESTART_GAME := 2
 const MENU_EXIT_TO_SETUP := 3
 const MENU_QUIT_APP := 4
-const COMPACT_LAYOUT_BREAKPOINT := 980.0
-const COMPACT_LAYOUT_ASPECT_THRESHOLD := 1.12
-
 # Profile keys in easiest→hardest order for builtin profiles.
 const BUILTIN_PROFILE_ORDER := [
 	"human", "random", "swarm", "tortoise", "engineer",
@@ -526,8 +524,7 @@ func _refresh_setup_name_fields() -> void:
 
 func _on_viewport_resized() -> void:
 	var viewport_size := _effective_window_size()
-	var compact := viewport_size.x <= COMPACT_LAYOUT_BREAKPOINT or viewport_size.x < viewport_size.y * COMPACT_LAYOUT_ASPECT_THRESHOLD
-	_compact_layout = compact
+	_compact_layout = WahooResponsiveLayout.is_main_scene_compact(viewport_size)
 	_apply_responsive_layout(viewport_size)
 
 func _effective_window_size() -> Vector2:
@@ -542,9 +539,10 @@ func _effective_window_size() -> Vector2:
 	return get_viewport_rect().size
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
-	var short_side := minf(viewport_size.x, viewport_size.y)
-	var mobile_landscape := short_side <= 600.0 and viewport_size.x > viewport_size.y
-	var mobile_portrait := short_side <= 600.0 and viewport_size.y > viewport_size.x
+	var short_landscape := not _compact_layout and WahooResponsiveLayout.is_short_landscape(viewport_size)
+	var mobile_like := WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
+	var mobile_landscape := mobile_like and viewport_size.x > viewport_size.y
+	var mobile_portrait := mobile_like and viewport_size.y > viewport_size.x
 	var frame_margin := 12.0
 	if mobile_landscape:
 		frame_margin = 6.0
@@ -555,7 +553,6 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var portrait_scale := 1.0
 	if _compact_layout and mobile_portrait:
 		portrait_scale = 1.24
-
 	_root_container.vertical = _compact_layout
 	_root_container.add_theme_constant_override("separation", 12 if _compact_layout else 16)
 	var desktop_ui_scale := 1.0
@@ -564,12 +561,14 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		if mobile_landscape:
 			desktop_ui_scale = minf(desktop_ui_scale, 0.62)
 
-	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(350.0 * desktop_ui_scale, 0)
+	var desktop_side_width := (320.0 if short_landscape else 350.0) * desktop_ui_scale
+	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(desktop_side_width, 0)
 	_side_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _compact_layout else Control.SIZE_SHRINK_BEGIN
 	_side_panel.size_flags_vertical = Control.SIZE_FILL
+	_side_panel.add_theme_constant_override("separation", 8 if short_landscape else 10)
 
 	_board_frame.size_flags_stretch_ratio = 1.0 if _compact_layout else 3.0
-	_side_spacer.visible = not _compact_layout
+	_side_spacer.visible = not _compact_layout and not short_landscape
 	_side_panel_title.visible = not _compact_layout
 	if not _compact_layout:
 		var wordmark_aspect := 1400.0 / 520.0
@@ -577,25 +576,29 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 			var wordmark_size := WORDMARK_TEXTURE.get_size()
 			if wordmark_size.y > 0.0:
 				wordmark_aspect = wordmark_size.x / wordmark_size.y
-		var estimated_side_width := maxf(350.0 * desktop_ui_scale, viewport_size.x * 0.24 * desktop_ui_scale)
+		var estimated_side_width := maxf(desktop_side_width, viewport_size.x * 0.24 * desktop_ui_scale)
 		var target_wordmark_height := maxf(1.0, estimated_side_width - 12.0) / wordmark_aspect
-		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(target_wordmark_height + 8.0, 138.0, 210.0))))
+		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(
+			target_wordmark_height + 8.0,
+			110.0 if short_landscape else 138.0,
+			210.0
+		))))
 
-	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round(52.0 * desktop_ui_scale))
-	_game_menu_button.add_theme_font_size_override("font_size", round(18.0 * portrait_scale) if _compact_layout else round(20.0 * desktop_ui_scale))
+	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round((46.0 if short_landscape else 52.0) * desktop_ui_scale))
+	_game_menu_button.add_theme_font_size_override("font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 20.0) * desktop_ui_scale))
 
-	_status.custom_minimum_size = Vector2(0, round(108.0 * portrait_scale)) if _compact_layout else Vector2(0, round(172.0 * desktop_ui_scale))
-	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round(24.0 * desktop_ui_scale))
+	_status.custom_minimum_size = Vector2(0, round(108.0 * portrait_scale)) if _compact_layout else Vector2(0, round((92.0 if short_landscape else 172.0) * desktop_ui_scale))
+	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 24.0) * desktop_ui_scale))
 
-	_die_frame.custom_minimum_size = Vector2(round(112.0 * portrait_scale), round(112.0 * portrait_scale)) if _compact_layout else Vector2(round(152.0 * desktop_ui_scale), round(152.0 * desktop_ui_scale))
+	_die_frame.custom_minimum_size = Vector2(round(112.0 * portrait_scale), round(112.0 * portrait_scale)) if _compact_layout else Vector2(round((126.0 if short_landscape else 152.0) * desktop_ui_scale), round((126.0 if short_landscape else 152.0) * desktop_ui_scale))
 	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
-	_die_label.add_theme_font_size_override("font_size", round(74.0 * portrait_scale) if _compact_layout else round(96.0 * desktop_ui_scale))
-	_turn_label.add_theme_font_size_override("font_size", round(24.0 * portrait_scale) if _compact_layout else round(30.0 * desktop_ui_scale))
+	_die_label.add_theme_font_size_override("font_size", round(74.0 * portrait_scale) if _compact_layout else round((82.0 if short_landscape else 96.0) * desktop_ui_scale))
+	_turn_label.add_theme_font_size_override("font_size", round(24.0 * portrait_scale) if _compact_layout else round((22.0 if short_landscape else 30.0) * desktop_ui_scale))
 
-	_roll_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round(80.0 * desktop_ui_scale))
-	_end_turn_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round(80.0 * desktop_ui_scale))
-	_roll_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round(26.0 * desktop_ui_scale))
-	_end_turn_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round(26.0 * desktop_ui_scale))
+	_roll_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
+	_end_turn_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
+	_roll_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
+	_end_turn_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
 	if _compact_layout and mobile_portrait:
 		var action_width := round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
 		_roll_button.custom_minimum_size.x = action_width
