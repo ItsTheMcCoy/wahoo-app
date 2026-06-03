@@ -81,6 +81,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var is_mobile := _mobile_like_layout
 	var mobile_landscape := is_mobile and is_landscape
 	var mobile_portrait := is_mobile and not is_landscape
+	var ui_scale := 1.0
+	if mobile_portrait:
+		ui_scale = 1.22
 
 	var home_width := 360.0
 	if mobile_landscape:
@@ -89,6 +92,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		home_width = minf(viewport_size.x * 0.995, 560.0)
 	else:
 		home_width = minf(viewport_size.x * 0.56, 330.0)
+	home_width *= ui_scale
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 
 	var brand_height := 280
@@ -98,6 +102,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		brand_height = int(clampf(viewport_size.y * 0.34, 300.0, 460.0))
 	else:
 		brand_height = 240
+	brand_height = int(round(float(brand_height) * ui_scale))
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
 
 	var main_button_height := 60
@@ -111,6 +116,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	else:
 		main_button_height = 56
 		main_button_font = 19
+	main_button_height = int(round(float(main_button_height) * ui_scale))
+	main_button_font = int(round(float(main_button_font) * ui_scale))
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
@@ -122,14 +129,16 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		prompt_width = minf(viewport_size.x * 0.96, 480.0)
 	else:
 		prompt_width = minf(viewport_size.x * 0.60, 320.0)
+	prompt_width *= ui_scale
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
 	var stack_prompt_buttons := _compact_layout and not mobile_landscape
 	_host_buttons.vertical = stack_prompt_buttons
 	_join_buttons.vertical = stack_prompt_buttons
-	_host_buttons.add_theme_constant_override("separation", 10 if _compact_layout else 12)
-	_join_buttons.add_theme_constant_override("separation", 10 if _compact_layout else 12)
+	var button_separation := float(10 if _compact_layout else 12) * ui_scale
+	_host_buttons.add_theme_constant_override("separation", int(round(button_separation)))
+	_join_buttons.add_theme_constant_override("separation", int(round(button_separation)))
 
 # --- Main button handlers ---
 
