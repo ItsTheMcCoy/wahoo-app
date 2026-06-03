@@ -77,46 +77,46 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var mobile_landscape := is_mobile and is_landscape
 	var mobile_portrait := is_mobile and not is_landscape
 
-	var home_width := minf(viewport_size.x * 0.92, 440.0)
+	var home_width := 360.0
 	if mobile_landscape:
 		home_width = minf(viewport_size.x * 0.48, 440.0)
 	elif mobile_portrait:
-		home_width = minf(viewport_size.x * 0.97, 500.0)
-	elif not _compact_layout:
-		home_width = minf(viewport_size.x * 0.62, 360.0)
+		home_width = minf(viewport_size.x * 0.995, 560.0)
+	else:
+		home_width = minf(viewport_size.x * 0.56, 330.0)
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 
-	var brand_height := 250 if _compact_layout else 375
+	var brand_height := 280
 	if mobile_landscape:
 		brand_height = 190
 	elif mobile_portrait:
-		brand_height = 340
-	elif not _compact_layout:
-		brand_height = 280
+		brand_height = 400
+	else:
+		brand_height = 240
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
 
-	var main_button_height := 62 if _compact_layout else 72
-	var main_button_font := 22 if _compact_layout else 26
+	var main_button_height := 60
+	var main_button_font := 21
 	if mobile_landscape:
 		main_button_height = 54
 		main_button_font = 18
 	elif mobile_portrait:
-		main_button_height = 72
-		main_button_font = 25
-	elif not _compact_layout:
-		main_button_height = 60
-		main_button_font = 21
+		main_button_height = 78
+		main_button_font = 27
+	else:
+		main_button_height = 56
+		main_button_font = 19
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
 
-	var prompt_width := minf(viewport_size.x * 0.90, 380.0)
+	var prompt_width := 340.0
 	if mobile_landscape:
 		prompt_width = minf(viewport_size.x * 0.54, 420.0)
 	elif mobile_portrait:
-		prompt_width = minf(viewport_size.x * 0.95, 430.0)
-	elif not _compact_layout:
-		prompt_width = minf(viewport_size.x * 0.66, 340.0)
+		prompt_width = minf(viewport_size.x * 0.96, 480.0)
+	else:
+		prompt_width = minf(viewport_size.x * 0.60, 320.0)
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
