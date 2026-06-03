@@ -1,5 +1,7 @@
 extends Control
 
+const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
+
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 const PLAYER_COLORS := [
@@ -86,7 +88,9 @@ func _ready() -> void:
 
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size
-	_compact_layout = viewport_size.x <= 920.0 or viewport_size.x < viewport_size.y * 1.04
+	_compact_layout = viewport_size.x <= 920.0 \
+		or viewport_size.x < viewport_size.y * 1.04 \
+		or WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
 	_apply_responsive_layout(viewport_size)
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:

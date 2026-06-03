@@ -619,6 +619,29 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if _chat_section.visible:
 		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
 
+	var setup_row_separation := 8 if mobile_portrait else 16
+	var setup_dot_size := 32 if mobile_portrait else 46
+	var setup_option_width := 142 if mobile_portrait else 220
+	var setup_name_width := 112 if mobile_portrait else 170
+	var setup_row_height := 48 if mobile_portrait else 56
+	var setup_font_size := 16 if mobile_portrait else 18
+	for row in [
+		$SetupOverlay/SetupPanel/SetupContent/Seat0Row,
+		$SetupOverlay/SetupPanel/SetupContent/Seat1Row,
+		$SetupOverlay/SetupPanel/SetupContent/Seat2Row,
+		$SetupOverlay/SetupPanel/SetupContent/Seat3Row,
+	]:
+		row.custom_minimum_size = Vector2(0, setup_row_height)
+		row.add_theme_constant_override("separation", setup_row_separation)
+	for label in [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]:
+		label.custom_minimum_size = Vector2(setup_dot_size, setup_dot_size)
+	for opt in _seat_options():
+		opt.custom_minimum_size = Vector2(setup_option_width, 44 if mobile_portrait else 44)
+		opt.add_theme_font_size_override("font_size", setup_font_size)
+	for field in _seat_name_fields():
+		field.custom_minimum_size = Vector2(setup_name_width, 44 if mobile_portrait else 44)
+		field.add_theme_font_size_override("font_size", setup_font_size)
+
 	var setup_size := Vector2(
 		minf(viewport_size.x * 0.94, 560.0),
 		minf(viewport_size.y * 0.92, 600.0)
@@ -639,7 +662,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		win_panel.offset_top = -win_size.y * 0.5
 		win_panel.offset_bottom = win_size.y * 0.5
 
-	_setup_brand_title.custom_minimum_size = Vector2(0, 140 if _compact_layout else 204)
+	_setup_brand_title.custom_minimum_size = Vector2(0, 104 if mobile_portrait else (140 if _compact_layout else 204))
 	_win_brand_title.custom_minimum_size = Vector2(0, 112 if _compact_layout else 162)
 
 func _on_start_pressed() -> void:

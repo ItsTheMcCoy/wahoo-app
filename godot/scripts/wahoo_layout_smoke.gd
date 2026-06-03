@@ -19,6 +19,7 @@ static func run() -> Dictionary:
         _test_all_normalized_coordinates_are_in_unit_square,
         _test_main_scene_uses_compact_layout_for_mobile_landscape,
         _test_main_scene_uses_short_landscape_sizing_for_wide_short_viewports,
+        _test_mobile_like_detection_covers_phone_portrait_and_landscape,
     ]:
         total += 1
         var result: Dictionary = test.call()
@@ -162,4 +163,14 @@ static func _test_main_scene_uses_short_landscape_sizing_for_wide_short_viewport
         return _fail(name, "expected 1024x600 viewport to use short-landscape side-panel sizing")
     if WahooResponsiveLayout.is_short_landscape(Vector2(1366, 900)):
         return _fail(name, "expected 1366x900 viewport to keep full desktop side-panel sizing")
+    return _ok(name)
+
+static func _test_mobile_like_detection_covers_phone_portrait_and_landscape() -> Dictionary:
+    var name := "responsive layout detects phone-sized portrait and landscape canvases"
+    if not WahooResponsiveLayout.is_mobile_like_layout(Vector2(390, 844)):
+        return _fail(name, "expected 390x844 viewport to use mobile-like layout")
+    if not WahooResponsiveLayout.is_mobile_like_layout(Vector2(844, 390)):
+        return _fail(name, "expected 844x390 viewport to use mobile-like layout")
+    if WahooResponsiveLayout.is_mobile_like_layout(Vector2(1280, 720)):
+        return _fail(name, "expected 1280x720 viewport to remain desktop-like")
     return _ok(name)

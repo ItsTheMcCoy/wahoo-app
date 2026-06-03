@@ -1,6 +1,7 @@
 extends Control
 
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 
 # Main buttons
@@ -62,9 +63,7 @@ func _ready() -> void:
 
 func _on_viewport_resized() -> void:
 	var viewport_size := _effective_window_size()
-	var short_side := minf(viewport_size.x, viewport_size.y)
-	var long_side := maxf(viewport_size.x, viewport_size.y)
-	_mobile_like_layout = short_side <= 600.0 and long_side <= 2200.0
+	_mobile_like_layout = WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
 	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04 or _mobile_like_layout
 	_apply_responsive_layout(viewport_size)
 
@@ -89,16 +88,15 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var mobile_portrait := is_mobile and not is_landscape
 	var ui_scale := 1.0
 	if mobile_portrait:
-		ui_scale = 1.55
+		ui_scale = 1.12
 
 	var home_width := 360.0
 	if mobile_landscape:
 		home_width = minf(viewport_size.x * 0.48, 440.0)
 	elif mobile_portrait:
-		home_width = minf(viewport_size.x * 0.995, 560.0)
+		home_width = minf(viewport_size.x * 0.94, 560.0)
 	else:
 		home_width = minf(viewport_size.x * 0.56, 330.0)
-	home_width *= ui_scale
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 	_home_content.add_theme_constant_override("separation", int(round((12.0 if _compact_layout else 16.0) * ui_scale)))
 
@@ -126,10 +124,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if mobile_landscape:
 		prompt_width = minf(viewport_size.x * 0.54, 420.0)
 	elif mobile_portrait:
-		prompt_width = minf(viewport_size.x * 0.96, 480.0)
+		prompt_width = minf(viewport_size.x * 0.92, 480.0)
 	else:
 		prompt_width = minf(viewport_size.x * 0.60, 320.0)
-	prompt_width *= ui_scale
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
