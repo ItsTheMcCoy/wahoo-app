@@ -547,6 +547,15 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_board_frame.size_flags_stretch_ratio = 1.0 if _compact_layout else 3.0
 	_side_spacer.visible = not _compact_layout
 	_side_panel_title.visible = not _compact_layout
+	if not _compact_layout:
+		var wordmark_aspect := 1400.0 / 520.0
+		if WORDMARK_TEXTURE != null:
+			var wordmark_size := WORDMARK_TEXTURE.get_size()
+			if wordmark_size.y > 0.0:
+				wordmark_aspect = wordmark_size.x / wordmark_size.y
+		var estimated_side_width := maxf(350.0, viewport_size.x * 0.24)
+		var target_wordmark_height := maxf(1.0, estimated_side_width - 12.0) / wordmark_aspect
+		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(target_wordmark_height + 8.0, 138.0, 210.0))))
 
 	_game_menu_button.custom_minimum_size = Vector2(0, round((48.0 if _compact_layout else 52.0) * portrait_scale))
 	_game_menu_button.add_theme_font_size_override("font_size", round((18.0 if _compact_layout else 20.0) * portrait_scale))
