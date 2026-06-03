@@ -544,6 +544,7 @@ func _effective_window_size() -> Vector2:
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var short_side := minf(viewport_size.x, viewport_size.y)
 	var mobile_landscape := short_side <= 600.0 and viewport_size.x > viewport_size.y
+	var mobile_portrait := short_side <= 600.0 and viewport_size.y > viewport_size.x
 	var frame_margin := 12.0
 	if mobile_landscape:
 		frame_margin = 6.0
@@ -551,6 +552,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_root_container.offset_top = frame_margin
 	_root_container.offset_right = -frame_margin
 	_root_container.offset_bottom = -frame_margin
+	var portrait_scale := 1.0
+	if _compact_layout and mobile_portrait:
+		portrait_scale = 1.24
 
 	_root_container.vertical = _compact_layout
 	_root_container.add_theme_constant_override("separation", 12 if _compact_layout else 16)
@@ -568,26 +572,42 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_side_spacer.visible = not _compact_layout
 	_side_panel_title.visible = not _compact_layout
 	if not _compact_layout:
-		_side_panel_title.custom_minimum_size = Vector2(0, round(138.0 * desktop_ui_scale))
+		var wordmark_aspect := 1400.0 / 520.0
+		if WORDMARK_TEXTURE != null:
+			var wordmark_size := WORDMARK_TEXTURE.get_size()
+			if wordmark_size.y > 0.0:
+				wordmark_aspect = wordmark_size.x / wordmark_size.y
+		var estimated_side_width := maxf(350.0, viewport_size.x * 0.24)
+		var target_wordmark_height := maxf(1.0, estimated_side_width - 12.0) / wordmark_aspect
+		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(target_wordmark_height + 8.0, 138.0, 210.0))))
 
-	_game_menu_button.custom_minimum_size = Vector2(0, 48 if _compact_layout else round(52.0 * desktop_ui_scale))
-	_game_menu_button.add_theme_font_size_override("font_size", 18 if _compact_layout else round(20.0 * desktop_ui_scale))
+	_game_menu_button.custom_minimum_size = Vector2(0, round((48.0 if _compact_layout else 52.0 * desktop_ui_scale) * portrait_scale))
+	_game_menu_button.add_theme_font_size_override("font_size", round((18.0 if _compact_layout else 20.0 * desktop_ui_scale) * portrait_scale))
 
-	_status.custom_minimum_size = Vector2(0, 108 if _compact_layout else round(172.0 * desktop_ui_scale))
-	_status.add_theme_font_size_override("normal_font_size", 18 if _compact_layout else round(24.0 * desktop_ui_scale))
+	_status.custom_minimum_size = Vector2(0, round((108.0 if _compact_layout else 172.0 * desktop_ui_scale) * portrait_scale))
+	_status.add_theme_font_size_override("normal_font_size", round((18.0 if _compact_layout else 24.0 * desktop_ui_scale) * portrait_scale))
 
-	_die_frame.custom_minimum_size = Vector2(112, 112) if _compact_layout else Vector2(round(152.0 * desktop_ui_scale), round(152.0 * desktop_ui_scale))
+	_die_frame.custom_minimum_size = Vector2(round(112.0 * portrait_scale), round(112.0 * portrait_scale)) if _compact_layout else Vector2(round(152.0 * desktop_ui_scale), round(152.0 * desktop_ui_scale))
 	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
-	_die_label.add_theme_font_size_override("font_size", 74 if _compact_layout else round(96.0 * desktop_ui_scale))
-	_turn_label.add_theme_font_size_override("font_size", 24 if _compact_layout else round(30.0 * desktop_ui_scale))
+	_die_label.add_theme_font_size_override("font_size", round((74.0 if _compact_layout else 96.0 * desktop_ui_scale) * portrait_scale))
+	_turn_label.add_theme_font_size_override("font_size", round((24.0 if _compact_layout else 30.0 * desktop_ui_scale) * portrait_scale))
 
-	_roll_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else round(80.0 * desktop_ui_scale))
-	_end_turn_button.custom_minimum_size = Vector2(0, 64 if _compact_layout else round(80.0 * desktop_ui_scale))
-	_roll_button.add_theme_font_size_override("font_size", 22 if _compact_layout else round(26.0 * desktop_ui_scale))
-	_end_turn_button.add_theme_font_size_override("font_size", 22 if _compact_layout else round(26.0 * desktop_ui_scale))
+	_roll_button.custom_minimum_size = Vector2(0, round((64.0 if _compact_layout else 80.0 * desktop_ui_scale) * portrait_scale))
+	_end_turn_button.custom_minimum_size = Vector2(0, round((64.0 if _compact_layout else 80.0 * desktop_ui_scale) * portrait_scale))
+	_roll_button.add_theme_font_size_override("font_size", round((22.0 if _compact_layout else 26.0 * desktop_ui_scale) * portrait_scale))
+	_end_turn_button.add_theme_font_size_override("font_size", round((22.0 if _compact_layout else 26.0 * desktop_ui_scale) * portrait_scale))
+	if _compact_layout and mobile_portrait:
+		var action_width := round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
+		_roll_button.custom_minimum_size.x = action_width
+		_end_turn_button.custom_minimum_size.x = action_width
+		_roll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		_end_turn_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	else:
+		_roll_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_end_turn_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	if _chat_section.visible:
-		_chat_log.custom_minimum_size = Vector2(0, 100 if _compact_layout else round(150.0 * desktop_ui_scale))
+		_chat_log.custom_minimum_size = Vector2(0, round((100.0 if _compact_layout else 150.0 * desktop_ui_scale) * portrait_scale))
 
 	var setup_size := Vector2(
 		minf(viewport_size.x * 0.94, 560.0),
