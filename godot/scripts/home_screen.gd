@@ -4,6 +4,7 @@ const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
+@onready var _brand_spacer: Control      = $MainCenter/HomePanel/Content/Spacer
 @onready var _home_content: VBoxContainer = $MainCenter/HomePanel/Content
 @onready var _play_solo_btn: Button     = $MainCenter/HomePanel/Content/PlaySoloButton
 @onready var _host_game_btn: Button     = $MainCenter/HomePanel/Content/HostGameButton
@@ -51,6 +52,8 @@ func _ready() -> void:
 	_join_spectator_btn.pressed.connect(_on_join_as_spectator)
 	_host_name_field.text_submitted.connect(func(_t): _on_host_create())
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
+	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+		field.focus_entered.connect(func(): _on_text_field_focus(field))
 
 	_apply_theme()
 	get_viewport().size_changed.connect(_on_viewport_resized)
@@ -94,16 +97,19 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		home_width = minf(viewport_size.x * 0.56, 330.0)
 	home_width *= ui_scale
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
+	_home_content.add_theme_constant_override("separation", int(round((12.0 if _compact_layout else 16.0) * ui_scale)))
 
-	var brand_height := 280
-	if mobile_landscape:
-		brand_height = 190
-	elif mobile_portrait:
-		brand_height = int(clampf(viewport_size.y * 0.34, 300.0, 460.0))
-	else:
-		brand_height = 240
-	brand_height = int(round(float(brand_height) * ui_scale))
+	var wordmark_aspect := 1400.0 / 520.0
+	if _brand_title.texture != null:
+		var tex_size := _brand_title.texture.get_size()
+		if tex_size.y > 0.0:
+			wordmark_aspect = tex_size.x / tex_size.y
+	var horizontal_padding := (8.0 if _compact_layout else 12.0) * ui_scale
+	var target_wordmark_height := maxf(1.0, home_width - horizontal_padding) / wordmark_aspect
+	var vertical_padding := (8.0 if _compact_layout else 12.0) * ui_scale
+	var brand_height := int(round(clampf(target_wordmark_height + vertical_padding, 120.0, 260.0)))
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
+	_brand_spacer.custom_minimum_size = Vector2(0, int(round((8.0 if _compact_layout else 12.0) * ui_scale)))
 
 	var main_button_height := 60
 	var main_button_font := 21
@@ -149,7 +155,7 @@ func _on_host_game() -> void:
 	_host_error.visible = false
 	_host_name_field.text = ""
 	_host_layer.visible = true
-	_host_name_field.grab_focus()
+	_focus_text_field(_host_name_field)
 
 func _on_join() -> void:
 	_open_join_prompt("")
@@ -160,9 +166,23 @@ func _open_join_prompt(prefill_code: String) -> void:
 	_join_name_field.text = ""
 	_join_layer.visible = true
 	if prefill_code.is_empty():
-		_join_code_field.grab_focus()
+		_focus_text_field(_join_code_field)
 	else:
-		_join_name_field.grab_focus()
+		_focus_text_field(_join_name_field)
+
+func _focus_text_field(field: LineEdit) -> void:
+	field.grab_focus.call_deferred()
+	_ensure_web_canvas_focus.call_deferred()
+
+func _on_text_field_focus(field: LineEdit) -> void:
+	if not field.editable:
+		return
+	_ensure_web_canvas_focus.call_deferred()
+
+func _ensure_web_canvas_focus() -> void:
+	if not OS.has_feature("web"):
+		return
+	JavaScriptBridge.eval("(function(){const c=document.getElementById('canvas'); if(c){ c.focus(); }})();")
 
 # --- Host flow ---
 
@@ -391,6 +411,25 @@ func _apply_theme() -> void:
 	btn_disabled.bg_color = Color(0.19, 0.15, 0.12, 0.74)
 	btn_disabled.border_color = Color(0.41, 0.34, 0.28, 0.74)
 
+	var field_normal := StyleBoxFlat.new()
+	field_normal.bg_color = Color(0.15, 0.11, 0.08, 0.98)
+	field_normal.border_color = Color(0.52, 0.39, 0.27, 0.95)
+	field_normal.border_width_left = 2
+	field_normal.border_width_top = 2
+	field_normal.border_width_right = 2
+	field_normal.border_width_bottom = 2
+	field_normal.corner_radius_top_left = 9
+	field_normal.corner_radius_top_right = 9
+	field_normal.corner_radius_bottom_left = 9
+	field_normal.corner_radius_bottom_right = 9
+	field_normal.content_margin_left = 14
+	field_normal.content_margin_top = 10
+	field_normal.content_margin_right = 14
+	field_normal.content_margin_bottom = 10
+
+	var field_focus := field_normal.duplicate()
+	field_focus.border_color = Color(0.85, 0.65, 0.45, 0.98)
+
 	var all_buttons: Array = [
 		_play_solo_btn, _host_game_btn, _join_btn,
 		_host_cancel_btn, _host_create_btn,
@@ -408,5 +447,10 @@ func _apply_theme() -> void:
 		btn.add_theme_font_size_override("font_size", 26)
 
 	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+		field.add_theme_stylebox_override("normal", field_normal)
+		field.add_theme_stylebox_override("focus", field_focus)
+		field.add_theme_stylebox_override("read_only", field_normal)
 		field.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
 		field.add_theme_color_override("font_placeholder_color", Color(0.62, 0.58, 0.52))
+		field.add_theme_color_override("caret_color", Color(0.96, 0.92, 0.82))
+		field.add_theme_color_override("selection_color", Color(0.55, 0.40, 0.25, 0.85))
