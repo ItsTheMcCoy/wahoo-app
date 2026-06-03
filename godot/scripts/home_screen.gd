@@ -58,12 +58,18 @@ func _ready() -> void:
 	_check_deep_link()
 
 func _on_viewport_resized() -> void:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size := _effective_window_size()
 	var short_side := minf(viewport_size.x, viewport_size.y)
 	var long_side := maxf(viewport_size.x, viewport_size.y)
 	_mobile_like_layout = short_side <= 560.0 and long_side <= 1400.0
 	_compact_layout = viewport_size.x <= 760.0 or viewport_size.x < viewport_size.y * 1.04 or _mobile_like_layout
 	_apply_responsive_layout(viewport_size)
+
+func _effective_window_size() -> Vector2:
+	var win_size := Vector2(DisplayServer.window_get_size())
+	if win_size.x > 0.0 and win_size.y > 0.0:
+		return win_size
+	return get_viewport_rect().size
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var is_landscape := viewport_size.x > viewport_size.y
@@ -73,35 +79,44 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 
 	var home_width := minf(viewport_size.x * 0.92, 440.0)
 	if mobile_landscape:
-		home_width = minf(viewport_size.x * 0.56, 560.0)
+		home_width = minf(viewport_size.x * 0.48, 440.0)
 	elif mobile_portrait:
-		home_width = minf(viewport_size.x * 0.94, 430.0)
+		home_width = minf(viewport_size.x * 0.97, 500.0)
+	elif not _compact_layout:
+		home_width = minf(viewport_size.x * 0.68, 390.0)
 	_home_content.custom_minimum_size = Vector2(home_width, 0)
 
 	var brand_height := 250 if _compact_layout else 375
 	if mobile_landscape:
-		brand_height = 310
+		brand_height = 190
 	elif mobile_portrait:
-		brand_height = 280
+		brand_height = 340
+	elif not _compact_layout:
+		brand_height = 300
 	_brand_title.custom_minimum_size = Vector2(0, brand_height)
 
 	var main_button_height := 62 if _compact_layout else 72
 	var main_button_font := 22 if _compact_layout else 26
 	if mobile_landscape:
-		main_button_height = 68
-		main_button_font = 24
+		main_button_height = 54
+		main_button_font = 18
 	elif mobile_portrait:
-		main_button_height = 66
-		main_button_font = 23
+		main_button_height = 72
+		main_button_font = 25
+	elif not _compact_layout:
+		main_button_height = 64
+		main_button_font = 22
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
 
 	var prompt_width := minf(viewport_size.x * 0.90, 380.0)
 	if mobile_landscape:
-		prompt_width = minf(viewport_size.x * 0.58, 460.0)
+		prompt_width = minf(viewport_size.x * 0.54, 420.0)
 	elif mobile_portrait:
-		prompt_width = minf(viewport_size.x * 0.92, 390.0)
+		prompt_width = minf(viewport_size.x * 0.95, 430.0)
+	elif not _compact_layout:
+		prompt_width = minf(viewport_size.x * 0.72, 360.0)
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
