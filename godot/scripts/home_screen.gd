@@ -83,7 +83,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var mobile_portrait := is_mobile and not is_landscape
 	var ui_scale := 1.0
 	if mobile_portrait:
-		ui_scale = 1.35
+		ui_scale = 1.45
 
 	var home_width := 360.0
 	if mobile_landscape:
