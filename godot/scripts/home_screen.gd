@@ -57,7 +57,7 @@ func _ready() -> void:
 
 	_apply_theme()
 	get_viewport().size_changed.connect(_on_viewport_resized)
-	_on_viewport_resized()
+	call_deferred("_on_viewport_resized")
 	_check_deep_link()
 
 func _on_viewport_resized() -> void:
@@ -69,6 +69,9 @@ func _on_viewport_resized() -> void:
 	_apply_responsive_layout(viewport_size)
 
 func _effective_window_size() -> Vector2:
+	var vp_size := get_viewport_rect().size
+	if vp_size.x > 0.0 and vp_size.y > 0.0:
+		return vp_size
 	if OS.has_feature("web"):
 		var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
 		var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
@@ -77,7 +80,7 @@ func _effective_window_size() -> Vector2:
 	var win_size := Vector2(DisplayServer.window_get_size())
 	if win_size.x > 0.0 and win_size.y > 0.0:
 		return win_size
-	return get_viewport_rect().size
+	return Vector2(1280, 720)
 
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var is_landscape := viewport_size.x > viewport_size.y

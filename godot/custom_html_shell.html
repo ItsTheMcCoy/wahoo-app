@@ -205,8 +205,8 @@ const engine = new Engine(GODOT_CONFIG);
 		if (!fullscreenBtn) {
 			return;
 		}
-		fullscreenBtn.textContent = 'Fullscreen';
-		fullscreenBtn.style.display = isFullscreen() ? 'none' : 'inline-flex';
+		const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+		fullscreenBtn.style.display = (isTouchDevice && !isFullscreen()) ? 'inline-flex' : 'none';
 	}
 
 	if (fullscreenBtn) {

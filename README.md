@@ -70,7 +70,8 @@ Phase 2b+ complete:
 - `godot/scripts/wahoo_layout_smoke.gd` adds layout checks to the headless Godot smoke runner.
 - `godot/scenes/Main.tscn`, `godot/scripts/main.gd`, and `godot/scripts/wahoo_board_view.gd` provide a responsive board-first hot-seat game with marble rendering, tap-to-move selection, lift-and-place movement animation, dynamic marble shadows, landing impact pulse, turn status, Roll button state, and a win overlay.
 - Latest Godot smoke validation (June 3, 2026): `51/51 passed`.
-- Web export artifacts are current for recent profile-manager and setup-overlay updates.
+- Desktop browser layout fix: viewport sizing now uses Godot's virtual coordinate space (`get_viewport_rect().size`) so the responsive layout never overflows the canvas on large or maximized browser windows. Fullscreen button hidden on desktop (pointer: fine); touch-only devices still show it.
+- Web export artifacts are current for recent profile-manager, setup-overlay, and desktop layout fixes.
 
 ## Requirements
 
