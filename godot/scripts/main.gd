@@ -577,25 +577,25 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 			var wordmark_size := WORDMARK_TEXTURE.get_size()
 			if wordmark_size.y > 0.0:
 				wordmark_aspect = wordmark_size.x / wordmark_size.y
-		var estimated_side_width := maxf(350.0, viewport_size.x * 0.24)
+		var estimated_side_width := maxf(350.0 * desktop_ui_scale, viewport_size.x * 0.24 * desktop_ui_scale)
 		var target_wordmark_height := maxf(1.0, estimated_side_width - 12.0) / wordmark_aspect
 		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(target_wordmark_height + 8.0, 138.0, 210.0))))
 
-	_game_menu_button.custom_minimum_size = Vector2(0, round((48.0 if _compact_layout else 52.0 * desktop_ui_scale) * portrait_scale))
-	_game_menu_button.add_theme_font_size_override("font_size", round((18.0 if _compact_layout else 20.0 * desktop_ui_scale) * portrait_scale))
+	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round(52.0 * desktop_ui_scale))
+	_game_menu_button.add_theme_font_size_override("font_size", round(18.0 * portrait_scale) if _compact_layout else round(20.0 * desktop_ui_scale))
 
-	_status.custom_minimum_size = Vector2(0, round((108.0 if _compact_layout else 172.0 * desktop_ui_scale) * portrait_scale))
-	_status.add_theme_font_size_override("normal_font_size", round((18.0 if _compact_layout else 24.0 * desktop_ui_scale) * portrait_scale))
+	_status.custom_minimum_size = Vector2(0, round(108.0 * portrait_scale)) if _compact_layout else Vector2(0, round(172.0 * desktop_ui_scale))
+	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round(24.0 * desktop_ui_scale))
 
 	_die_frame.custom_minimum_size = Vector2(round(112.0 * portrait_scale), round(112.0 * portrait_scale)) if _compact_layout else Vector2(round(152.0 * desktop_ui_scale), round(152.0 * desktop_ui_scale))
 	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
-	_die_label.add_theme_font_size_override("font_size", round((74.0 if _compact_layout else 96.0 * desktop_ui_scale) * portrait_scale))
-	_turn_label.add_theme_font_size_override("font_size", round((24.0 if _compact_layout else 30.0 * desktop_ui_scale) * portrait_scale))
+	_die_label.add_theme_font_size_override("font_size", round(74.0 * portrait_scale) if _compact_layout else round(96.0 * desktop_ui_scale))
+	_turn_label.add_theme_font_size_override("font_size", round(24.0 * portrait_scale) if _compact_layout else round(30.0 * desktop_ui_scale))
 
-	_roll_button.custom_minimum_size = Vector2(0, round((64.0 if _compact_layout else 80.0 * desktop_ui_scale) * portrait_scale))
-	_end_turn_button.custom_minimum_size = Vector2(0, round((64.0 if _compact_layout else 80.0 * desktop_ui_scale) * portrait_scale))
-	_roll_button.add_theme_font_size_override("font_size", round((22.0 if _compact_layout else 26.0 * desktop_ui_scale) * portrait_scale))
-	_end_turn_button.add_theme_font_size_override("font_size", round((22.0 if _compact_layout else 26.0 * desktop_ui_scale) * portrait_scale))
+	_roll_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round(80.0 * desktop_ui_scale))
+	_end_turn_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round(80.0 * desktop_ui_scale))
+	_roll_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round(26.0 * desktop_ui_scale))
+	_end_turn_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round(26.0 * desktop_ui_scale))
 	if _compact_layout and mobile_portrait:
 		var action_width := round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
 		_roll_button.custom_minimum_size.x = action_width
@@ -607,7 +607,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		_end_turn_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	if _chat_section.visible:
-		_chat_log.custom_minimum_size = Vector2(0, round((100.0 if _compact_layout else 150.0 * desktop_ui_scale) * portrait_scale))
+		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
 
 	var setup_size := Vector2(
 		minf(viewport_size.x * 0.94, 560.0),
