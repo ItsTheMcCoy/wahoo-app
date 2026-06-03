@@ -572,10 +572,11 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(desktop_side_width, 0)
 	_side_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _compact_layout else Control.SIZE_SHRINK_BEGIN
 	_side_panel.size_flags_vertical = Control.SIZE_FILL
-	_side_panel.add_theme_constant_override("separation", 8 if short_landscape else 10)
+	var side_panel_gap := 8 if short_landscape else 10
+	_side_panel.add_theme_constant_override("separation", side_panel_gap)
 
 	_board_frame.size_flags_stretch_ratio = 1.0 if _compact_layout else 3.0
-	_side_spacer.visible = not _compact_layout and not short_landscape
+	_side_spacer.visible = not _compact_layout
 	_side_panel_title.visible = not _compact_layout
 	if not _compact_layout:
 		var wordmark_aspect := 1400.0 / 520.0
@@ -583,16 +584,18 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 			var wordmark_size := WORDMARK_TEXTURE.get_size()
 			if wordmark_size.y > 0.0:
 				wordmark_aspect = wordmark_size.x / wordmark_size.y
-		var estimated_side_width := maxf(desktop_side_width, viewport_size.x * 0.24 * desktop_ui_scale)
-		var target_wordmark_height := maxf(1.0, estimated_side_width - 12.0) / wordmark_aspect
-		_side_panel_title.custom_minimum_size = Vector2(0, int(round(clampf(
-			target_wordmark_height + 8.0,
-			110.0 if short_landscape else 138.0,
-			210.0
-		))))
+		var button_side_padding := 12.0
+		var target_wordmark_width := maxf(1.0, desktop_side_width - button_side_padding * 2.0)
+		var target_wordmark_height := target_wordmark_width / wordmark_aspect
+		_side_panel_title.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		_side_panel_title.custom_minimum_size = Vector2(
+			round(target_wordmark_width),
+			round(maxf(target_wordmark_height, 110.0 if short_landscape else 138.0))
+		)
 
 	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round((46.0 if short_landscape else 52.0) * desktop_ui_scale))
-	_game_menu_button.add_theme_font_size_override("font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 20.0) * desktop_ui_scale))
+	var action_button_font_size: int = round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale)
+	_game_menu_button.add_theme_font_size_override("font_size", action_button_font_size)
 
 	_status.custom_minimum_size = Vector2(0, round(108.0 * portrait_scale)) if _compact_layout else Vector2(0, round((92.0 if short_landscape else 172.0) * desktop_ui_scale))
 	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 24.0) * desktop_ui_scale))
@@ -604,8 +607,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 
 	_roll_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
 	_end_turn_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
-	_roll_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
-	_end_turn_button.add_theme_font_size_override("font_size", round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale))
+	_roll_button.add_theme_font_size_override("font_size", action_button_font_size)
+	_end_turn_button.add_theme_font_size_override("font_size", action_button_font_size)
 	if _compact_layout and mobile_portrait:
 		var action_width: float = round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
 		_roll_button.custom_minimum_size.x = action_width
