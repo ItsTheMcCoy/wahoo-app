@@ -6,6 +6,9 @@ const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 const MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN := 18.0
 const MOBILE_BROWSER_PORTRAIT_PANEL_WIDTH_RATIO := 0.94
 const MOBILE_BROWSER_PORTRAIT_PROMPT_WIDTH_RATIO := 0.92
+const MOBILE_BROWSER_LANDSCAPE_PANEL_MARGIN := 14.0
+const MOBILE_BROWSER_LANDSCAPE_PANEL_HEIGHT_RATIO := 0.92
+const MOBILE_BROWSER_LANDSCAPE_PROMPT_WIDTH_RATIO := 0.50
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
@@ -103,9 +106,15 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var mobile_browser_portrait := web_window_size.x > 0.0 \
 		and web_window_size.y > web_window_size.x \
 		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_landscape := web_window_size.x > 0.0 \
+		and web_window_size.x > web_window_size.y \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_layout := mobile_browser_portrait or mobile_browser_landscape
 	var mobile_browser_unit_scale := 1.0
 	if mobile_browser_portrait:
 		mobile_browser_unit_scale = maxf(1.0, viewport_size.x / web_window_size.x)
+	elif mobile_browser_landscape:
+		mobile_browser_unit_scale = maxf(1.0, viewport_size.y / web_window_size.y)
 
 	var is_landscape := viewport_size.x > viewport_size.y
 	var is_mobile := _mobile_like_layout
@@ -114,12 +123,28 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var ui_scale := 1.0
 	if mobile_browser_portrait:
 		ui_scale = mobile_browser_unit_scale
+	elif mobile_browser_landscape:
+		ui_scale = mobile_browser_unit_scale
 	elif mobile_portrait:
 		ui_scale = 1.12
-	_apply_theme(ui_scale, mobile_browser_portrait)
+	var mobile_browser_margin := -1.0
+	if mobile_browser_portrait:
+		mobile_browser_margin = MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN
+	elif mobile_browser_landscape:
+		mobile_browser_margin = MOBILE_BROWSER_LANDSCAPE_PANEL_MARGIN
+	_apply_theme(ui_scale, mobile_browser_margin)
 
 	var home_width := 360.0
-	if mobile_landscape:
+	if mobile_browser_landscape:
+		var target_panel_height := web_window_size.y * MOBILE_BROWSER_LANDSCAPE_PANEL_HEIGHT_RATIO
+		var panel_margin := MOBILE_BROWSER_LANDSCAPE_PANEL_MARGIN * 2.0
+		var content_gap := 12.0 * 3.0
+		var landscape_button_height := clampf(web_window_size.y * 0.15, 56.0, 68.0)
+		var target_brand_height := target_panel_height - panel_margin - content_gap - (landscape_button_height * 3.0)
+		var target_content_width := target_brand_height * WORDMARK_ASPECT_RATIO
+		var max_content_width := web_window_size.x * 0.56
+		home_width = clampf(target_content_width, 280.0, max_content_width) * mobile_browser_unit_scale
+	elif mobile_landscape:
 		home_width = minf(viewport_size.x * 0.48, 440.0)
 	elif mobile_browser_portrait:
 		var target_panel_width := web_window_size.x * MOBILE_BROWSER_PORTRAIT_PANEL_WIDTH_RATIO
@@ -137,7 +162,11 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 
 	var main_button_height := 60
 	var main_button_font := 21
-	if mobile_landscape:
+	if mobile_browser_landscape:
+		var landscape_button_height_css := clampf(web_window_size.y * 0.15, 56.0, 68.0)
+		main_button_height = int(round(landscape_button_height_css * mobile_browser_unit_scale))
+		main_button_font = int(round(clampf(landscape_button_height_css * 0.34, 20.0, 24.0) * mobile_browser_unit_scale))
+	elif mobile_landscape:
 		main_button_height = 54
 		main_button_font = 18
 	elif mobile_browser_portrait:
@@ -150,7 +179,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	else:
 		main_button_height = 56
 		main_button_font = 19
-	if not mobile_browser_portrait:
+	if not mobile_browser_layout:
 		main_button_height = int(round(float(main_button_height) * ui_scale))
 		main_button_font = int(round(float(main_button_font) * ui_scale))
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
@@ -158,7 +187,11 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		btn.add_theme_font_size_override("font_size", main_button_font)
 
 	var prompt_width := 340.0
-	if mobile_landscape:
+	if mobile_browser_landscape:
+		var target_prompt_panel_width := web_window_size.x * MOBILE_BROWSER_LANDSCAPE_PROMPT_WIDTH_RATIO
+		var prompt_content_width := target_prompt_panel_width - (MOBILE_BROWSER_LANDSCAPE_PANEL_MARGIN * 2.0)
+		prompt_width = clampf(prompt_content_width, 320.0, 460.0) * mobile_browser_unit_scale
+	elif mobile_landscape:
 		prompt_width = minf(viewport_size.x * 0.54, 420.0)
 	elif mobile_browser_portrait:
 		var target_prompt_panel_width := web_window_size.x * MOBILE_BROWSER_PORTRAIT_PROMPT_WIDTH_RATIO
@@ -171,7 +204,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
 
-	if mobile_portrait:
+	if mobile_browser_layout or mobile_portrait:
 		var prompt_field_height := int(round(52.0 * ui_scale))
 		for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
 			field.custom_minimum_size = Vector2(0, prompt_field_height)
@@ -416,9 +449,9 @@ func _check_deep_link() -> void:
 
 # --- Visual theme ---
 
-func _apply_theme(ui_scale: float = 1.0, mobile_browser_portrait: bool = false) -> void:
-	var main_margin := MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN if mobile_browser_portrait else 32.0
-	var prompt_margin := MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN if mobile_browser_portrait else 28.0
+func _apply_theme(ui_scale: float = 1.0, mobile_browser_margin: float = -1.0) -> void:
+	var main_margin := mobile_browser_margin if mobile_browser_margin >= 0.0 else 32.0
+	var prompt_margin := mobile_browser_margin if mobile_browser_margin >= 0.0 else 28.0
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.17, 0.13, 0.10, 0.94)
