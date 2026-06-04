@@ -198,7 +198,27 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 
 	function isFullscreen() {
-		return !!document.fullscreenElement;
+		return !!(
+			document.fullscreenElement ||
+			document.webkitFullscreenElement ||
+			document.msFullscreenElement
+		);
+	}
+
+	function supportsFullscreen(element) {
+		return !!(
+			element &&
+			(element.requestFullscreen || element.webkitRequestFullscreen || element.msRequestFullscreen)
+		);
+	}
+
+	async function requestFullscreenForGame() {
+		const gameCanvas = document.getElementById('canvas');
+		const target = supportsFullscreen(gameCanvas) ? gameCanvas : document.documentElement;
+		const request = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
+		if (request) {
+			await request.call(target);
+		}
 	}
 
 	function updateFullscreenButton() {
@@ -215,7 +235,7 @@ const engine = new Engine(GODOT_CONFIG);
 				if (isFullscreen()) {
 					await document.exitFullscreen();
 				} else {
-					await document.documentElement.requestFullscreen();
+					await requestFullscreenForGame();
 				}
 			} catch (_err) {
 				/* Ignore unsupported fullscreen requests. */
