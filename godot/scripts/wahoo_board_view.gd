@@ -30,6 +30,8 @@ const MOVE_DEST_RING := Color(1.0, 0.78, 0.10, 1.0)
 const MOVE_DEST_FILL_ALPHA := 0.42
 const MOVE_DEST_RING_ALPHA := 0.98
 const TURN_FOCUS_RING_ALPHA := 0.55
+const TOUCH_MOUSE_DEBOUNCE_MS := 350
+const TOUCH_MOUSE_DEBOUNCE_RADIUS_PX := 24.0
 const BOARD_SCALE := 0.97
 const POSITION_SPOT_RADIUS_RATIO := 0.37
 const MARBLE_SIZE_RATIO := 0.71
@@ -101,6 +103,8 @@ var _impact_tween: Tween = null
 var _animation_style: Dictionary = {}
 var _board_texture: Texture2D = null
 var _marble_texture: Texture2D = null
+var _last_touch_press_msec := -1000
+var _last_touch_press_position := Vector2.INF
 
 func _ready() -> void:
     _load_visual_assets()
@@ -251,11 +255,18 @@ func _gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
         var mouse_event := event as InputEventMouseButton
         if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+            if _is_duplicate_mouse_press_after_touch(mouse_event.position):
+                accept_event()
+                return
             _handle_pointer_press(mouse_event.position)
+            accept_event()
     elif event is InputEventScreenTouch:
         var touch_event := event as InputEventScreenTouch
         if touch_event.pressed:
+            _last_touch_press_msec = Time.get_ticks_msec()
+            _last_touch_press_position = touch_event.position
             _handle_pointer_press(touch_event.position)
+            accept_event()
 
 func _draw() -> void:
     _board_rect = _square_board_rect()
@@ -682,6 +693,13 @@ func _handle_pointer_press(local_position: Vector2) -> void:
         _selected_marble = -1
         _refresh_marble_nodes()
         queue_redraw()
+
+func _is_duplicate_mouse_press_after_touch(local_position: Vector2) -> bool:
+    var elapsed := Time.get_ticks_msec() - _last_touch_press_msec
+    if elapsed < 0 or elapsed > TOUCH_MOUSE_DEBOUNCE_MS:
+        return false
+    var radius: float = max(TOUCH_MOUSE_DEBOUNCE_RADIUS_PX, _cell_size * 0.35)
+    return local_position.distance_to(_last_touch_press_position) <= radius
 
 func _move_at_destination(local_position: Vector2) -> Variant:
     for move in _visible_legal_moves():

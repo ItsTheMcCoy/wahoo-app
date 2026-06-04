@@ -1,1 +1,0 @@
-I would like a tool that allows me to create an AI profile based on the traits that the existing profiles use.  The traits should be granular enough that each one is a single trait.  The tool should not allow traits that contridicts.  Each selected trait should have a slider that increases the weight of a trait, or how likely the AI is to stick to the trait.

@@ -2,6 +2,7 @@ extends SceneTree
 
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooLayoutSmoke = preload("res://scripts/wahoo_layout_smoke.gd")
+const WahooBoardViewSmoke = preload("res://scripts/wahoo_board_view_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
 const WahooAISmoke = preload("res://scripts/wahoo_ai_smoke.gd")
 
@@ -48,6 +49,7 @@ func _init() -> void:
     var suites := [
         ["rules", WahooRulesSmoke.run()],
         ["layout", WahooLayoutSmoke.run()],
+        ["board_view", WahooBoardViewSmoke.run()],
         ["ai_load", _ai_load_smoke()],
         ["ai_smoke", WahooAISmoke.run()],
     ]
