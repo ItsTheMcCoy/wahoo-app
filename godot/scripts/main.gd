@@ -622,21 +622,39 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if _chat_section.visible:
 		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
 
-	var setup_size := Vector2(
-		minf(viewport_size.x * (0.975 if mobile_like else 0.94), 640.0 if mobile_like else 560.0),
-		minf(viewport_size.y * (0.97 if mobile_like else 0.92), 760.0 if mobile_like else 600.0)
-	)
+	var setup_size := Vector2.ZERO
+	if mobile_portrait:
+		setup_size = Vector2(
+			minf(viewport_size.x * 0.995, 760.0),
+			minf(viewport_size.y * 0.985, 900.0)
+		)
+	elif mobile_like:
+		setup_size = Vector2(
+			minf(viewport_size.x * 0.975, 640.0),
+			minf(viewport_size.y * 0.97, 760.0)
+		)
+	else:
+		setup_size = Vector2(
+			minf(viewport_size.x * 0.94, 560.0),
+			minf(viewport_size.y * 0.92, 600.0)
+		)
 	var setup_content_width := maxf(240.0, setup_size.x - 64.0)
 	var setup_mobile_scale := 1.0
 	if mobile_portrait:
-		setup_mobile_scale = 1.36
+		setup_mobile_scale = 1.55
 	elif mobile_landscape:
 		setup_mobile_scale = 1.22
 
 	var setup_row_separation := round(16.0 * setup_mobile_scale) if mobile_like else 16
 	var setup_dot_size := round(46.0 * setup_mobile_scale) if mobile_like else 46
-	var setup_option_width := round(clampf(setup_content_width * 0.52, 162.0, 270.0)) if mobile_like else 220
-	var setup_name_width := round(clampf(setup_content_width * 0.36, 126.0, 210.0)) if mobile_like else 170
+	var setup_option_width := 220
+	var setup_name_width := 170
+	if mobile_portrait:
+		setup_option_width = round(clampf(setup_content_width * 0.57, 220.0, 360.0))
+		setup_name_width = round(clampf(setup_content_width * 0.40, 150.0, 260.0))
+	elif mobile_like:
+		setup_option_width = round(clampf(setup_content_width * 0.52, 162.0, 270.0))
+		setup_name_width = round(clampf(setup_content_width * 0.36, 126.0, 210.0))
 	var setup_row_height := round(56.0 * setup_mobile_scale) if mobile_like else 56
 	var setup_field_height := round(44.0 * setup_mobile_scale) if mobile_like else 44
 	var setup_font_size := round(18.0 * setup_mobile_scale) if mobile_like else 18
@@ -665,7 +683,10 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	for field in _seat_name_fields():
 		field.custom_minimum_size = Vector2(setup_name_width, setup_field_height)
 		field.add_theme_font_size_override("font_size", setup_font_size)
-	_start_button.custom_minimum_size = Vector2(round(clampf(setup_content_width * 0.8, 280.0, 420.0)), setup_start_height)
+	var start_button_width := round(clampf(setup_content_width * 0.8, 280.0, 420.0))
+	if mobile_portrait:
+		start_button_width = round(clampf(setup_content_width * 0.84, 320.0, 520.0))
+	_start_button.custom_minimum_size = Vector2(start_button_width, setup_start_height)
 	_start_button.add_theme_font_size_override("font_size", setup_start_font_size)
 	_setup_panel.offset_left = -setup_size.x * 0.5
 	_setup_panel.offset_right = setup_size.x * 0.5
