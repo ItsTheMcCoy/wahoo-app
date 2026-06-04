@@ -3,6 +3,9 @@ extends Control
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
+const MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN := 18.0
+const MOBILE_BROWSER_PORTRAIT_PANEL_WIDTH_RATIO := 0.94
+const MOBILE_BROWSER_PORTRAIT_PROMPT_WIDTH_RATIO := 0.92
 
 # Main buttons
 @onready var _brand_title: TextureRect  = $MainCenter/HomePanel/Content/BrandTitle
@@ -13,6 +16,8 @@ const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 
 # Host prompt
 @onready var _host_layer: Control       = $HostPromptLayer
+@onready var _host_title: Label         = $HostPromptLayer/Center/HostPanel/HostContent/HostTitle
+@onready var _host_name_label: Label    = $HostPromptLayer/Center/HostPanel/HostContent/HostNameLabel
 @onready var _host_name_field: LineEdit = $HostPromptLayer/Center/HostPanel/HostContent/HostNameField
 @onready var _host_error: Label         = $HostPromptLayer/Center/HostPanel/HostContent/HostErrorLabel
 @onready var _host_cancel_btn: Button   = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons/HostCancelBtn
@@ -22,7 +27,10 @@ const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 
 # Join prompt
 @onready var _join_layer: Control           = $JoinPromptLayer
+@onready var _join_title: Label             = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinTitle
+@onready var _join_code_label: Label        = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinCodeLabel
 @onready var _join_code_field: LineEdit     = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinCodeField
+@onready var _join_name_label: Label        = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinNameLabel
 @onready var _join_name_field: LineEdit     = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinNameField
 @onready var _join_error: Label             = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinErrorLabel
 @onready var _join_cancel_btn: Button       = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinCancelBtn
@@ -81,18 +89,42 @@ func _effective_window_size() -> Vector2:
 		return win_size
 	return Vector2(1280, 720)
 
+func _web_window_size() -> Vector2:
+	if not OS.has_feature("web"):
+		return Vector2.ZERO
+	var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+	var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+	if web_width > 0.0 and web_height > 0.0:
+		return Vector2(web_width, web_height)
+	return Vector2.ZERO
+
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	var web_window_size := _web_window_size()
+	var mobile_browser_portrait := web_window_size.x > 0.0 \
+		and web_window_size.y > web_window_size.x \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_unit_scale := 1.0
+	if mobile_browser_portrait:
+		mobile_browser_unit_scale = maxf(1.0, viewport_size.x / web_window_size.x)
+
 	var is_landscape := viewport_size.x > viewport_size.y
 	var is_mobile := _mobile_like_layout
 	var mobile_landscape := is_mobile and is_landscape
-	var mobile_portrait := is_mobile and not is_landscape
+	var mobile_portrait := mobile_browser_portrait or (is_mobile and not is_landscape)
 	var ui_scale := 1.0
-	if mobile_portrait:
+	if mobile_browser_portrait:
+		ui_scale = mobile_browser_unit_scale
+	elif mobile_portrait:
 		ui_scale = 1.12
+	_apply_theme(ui_scale, mobile_browser_portrait)
 
 	var home_width := 360.0
 	if mobile_landscape:
 		home_width = minf(viewport_size.x * 0.48, 440.0)
+	elif mobile_browser_portrait:
+		var target_panel_width := web_window_size.x * MOBILE_BROWSER_PORTRAIT_PANEL_WIDTH_RATIO
+		var content_width := target_panel_width - (MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN * 2.0)
+		home_width = maxf(content_width, 280.0) * mobile_browser_unit_scale
 	elif mobile_portrait:
 		home_width = minf(viewport_size.x * 0.94, 560.0)
 	else:
@@ -108,14 +140,19 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if mobile_landscape:
 		main_button_height = 54
 		main_button_font = 18
+	elif mobile_browser_portrait:
+		var button_height_css := clampf(web_window_size.y * 0.105, 76.0, 96.0)
+		main_button_height = int(round(button_height_css * mobile_browser_unit_scale))
+		main_button_font = int(round(clampf(button_height_css * 0.34, 24.0, 31.0) * mobile_browser_unit_scale))
 	elif mobile_portrait:
 		main_button_height = int(clampf(viewport_size.y * 0.095, 64.0, 92.0))
 		main_button_font = int(clampf(float(main_button_height) * 0.34, 22.0, 30.0))
 	else:
 		main_button_height = 56
 		main_button_font = 19
-	main_button_height = int(round(float(main_button_height) * ui_scale))
-	main_button_font = int(round(float(main_button_font) * ui_scale))
+	if not mobile_browser_portrait:
+		main_button_height = int(round(float(main_button_height) * ui_scale))
+		main_button_font = int(round(float(main_button_font) * ui_scale))
 	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
@@ -123,12 +160,40 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var prompt_width := 340.0
 	if mobile_landscape:
 		prompt_width = minf(viewport_size.x * 0.54, 420.0)
+	elif mobile_browser_portrait:
+		var target_prompt_panel_width := web_window_size.x * MOBILE_BROWSER_PORTRAIT_PROMPT_WIDTH_RATIO
+		var prompt_content_width := target_prompt_panel_width - (MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN * 2.0)
+		prompt_width = maxf(prompt_content_width, 280.0) * mobile_browser_unit_scale
 	elif mobile_portrait:
 		prompt_width = minf(viewport_size.x * 0.92, 480.0)
 	else:
 		prompt_width = minf(viewport_size.x * 0.60, 320.0)
 	_host_content.custom_minimum_size = Vector2(prompt_width, 0)
 	_join_content.custom_minimum_size = Vector2(prompt_width, 0)
+
+	if mobile_portrait:
+		var prompt_field_height := int(round(52.0 * ui_scale))
+		for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+			field.custom_minimum_size = Vector2(0, prompt_field_height)
+			field.add_theme_font_size_override("font_size", int(round(18.0 * ui_scale)))
+		for btn: Button in [_host_cancel_btn, _host_create_btn, _join_cancel_btn, _join_player_btn, _join_spectator_btn]:
+			btn.custom_minimum_size = Vector2(0, int(round(56.0 * ui_scale)))
+			btn.add_theme_font_size_override("font_size", int(round(22.0 * ui_scale)))
+		for title: Label in [_host_title, _join_title]:
+			title.add_theme_font_size_override("font_size", int(round(24.0 * ui_scale)))
+		for label: Label in [_host_name_label, _join_code_label, _join_name_label, _host_error, _join_error]:
+			label.add_theme_font_size_override("font_size", int(round(16.0 * ui_scale)))
+	else:
+		for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+			field.custom_minimum_size = Vector2(0, 52)
+			field.add_theme_font_size_override("font_size", 16)
+		for btn: Button in [_host_cancel_btn, _host_create_btn, _join_cancel_btn, _join_player_btn, _join_spectator_btn]:
+			btn.custom_minimum_size = Vector2(0, 56)
+			btn.add_theme_font_size_override("font_size", 26)
+		for title: Label in [_host_title, _join_title]:
+			title.add_theme_font_size_override("font_size", 24)
+		for label: Label in [_host_name_label, _join_code_label, _join_name_label, _host_error, _join_error]:
+			label.add_theme_font_size_override("font_size", 16)
 
 	var stack_prompt_buttons := _compact_layout and not mobile_landscape
 	_host_buttons.vertical = stack_prompt_buttons
@@ -351,30 +416,33 @@ func _check_deep_link() -> void:
 
 # --- Visual theme ---
 
-func _apply_theme() -> void:
+func _apply_theme(ui_scale: float = 1.0, mobile_browser_portrait: bool = false) -> void:
+	var main_margin := MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN if mobile_browser_portrait else 32.0
+	var prompt_margin := MOBILE_BROWSER_PORTRAIT_PANEL_MARGIN if mobile_browser_portrait else 28.0
+
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.17, 0.13, 0.10, 0.94)
 	panel_style.border_color = Color(0.46, 0.34, 0.24, 0.95)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.corner_radius_top_left = 14
-	panel_style.corner_radius_top_right = 14
-	panel_style.corner_radius_bottom_left = 14
-	panel_style.corner_radius_bottom_right = 14
+	panel_style.border_width_left = int(round(2.0 * ui_scale))
+	panel_style.border_width_top = int(round(2.0 * ui_scale))
+	panel_style.border_width_right = int(round(2.0 * ui_scale))
+	panel_style.border_width_bottom = int(round(2.0 * ui_scale))
+	panel_style.corner_radius_top_left = int(round(14.0 * ui_scale))
+	panel_style.corner_radius_top_right = int(round(14.0 * ui_scale))
+	panel_style.corner_radius_bottom_left = int(round(14.0 * ui_scale))
+	panel_style.corner_radius_bottom_right = int(round(14.0 * ui_scale))
 	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.24)
-	panel_style.shadow_size = 6
-	panel_style.content_margin_left = 32
-	panel_style.content_margin_top = 32
-	panel_style.content_margin_right = 32
-	panel_style.content_margin_bottom = 32
+	panel_style.shadow_size = int(round(6.0 * ui_scale))
+	panel_style.content_margin_left = main_margin * ui_scale
+	panel_style.content_margin_top = main_margin * ui_scale
+	panel_style.content_margin_right = main_margin * ui_scale
+	panel_style.content_margin_bottom = main_margin * ui_scale
 
 	var prompt_style := panel_style.duplicate()
-	prompt_style.content_margin_left = 28
-	prompt_style.content_margin_top = 28
-	prompt_style.content_margin_right = 28
-	prompt_style.content_margin_bottom = 28
+	prompt_style.content_margin_left = prompt_margin * ui_scale
+	prompt_style.content_margin_top = prompt_margin * ui_scale
+	prompt_style.content_margin_right = prompt_margin * ui_scale
+	prompt_style.content_margin_bottom = prompt_margin * ui_scale
 
 	($MainCenter/HomePanel as PanelContainer).add_theme_stylebox_override("panel", panel_style)
 	($HostPromptLayer/Center/HostPanel as PanelContainer).add_theme_stylebox_override("panel", prompt_style)
@@ -383,14 +451,14 @@ func _apply_theme() -> void:
 	var btn_normal := StyleBoxFlat.new()
 	btn_normal.bg_color = Color(0.30, 0.22, 0.15, 0.98)
 	btn_normal.border_color = Color(0.73, 0.56, 0.39, 0.98)
-	btn_normal.border_width_left = 2
-	btn_normal.border_width_top = 2
-	btn_normal.border_width_right = 2
-	btn_normal.border_width_bottom = 2
-	btn_normal.corner_radius_top_left = 10
-	btn_normal.corner_radius_top_right = 10
-	btn_normal.corner_radius_bottom_left = 10
-	btn_normal.corner_radius_bottom_right = 10
+	btn_normal.border_width_left = int(round(2.0 * ui_scale))
+	btn_normal.border_width_top = int(round(2.0 * ui_scale))
+	btn_normal.border_width_right = int(round(2.0 * ui_scale))
+	btn_normal.border_width_bottom = int(round(2.0 * ui_scale))
+	btn_normal.corner_radius_top_left = int(round(10.0 * ui_scale))
+	btn_normal.corner_radius_top_right = int(round(10.0 * ui_scale))
+	btn_normal.corner_radius_bottom_left = int(round(10.0 * ui_scale))
+	btn_normal.corner_radius_bottom_right = int(round(10.0 * ui_scale))
 
 	var btn_hover := btn_normal.duplicate()
 	btn_hover.bg_color = Color(0.38, 0.28, 0.19, 0.98)
@@ -405,18 +473,18 @@ func _apply_theme() -> void:
 	var field_normal := StyleBoxFlat.new()
 	field_normal.bg_color = Color(0.15, 0.11, 0.08, 0.98)
 	field_normal.border_color = Color(0.52, 0.39, 0.27, 0.95)
-	field_normal.border_width_left = 2
-	field_normal.border_width_top = 2
-	field_normal.border_width_right = 2
-	field_normal.border_width_bottom = 2
-	field_normal.corner_radius_top_left = 9
-	field_normal.corner_radius_top_right = 9
-	field_normal.corner_radius_bottom_left = 9
-	field_normal.corner_radius_bottom_right = 9
-	field_normal.content_margin_left = 14
-	field_normal.content_margin_top = 10
-	field_normal.content_margin_right = 14
-	field_normal.content_margin_bottom = 10
+	field_normal.border_width_left = int(round(2.0 * ui_scale))
+	field_normal.border_width_top = int(round(2.0 * ui_scale))
+	field_normal.border_width_right = int(round(2.0 * ui_scale))
+	field_normal.border_width_bottom = int(round(2.0 * ui_scale))
+	field_normal.corner_radius_top_left = int(round(9.0 * ui_scale))
+	field_normal.corner_radius_top_right = int(round(9.0 * ui_scale))
+	field_normal.corner_radius_bottom_left = int(round(9.0 * ui_scale))
+	field_normal.corner_radius_bottom_right = int(round(9.0 * ui_scale))
+	field_normal.content_margin_left = 14.0 * ui_scale
+	field_normal.content_margin_top = 10.0 * ui_scale
+	field_normal.content_margin_right = 14.0 * ui_scale
+	field_normal.content_margin_bottom = 10.0 * ui_scale
 
 	var field_focus := field_normal.duplicate()
 	field_focus.border_color = Color(0.85, 0.65, 0.45, 0.98)
