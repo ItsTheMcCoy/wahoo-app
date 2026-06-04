@@ -6,6 +6,9 @@ const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const MOBILE_BROWSER_PORTRAIT_SETUP_PANEL_MARGIN := 18.0
+const MOBILE_BROWSER_PORTRAIT_SETUP_WIDTH_RATIO := 0.98
+const MOBILE_BROWSER_PORTRAIT_SETUP_HEIGHT_RATIO := 0.985
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
 const PLAYER_COLORS := [
@@ -545,11 +548,33 @@ func _effective_window_size() -> Vector2:
 		return win_size
 	return Vector2(1280, 720)
 
+func _web_window_size() -> Vector2:
+	if not OS.has_feature("web"):
+		return Vector2.ZERO
+	var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+	var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+	if web_width > 0.0 and web_height > 0.0:
+		return Vector2(web_width, web_height)
+	return Vector2.ZERO
+
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
+	var web_window_size := _web_window_size()
+	var mobile_browser_portrait := web_window_size.x > 0.0 \
+		and web_window_size.y > web_window_size.x \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_landscape := web_window_size.x > 0.0 \
+		and web_window_size.x > web_window_size.y \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_unit_scale := 1.0
+	if mobile_browser_portrait:
+		mobile_browser_unit_scale = maxf(1.0, viewport_size.x / web_window_size.x)
+	elif mobile_browser_landscape:
+		mobile_browser_unit_scale = maxf(1.0, viewport_size.y / web_window_size.y)
+
 	var short_landscape := not _compact_layout and WahooResponsiveLayout.is_short_landscape(viewport_size)
 	var mobile_like := WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
-	var mobile_landscape := mobile_like and viewport_size.x > viewport_size.y
-	var mobile_portrait := mobile_like and viewport_size.y > viewport_size.x
+	var mobile_landscape := mobile_browser_landscape or (mobile_like and viewport_size.x > viewport_size.y)
+	var mobile_portrait := mobile_browser_portrait or (mobile_like and viewport_size.y > viewport_size.x)
 	var frame_margin := 12.0
 	if mobile_landscape:
 		frame_margin = 6.0
@@ -623,7 +648,15 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
 
 	var setup_size := Vector2.ZERO
-	if mobile_portrait:
+	if mobile_browser_portrait:
+		var target_panel_width := web_window_size.x * MOBILE_BROWSER_PORTRAIT_SETUP_WIDTH_RATIO
+		var target_panel_height := web_window_size.y * MOBILE_BROWSER_PORTRAIT_SETUP_HEIGHT_RATIO
+		var margin := MOBILE_BROWSER_PORTRAIT_SETUP_PANEL_MARGIN * 2.0
+		setup_size = Vector2(
+			maxf(320.0, target_panel_width - margin) * mobile_browser_unit_scale,
+			maxf(480.0, target_panel_height - margin) * mobile_browser_unit_scale
+		)
+	elif mobile_portrait:
 		setup_size = Vector2(
 			minf(viewport_size.x * 0.995, 760.0),
 			minf(viewport_size.y * 0.985, 900.0)
@@ -640,7 +673,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		)
 	var setup_content_width := maxf(240.0, setup_size.x - 64.0)
 	var setup_mobile_scale := 1.0
-	if mobile_portrait:
+	if mobile_browser_portrait:
+		setup_mobile_scale = 1.55 * mobile_browser_unit_scale
+	elif mobile_portrait:
 		setup_mobile_scale = 1.55
 	elif mobile_landscape:
 		setup_mobile_scale = 1.22
