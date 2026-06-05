@@ -735,8 +735,8 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var dot_size      := roundi(28.0 * ui_scale)   # 35 * 0.8
 	var option_height := roundi(32.0 * ui_scale)   # 46 * 0.7
 	var name_height   := roundi(31.0 * ui_scale)   # dot_size * 1.1
-	var option_w      := maxi(roundi(card_interior_w * 0.74), roundi(120.0 * ui_scale))
 	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
+	var option_w      := dot_size + 12 + name_w  # matches header row: dot + separator + name
 	var field_font    := roundi(20.0 * ui_scale)
 	var card_sep      := roundi(10.0 * ui_scale)
 
