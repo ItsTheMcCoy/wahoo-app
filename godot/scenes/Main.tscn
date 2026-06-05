@@ -242,6 +242,7 @@ size_flags_horizontal = 3
 
 [node name="PlayerCard0Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0"]
 layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 14
 
 [node name="Seat0Dot" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner"]
@@ -251,7 +252,7 @@ size_flags_vertical = 4
 
 [node name="Seat0RightCol" type="VBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_constants/separation = 8
 
 [node name="Seat0Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol"]
@@ -275,6 +276,7 @@ size_flags_horizontal = 3
 
 [node name="PlayerCard1Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1"]
 layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 14
 
 [node name="Seat1Dot" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner"]
@@ -284,7 +286,7 @@ size_flags_vertical = 4
 
 [node name="Seat1RightCol" type="VBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_constants/separation = 8
 
 [node name="Seat1Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol"]
@@ -308,6 +310,7 @@ size_flags_horizontal = 3
 
 [node name="PlayerCard2Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2"]
 layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 14
 
 [node name="Seat2Dot" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner"]
@@ -317,7 +320,7 @@ size_flags_vertical = 4
 
 [node name="Seat2RightCol" type="VBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_constants/separation = 8
 
 [node name="Seat2Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightCol"]
@@ -341,6 +344,7 @@ size_flags_horizontal = 3
 
 [node name="PlayerCard3Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3"]
 layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 14
 
 [node name="Seat3Dot" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner"]
@@ -350,7 +354,7 @@ size_flags_vertical = 4
 
 [node name="Seat3RightCol" type="VBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_constants/separation = 8
 
 [node name="Seat3Name" type="LineEdit" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightCol"]
