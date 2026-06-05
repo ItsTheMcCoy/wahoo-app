@@ -711,10 +711,10 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	_setup_panel.offset_bottom =  panel_h * 0.5
 
 	# Scale the outer panel padding so it's proportional on all screen densities
+	var hpad := roundi(20.0 * ui_scale)
+	var vpad := roundi(16.0 * ui_scale)
 	var sps := _setup_panel.get_theme_stylebox("panel") as StyleBoxFlat
 	if sps != null:
-		var hpad := roundi(20.0 * ui_scale)
-		var vpad := roundi(16.0 * ui_scale)
 		sps.content_margin_left   = hpad
 		sps.content_margin_right  = hpad
 		sps.content_margin_top    = vpad
@@ -729,8 +729,13 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	if setup_title != null:
 		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
 
-	var dot_size      := roundi(44.0 * ui_scale)
-	var option_height := roundi(58.0 * ui_scale)
+	# 14 = fixed card_bg_style content margin (set once in _apply_visual_theme)
+	var card_interior_w := roundi(panel_w) - 2 * hpad - 2 * 14
+
+	var dot_size      := roundi(35.0 * ui_scale)   # 44 * 0.8
+	var option_height := roundi(46.0 * ui_scale)   # reduced from 58
+	var option_w      := maxi(roundi(card_interior_w * 0.74), roundi(120.0 * ui_scale))
+	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
 	var card_sep      := roundi(10.0 * ui_scale)
 
@@ -746,11 +751,13 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		card_inners[i].add_theme_constant_override("separation", card_sep)
 
 	for opt in _seat_options():
-		opt.custom_minimum_size = Vector2(0, option_height)
+		opt.custom_minimum_size = Vector2(option_w, option_height)
+		opt.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		opt.add_theme_font_size_override("font_size", field_font)
 		opt.get_popup().add_theme_font_size_override("font_size", field_font)
 	for field in _seat_name_fields():
-		field.custom_minimum_size = Vector2(0, dot_size)
+		field.custom_minimum_size = Vector2(name_w, dot_size)
+		field.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		field.add_theme_font_size_override("font_size", field_font)
 
 	_start_button.custom_minimum_size = Vector2(0, roundi(68.0 * ui_scale))
