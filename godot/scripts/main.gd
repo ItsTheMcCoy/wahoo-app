@@ -69,10 +69,10 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Option
 @onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Option
 @onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Option
-@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Name
-@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Name
-@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Name
-@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Name
+@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Name
+@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Name
+@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Name
+@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3Name
 @onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Dot
 @onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Dot
 @onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Dot
@@ -291,7 +291,8 @@ func _apply_visual_theme() -> void:
 		win_panel.add_theme_stylebox_override("panel", panel_style)
 	var setup_panel := $SetupOverlay/SetupPanel as PanelContainer
 	if setup_panel != null:
-		setup_panel.add_theme_stylebox_override("panel", panel_style)
+		var setup_panel_style := panel_style.duplicate() as StyleBoxFlat
+		setup_panel.add_theme_stylebox_override("panel", setup_panel_style)
 
 	var setup_title_label := $SetupOverlay/SetupPanel/SetupScroll/SetupContent/SetupTitle as Label
 	if setup_title_label != null:
@@ -319,20 +320,10 @@ func _apply_visual_theme() -> void:
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2,
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3,
 	]
-	var header_label_paths := [
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3HeaderLabel,
-	]
 	for i in range(4):
 		var cs := card_bg_style.duplicate() as StyleBoxFlat
 		cs.border_color = PLAYER_COLORS[i].lerp(Color.WHITE, 0.15)
 		player_card_paths[i].add_theme_stylebox_override("panel", cs)
-		var hl := header_label_paths[i] as Label
-		hl.add_theme_color_override("font_color", PLAYER_COLORS[i].lerp(Color.WHITE, 0.25))
-		hl.add_theme_constant_override("outline_size", 1)
-		hl.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.04, 0.85))
 
 	var status_style := StyleBoxFlat.new()
 	status_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)
@@ -719,6 +710,16 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	_setup_panel.offset_top    = -panel_h * 0.5
 	_setup_panel.offset_bottom =  panel_h * 0.5
 
+	# Scale the outer panel padding so it's proportional on all screen densities
+	var sps := _setup_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if sps != null:
+		var hpad := roundi(20.0 * ui_scale)
+		var vpad := roundi(16.0 * ui_scale)
+		sps.content_margin_left   = hpad
+		sps.content_margin_right  = hpad
+		sps.content_margin_top    = vpad
+		sps.content_margin_bottom = vpad
+
 	_setup_brand_title.custom_minimum_size = Vector2(0, roundi(88.0 * ui_scale))
 
 	var setup_content := $SetupOverlay/SetupPanel/SetupScroll/SetupContent as VBoxContainer
@@ -729,9 +730,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
 
 	var dot_size      := roundi(44.0 * ui_scale)
-	var header_font   := roundi(20.0 * ui_scale)
 	var option_height := roundi(58.0 * ui_scale)
-	var field_height  := roundi(54.0 * ui_scale)
 	var field_font    := roundi(20.0 * ui_scale)
 	var card_sep      := roundi(10.0 * ui_scale)
 
@@ -742,22 +741,16 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner,
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner,
 	]
-	var header_labels := [
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2HeaderLabel,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3HeaderLabel,
-	]
 	for i in range(4):
 		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
 		card_inners[i].add_theme_constant_override("separation", card_sep)
-		header_labels[i].add_theme_font_size_override("font_size", header_font)
 
 	for opt in _seat_options():
 		opt.custom_minimum_size = Vector2(0, option_height)
 		opt.add_theme_font_size_override("font_size", field_font)
+		opt.get_popup().add_theme_font_size_override("font_size", field_font)
 	for field in _seat_name_fields():
-		field.custom_minimum_size = Vector2(0, field_height)
+		field.custom_minimum_size = Vector2(0, dot_size)
 		field.add_theme_font_size_override("font_size", field_font)
 
 	_start_button.custom_minimum_size = Vector2(0, roundi(68.0 * ui_scale))
