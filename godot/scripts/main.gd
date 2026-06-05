@@ -760,6 +760,12 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2,
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3,
 	]
+	var right_spacers := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightSpacer,
+	]
 	for i in range(4):
 		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
 		card_inners[i].add_theme_constant_override("separation", header_sep)
@@ -767,6 +773,9 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		var cs := player_cards[i].get_theme_stylebox("panel") as StyleBoxFlat
 		if cs != null:
 			cs.content_margin_left = left_pad
+		# Mirror the dot+gap weight on the right so ALIGNMENT_CENTER places the
+		# name/picker column — not the dot+column group — at the card's center.
+		right_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
 
 	for opt in _seat_options():
 		opt.custom_minimum_size = Vector2(name_w, option_height)
