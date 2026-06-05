@@ -238,7 +238,7 @@ theme_override_font_sizes/font_size = 26
 
 [node name="PlayerCard0" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 
 [node name="PlayerCard0Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0"]
 layout_mode = 2
@@ -276,7 +276,7 @@ custom_minimum_size = Vector2(0, 0)
 
 [node name="PlayerCard1" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 
 [node name="PlayerCard1Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1"]
 layout_mode = 2
@@ -314,7 +314,7 @@ custom_minimum_size = Vector2(0, 0)
 
 [node name="PlayerCard2" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 
 [node name="PlayerCard2Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2"]
 layout_mode = 2
@@ -352,7 +352,7 @@ custom_minimum_size = Vector2(0, 0)
 
 [node name="PlayerCard3" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 
 [node name="PlayerCard3Inner" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3"]
 layout_mode = 2

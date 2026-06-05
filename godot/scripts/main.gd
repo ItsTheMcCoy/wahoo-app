@@ -729,17 +729,17 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	if setup_title != null:
 		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
 
-	# 14 = fixed card_bg_style content margin (set once in _apply_visual_theme)
-	var card_interior_w := roundi(panel_w) - 2 * hpad - 2 * 14
+	var card_pad      := roundi(14.0 * ui_scale)
+	var card_w        := roundi((panel_w - 2.0 * hpad) * 0.80)
+	var card_interior_w := card_w - 2 * card_pad
 
-	var dot_size      := roundi(28.0 * ui_scale)   # 35 * 0.8
-	var option_height := roundi(32.0 * ui_scale)   # 46 * 0.7
-	var name_height   := roundi(31.0 * ui_scale)   # dot_size * 1.1
+	var dot_size      := roundi(28.0 * ui_scale)
+	var option_height := roundi(32.0 * ui_scale)
+	var name_height   := roundi(31.0 * ui_scale)
 	var header_sep    := roundi(14.0 * ui_scale)
 	var name_w        := maxi(roundi(card_interior_w * 0.42), roundi(68.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
 	var right_col_sep := roundi(8.0 * ui_scale)
-	var left_pad      := roundi(18.0 * ui_scale)
 
 	var dots := [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]
 	var card_inners := [
@@ -770,9 +770,13 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
 		card_inners[i].add_theme_constant_override("separation", header_sep)
 		right_cols[i].add_theme_constant_override("separation", right_col_sep)
+		player_cards[i].custom_minimum_size = Vector2(card_w, 0)
 		var cs := player_cards[i].get_theme_stylebox("panel") as StyleBoxFlat
 		if cs != null:
-			cs.content_margin_left = left_pad
+			cs.content_margin_left   = card_pad
+			cs.content_margin_right  = card_pad
+			cs.content_margin_top    = card_pad
+			cs.content_margin_bottom = card_pad
 		# Mirror the dot+gap weight on the right so ALIGNMENT_CENTER places the
 		# name/picker column — not the dot+column group — at the card's center.
 		right_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
