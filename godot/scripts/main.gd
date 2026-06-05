@@ -736,7 +736,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var option_height := roundi(32.0 * ui_scale)   # 46 * 0.7
 	var name_height   := roundi(31.0 * ui_scale)   # dot_size * 1.1
 	var header_sep    := roundi(14.0 * ui_scale)
-	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
+	var name_w        := maxi(roundi(card_interior_w * 0.42), roundi(68.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
 	var right_col_sep := roundi(8.0 * ui_scale)
 	var left_pad      := roundi(18.0 * ui_scale)
