@@ -63,20 +63,20 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _new_game_button: Button = $WinOverlay/WinPanel/WinContent/NewGameButton
 @onready var _setup_overlay: ColorRect = $SetupOverlay
 @onready var _setup_panel: PanelContainer = $SetupOverlay/SetupPanel
-@onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupContent/BrandTitle
-@onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupContent/StartButton
-@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Option
-@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Option
-@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat2Row/Seat2Option
-@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupContent/Seat3Row/Seat3Option
-@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Name
-@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Name
-@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat2Row/Seat2Name
-@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupContent/Seat3Row/Seat3Name
-@onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupContent/Seat0Row/Seat0Label
-@onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupContent/Seat1Row/Seat1Label
-@onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupContent/Seat2Row/Seat2Label
-@onready var _seat_label_3: Control = $SetupOverlay/SetupPanel/SetupContent/Seat3Row/Seat3Label
+@onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/BrandTitle
+@onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/StartButton
+@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Option
+@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Option
+@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Option
+@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Option
+@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Name
+@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Name
+@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Name
+@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Name
+@onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Dot
+@onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Dot
+@onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Dot
+@onready var _seat_label_3: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3Dot
 
 signal _opening_roll_pressed
 
@@ -292,6 +292,47 @@ func _apply_visual_theme() -> void:
 	var setup_panel := $SetupOverlay/SetupPanel as PanelContainer
 	if setup_panel != null:
 		setup_panel.add_theme_stylebox_override("panel", panel_style)
+
+	var setup_title_label := $SetupOverlay/SetupPanel/SetupScroll/SetupContent/SetupTitle as Label
+	if setup_title_label != null:
+		setup_title_label.add_theme_color_override("font_color", Color(0.96, 0.91, 0.82))
+		setup_title_label.add_theme_constant_override("outline_size", 2)
+		setup_title_label.add_theme_color_override("font_outline_color", Color(0.07, 0.05, 0.04, 0.88))
+
+	var card_bg_style := StyleBoxFlat.new()
+	card_bg_style.bg_color = Color(0.20, 0.15, 0.11, 0.92)
+	card_bg_style.border_width_left = 5
+	card_bg_style.border_width_top = 1
+	card_bg_style.border_width_right = 1
+	card_bg_style.border_width_bottom = 1
+	card_bg_style.corner_radius_top_left = 10
+	card_bg_style.corner_radius_top_right = 10
+	card_bg_style.corner_radius_bottom_left = 10
+	card_bg_style.corner_radius_bottom_right = 10
+	card_bg_style.content_margin_left = 14
+	card_bg_style.content_margin_top = 12
+	card_bg_style.content_margin_right = 14
+	card_bg_style.content_margin_bottom = 12
+	var player_card_paths := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3,
+	]
+	var header_label_paths := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3HeaderLabel,
+	]
+	for i in range(4):
+		var cs := card_bg_style.duplicate() as StyleBoxFlat
+		cs.border_color = PLAYER_COLORS[i].lerp(Color.WHITE, 0.15)
+		player_card_paths[i].add_theme_stylebox_override("panel", cs)
+		var hl := header_label_paths[i] as Label
+		hl.add_theme_color_override("font_color", PLAYER_COLORS[i].lerp(Color.WHITE, 0.25))
+		hl.add_theme_constant_override("outline_size", 1)
+		hl.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.04, 0.85))
 
 	var status_style := StyleBoxFlat.new()
 	status_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)
@@ -545,11 +586,31 @@ func _effective_window_size() -> Vector2:
 		return win_size
 	return Vector2(1280, 720)
 
+func _web_window_size() -> Vector2:
+	if not OS.has_feature("web"):
+		return Vector2.ZERO
+	var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+	var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+	if web_width > 0.0 and web_height > 0.0:
+		return Vector2(web_width, web_height)
+	return Vector2.ZERO
+
 func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var short_landscape := not _compact_layout and WahooResponsiveLayout.is_short_landscape(viewport_size)
 	var mobile_like := WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
 	var mobile_landscape := mobile_like and viewport_size.x > viewport_size.y
 	var mobile_portrait := mobile_like and viewport_size.y > viewport_size.x
+
+	# Mobile browser detection: the Godot canvas runs at physical pixel resolution
+	# (CSS pixels × DPR), so is_mobile_like_layout() misses high-DPR mobile devices.
+	# Use window.innerWidth/innerHeight (CSS pixels) to reliably detect mobile browser.
+	var web_window_size := _web_window_size()
+	var mobile_browser_portrait := web_window_size.x > 0.0 \
+		and web_window_size.y > web_window_size.x \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var mobile_browser_landscape := web_window_size.x > 0.0 \
+		and web_window_size.x >= web_window_size.y \
+		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
 	var frame_margin := 12.0
 	if mobile_landscape:
 		frame_margin = 6.0
@@ -622,76 +683,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if _chat_section.visible:
 		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
 
-	var setup_size := Vector2.ZERO
-	if mobile_portrait:
-		setup_size = Vector2(
-			minf(viewport_size.x * 0.955, 620.0),
-			minf(viewport_size.y * 0.92, 760.0)
-		)
-	elif mobile_like:
-		setup_size = Vector2(
-			minf(viewport_size.x * 0.975, 640.0),
-			minf(viewport_size.y * 0.97, 760.0)
-		)
-	else:
-		setup_size = Vector2(
-			minf(viewport_size.x * 0.94, 560.0),
-			minf(viewport_size.y * 0.92, 600.0)
-		)
-	var setup_content_width := maxf(240.0, setup_size.x - 64.0)
-	var setup_mobile_scale := 1.0
-	if mobile_portrait:
-		setup_mobile_scale = 1.42
-	elif mobile_landscape:
-		setup_mobile_scale = 1.22
-
-	var setup_row_separation := round(16.0 * setup_mobile_scale) if mobile_like else 16
-	var setup_dot_size := round((52.0 if mobile_portrait else 46.0) * setup_mobile_scale) if mobile_like else 46
-	var setup_option_width := 220
-	var setup_name_width := 170
-	if mobile_portrait:
-		setup_option_width = round(clampf(setup_content_width * 0.46, 220.0, 250.0))
-		setup_name_width = round(clampf(setup_content_width * 0.32, 160.0, 190.0))
-	elif mobile_like:
-		setup_option_width = round(clampf(setup_content_width * 0.52, 162.0, 270.0))
-		setup_name_width = round(clampf(setup_content_width * 0.36, 126.0, 210.0))
-	var setup_row_height := round(56.0 * setup_mobile_scale) if mobile_like else 56
-	var setup_field_height := round((50.0 if mobile_portrait else 44.0) * setup_mobile_scale) if mobile_like else 44
-	var setup_font_size := round((20.0 if mobile_portrait else 18.0) * setup_mobile_scale) if mobile_like else 18
-	var setup_title_size := round((30.0 if mobile_portrait else 28.0) * setup_mobile_scale) if mobile_like else 28
-	var setup_start_height := round((66.0 if mobile_portrait else 60.0) * setup_mobile_scale) if mobile_like else 60
-	var setup_start_font_size := round((24.0 if mobile_portrait else 22.0) * setup_mobile_scale) if mobile_like else 22
-	var setup_content := $SetupOverlay/SetupPanel/SetupContent as VBoxContainer
-	var setup_title := $SetupOverlay/SetupPanel/SetupContent/SetupTitle as Label
-	if setup_content != null:
-		setup_content.add_theme_constant_override("separation", round(16.0 * setup_mobile_scale) if mobile_like else 16)
-	if setup_title != null:
-		setup_title.add_theme_font_size_override("font_size", setup_title_size)
-	for row in [
-		$SetupOverlay/SetupPanel/SetupContent/Seat0Row,
-		$SetupOverlay/SetupPanel/SetupContent/Seat1Row,
-		$SetupOverlay/SetupPanel/SetupContent/Seat2Row,
-		$SetupOverlay/SetupPanel/SetupContent/Seat3Row,
-	]:
-		row.custom_minimum_size = Vector2(0, setup_row_height)
-		row.add_theme_constant_override("separation", setup_row_separation)
-	for label in [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]:
-		label.custom_minimum_size = Vector2(setup_dot_size, setup_dot_size)
-	for opt in _seat_options():
-		opt.custom_minimum_size = Vector2(setup_option_width, setup_field_height)
-		opt.add_theme_font_size_override("font_size", setup_font_size)
-	for field in _seat_name_fields():
-		field.custom_minimum_size = Vector2(setup_name_width, setup_field_height)
-		field.add_theme_font_size_override("font_size", setup_font_size)
-	var start_button_width := round(clampf(setup_content_width * 0.8, 280.0, 420.0))
-	if mobile_portrait:
-		start_button_width = round(clampf(setup_content_width * 0.84, 300.0, 420.0))
-	_start_button.custom_minimum_size = Vector2(start_button_width, setup_start_height)
-	_start_button.add_theme_font_size_override("font_size", setup_start_font_size)
-	_setup_panel.offset_left = -setup_size.x * 0.5
-	_setup_panel.offset_right = setup_size.x * 0.5
-	_setup_panel.offset_top = -setup_size.y * 0.5
-	_setup_panel.offset_bottom = setup_size.y * 0.5
+	_apply_setup_layout(viewport_size)
 
 	var win_panel := $WinOverlay/WinPanel as PanelContainer
 	if win_panel != null:
@@ -704,11 +696,72 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		win_panel.offset_top = -win_size.y * 0.5
 		win_panel.offset_bottom = win_size.y * 0.5
 
-	_setup_brand_title.custom_minimum_size = Vector2(
-		0,
-		round((116.0 if mobile_portrait else (132.0 if mobile_landscape else (140.0 if _compact_layout else 204.0))) * setup_mobile_scale)
-	)
 	_win_brand_title.custom_minimum_size = Vector2(0, 112 if _compact_layout else 162)
+
+func _compute_setup_ui_scale(viewport_size: Vector2) -> float:
+	if OS.has_feature("web"):
+		var w := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+		var h := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+		if w > 0.0 and h > 0.0:
+			# DPR = Godot canvas pixels / CSS logical pixels
+			return clampf(viewport_size.x / w, 1.0, 4.0)
+	# Native: scale relative to 720p reference height
+	return clampf(viewport_size.y / 720.0, 0.8, 1.4)
+
+func _apply_setup_layout(viewport_size: Vector2) -> void:
+	var ui_scale := _compute_setup_ui_scale(viewport_size)
+
+	# Panel nearly fills the screen; ScrollContainer handles overflow
+	var panel_w := minf(viewport_size.x * 0.96, 600.0 * ui_scale)
+	var panel_h := viewport_size.y * 0.97
+	_setup_panel.offset_left   = -panel_w * 0.5
+	_setup_panel.offset_right  =  panel_w * 0.5
+	_setup_panel.offset_top    = -panel_h * 0.5
+	_setup_panel.offset_bottom =  panel_h * 0.5
+
+	_setup_brand_title.custom_minimum_size = Vector2(0, roundi(88.0 * ui_scale))
+
+	var setup_content := $SetupOverlay/SetupPanel/SetupScroll/SetupContent as VBoxContainer
+	var setup_title   := $SetupOverlay/SetupPanel/SetupScroll/SetupContent/SetupTitle as Label
+	if setup_content != null:
+		setup_content.add_theme_constant_override("separation", roundi(14.0 * ui_scale))
+	if setup_title != null:
+		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
+
+	var dot_size      := roundi(44.0 * ui_scale)
+	var header_font   := roundi(20.0 * ui_scale)
+	var option_height := roundi(58.0 * ui_scale)
+	var field_height  := roundi(54.0 * ui_scale)
+	var field_font    := roundi(20.0 * ui_scale)
+	var card_sep      := roundi(10.0 * ui_scale)
+
+	var dots := [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]
+	var card_inners := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner,
+	]
+	var header_labels := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2HeaderLabel,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3HeaderLabel,
+	]
+	for i in range(4):
+		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
+		card_inners[i].add_theme_constant_override("separation", card_sep)
+		header_labels[i].add_theme_font_size_override("font_size", header_font)
+
+	for opt in _seat_options():
+		opt.custom_minimum_size = Vector2(0, option_height)
+		opt.add_theme_font_size_override("font_size", field_font)
+	for field in _seat_name_fields():
+		field.custom_minimum_size = Vector2(0, field_height)
+		field.add_theme_font_size_override("font_size", field_font)
+
+	_start_button.custom_minimum_size = Vector2(0, roundi(68.0 * ui_scale))
+	_start_button.add_theme_font_size_override("font_size", roundi(24.0 * ui_scale))
 
 func _on_start_pressed() -> void:
 	var opts := _seat_options()
