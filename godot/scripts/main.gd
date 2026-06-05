@@ -731,13 +731,14 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 
 	var card_pad      := roundi(14.0 * ui_scale)
 	var card_w        := roundi((panel_w - 2.0 * hpad) * 0.80)
-	var card_interior_w := card_w - 2 * card_pad
+	# name_w derives from the full panel interior so card narrowing doesn't affect field widths
+	var name_interior_w := roundi(panel_w) - 2 * hpad - 2 * 14
 
 	var dot_size      := roundi(28.0 * ui_scale)
 	var option_height := roundi(32.0 * ui_scale)
 	var name_height   := roundi(31.0 * ui_scale)
 	var header_sep    := roundi(14.0 * ui_scale)
-	var name_w        := maxi(roundi(card_interior_w * 0.42), roundi(68.0 * ui_scale))
+	var name_w        := maxi(roundi(name_interior_w * 0.42), roundi(68.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
 	var right_col_sep := roundi(8.0 * ui_scale)
 
