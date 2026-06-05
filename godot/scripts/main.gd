@@ -734,6 +734,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 
 	var dot_size      := roundi(28.0 * ui_scale)   # 35 * 0.8
 	var option_height := roundi(32.0 * ui_scale)   # 46 * 0.7
+	var name_height   := roundi(31.0 * ui_scale)   # dot_size * 1.1
 	var option_w      := maxi(roundi(card_interior_w * 0.74), roundi(120.0 * ui_scale))
 	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
@@ -756,7 +757,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		opt.add_theme_font_size_override("font_size", field_font)
 		opt.get_popup().add_theme_font_size_override("font_size", field_font)
 	for field in _seat_name_fields():
-		field.custom_minimum_size = Vector2(name_w, dot_size)
+		field.custom_minimum_size = Vector2(name_w, name_height)
 		field.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		field.add_theme_font_size_override("font_size", field_font)
 
