@@ -65,10 +65,10 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _setup_panel: PanelContainer = $SetupOverlay/SetupPanel
 @onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/BrandTitle
 @onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/StartButton
-@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Option
-@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Option
-@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Option
-@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Option
+@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow/Seat0Option
+@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow/Seat1Option
+@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow/Seat2Option
+@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow/Seat3Option
 @onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Name
 @onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Name
 @onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Name
@@ -735,8 +735,8 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var dot_size      := roundi(28.0 * ui_scale)   # 35 * 0.8
 	var option_height := roundi(32.0 * ui_scale)   # 46 * 0.7
 	var name_height   := roundi(31.0 * ui_scale)   # dot_size * 1.1
+	var header_sep    := roundi(14.0 * ui_scale)
 	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
-	var option_w      := dot_size + 12 + name_w  # matches header row: dot + separator + name
 	var field_font    := roundi(20.0 * ui_scale)
 	var card_sep      := roundi(10.0 * ui_scale)
 
@@ -747,12 +747,26 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner,
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner,
 	]
+	var seat_headers := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header,
+	]
+	var option_spacers := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow/Seat0OptionSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow/Seat1OptionSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow/Seat2OptionSpacer,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow/Seat3OptionSpacer,
+	]
 	for i in range(4):
 		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
 		card_inners[i].add_theme_constant_override("separation", card_sep)
+		seat_headers[i].add_theme_constant_override("separation", header_sep)
+		option_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
 
 	for opt in _seat_options():
-		opt.custom_minimum_size = Vector2(option_w, option_height)
+		opt.custom_minimum_size = Vector2(name_w, option_height)
 		opt.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		opt.add_theme_font_size_override("font_size", field_font)
 		opt.get_popup().add_theme_font_size_override("font_size", field_font)

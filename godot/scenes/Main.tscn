@@ -263,10 +263,18 @@ max_length = 12
 placeholder_text = "Enter player name"
 theme_override_font_sizes/font_size = 20
 
-[node name="Seat0Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner"]
+[node name="Seat0OptionRow" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 58)
+theme_override_constants/separation = 0
+
+[node name="Seat0OptionSpacer" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 0)
+
+[node name="Seat0Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 20
 
 [node name="PlayerCard1" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
@@ -296,10 +304,18 @@ max_length = 12
 placeholder_text = "Enter player name"
 theme_override_font_sizes/font_size = 20
 
-[node name="Seat1Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner"]
+[node name="Seat1OptionRow" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 58)
+theme_override_constants/separation = 0
+
+[node name="Seat1OptionSpacer" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 0)
+
+[node name="Seat1Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 20
 
 [node name="PlayerCard2" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
@@ -329,10 +345,18 @@ max_length = 12
 placeholder_text = "Enter player name"
 theme_override_font_sizes/font_size = 20
 
-[node name="Seat2Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner"]
+[node name="Seat2OptionRow" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 58)
+theme_override_constants/separation = 0
+
+[node name="Seat2OptionSpacer" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 0)
+
+[node name="Seat2Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 20
 
 [node name="PlayerCard3" type="PanelContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
@@ -362,10 +386,18 @@ max_length = 12
 placeholder_text = "Enter player name"
 theme_override_font_sizes/font_size = 20
 
-[node name="Seat3Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner"]
+[node name="Seat3OptionRow" type="HBoxContainer" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner"]
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 58)
+theme_override_constants/separation = 0
+
+[node name="Seat3OptionSpacer" type="Control" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 0)
+
+[node name="Seat3Option" type="OptionButton" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 20
 
 [node name="StartButton" type="Button" parent="SetupOverlay/SetupPanel/SetupScroll/SetupContent"]
