@@ -65,18 +65,18 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _setup_panel: PanelContainer = $SetupOverlay/SetupPanel
 @onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/BrandTitle
 @onready var _start_button: Button = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/StartButton
-@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow/Seat0Option
-@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow/Seat1Option
-@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow/Seat2Option
-@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow/Seat3Option
-@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Name
-@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Name
-@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Name
-@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3Name
-@onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header/Seat0Dot
-@onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header/Seat1Dot
-@onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header/Seat2Dot
-@onready var _seat_label_3: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header/Seat3Dot
+@onready var _seat_option_0: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol/Seat0Option
+@onready var _seat_option_1: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol/Seat1Option
+@onready var _seat_option_2: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightCol/Seat2Option
+@onready var _seat_option_3: OptionButton = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightCol/Seat3Option
+@onready var _seat_name_0: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol/Seat0Name
+@onready var _seat_name_1: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol/Seat1Name
+@onready var _seat_name_2: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightCol/Seat2Name
+@onready var _seat_name_3: LineEdit = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightCol/Seat3Name
+@onready var _seat_label_0: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Dot
+@onready var _seat_label_1: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Dot
+@onready var _seat_label_2: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Dot
+@onready var _seat_label_3: Control = $SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Dot
 
 signal _opening_roll_pressed
 
@@ -738,7 +738,8 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var header_sep    := roundi(14.0 * ui_scale)
 	var name_w        := maxi(roundi(card_interior_w * 0.56), roundi(90.0 * ui_scale))
 	var field_font    := roundi(20.0 * ui_scale)
-	var card_sep      := roundi(10.0 * ui_scale)
+	var right_col_sep := roundi(8.0 * ui_scale)
+	var left_pad      := roundi(18.0 * ui_scale)
 
 	var dots := [_seat_label_0, _seat_label_1, _seat_label_2, _seat_label_3]
 	var card_inners := [
@@ -747,23 +748,25 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner,
 		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner,
 	]
-	var seat_headers := [
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0Header,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Header,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Header,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Header,
+	var right_cols := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightCol,
 	]
-	var option_spacers := [
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0OptionRow/Seat0OptionSpacer,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1OptionRow/Seat1OptionSpacer,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2OptionRow/Seat2OptionSpacer,
-		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3OptionRow/Seat3OptionSpacer,
+	var player_cards := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3,
 	]
 	for i in range(4):
 		dots[i].custom_minimum_size = Vector2(dot_size, dot_size)
-		card_inners[i].add_theme_constant_override("separation", card_sep)
-		seat_headers[i].add_theme_constant_override("separation", header_sep)
-		option_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
+		card_inners[i].add_theme_constant_override("separation", header_sep)
+		right_cols[i].add_theme_constant_override("separation", right_col_sep)
+		var cs := player_cards[i].get_theme_stylebox("panel") as StyleBoxFlat
+		if cs != null:
+			cs.content_margin_left = left_pad
 
 	for opt in _seat_options():
 		opt.custom_minimum_size = Vector2(name_w, option_height)
