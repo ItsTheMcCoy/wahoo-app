@@ -728,6 +728,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
 
 	var card_pad      := roundi(14.0 * ui_scale)
+	var card_vpad     := roundi(7.0 * ui_scale)
 	var card_w        := roundi((panel_w - 2.0 * hpad) * 0.80)
 	var wordmark_aspect := 1400.0 / 520.0
 	if WORDMARK_TEXTURE != null:
@@ -782,8 +783,8 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		if cs != null:
 			cs.content_margin_left   = card_pad
 			cs.content_margin_right  = card_pad
-			cs.content_margin_top    = card_pad
-			cs.content_margin_bottom = card_pad
+			cs.content_margin_top    = card_vpad
+			cs.content_margin_bottom = card_vpad
 		right_spacers[i].custom_minimum_size = Vector2.ZERO
 
 	for opt in _seat_options():
