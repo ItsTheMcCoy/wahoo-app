@@ -790,7 +790,8 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		field.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		field.add_theme_font_size_override("font_size", field_font)
 
-	_start_button.custom_minimum_size = Vector2(0, roundi(68.0 * ui_scale))
+	_start_button.custom_minimum_size = Vector2(card_w, roundi(68.0 * 0.85 * ui_scale))
+	_start_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_button.add_theme_font_size_override("font_size", roundi(24.0 * ui_scale))
 
 func _on_start_pressed() -> void:
