@@ -99,6 +99,7 @@ var _starting_phase := false
 var _awaiting_human_starting_roll := false
 var _is_multiplayer := false
 var _compact_layout := false
+var _seat_player_labels: Array = []
 var _mp_role := ""     # "host" | "player" | "spectator"
 var _mp_my_seat := -1
 var _mp_waiting_for_opening_roll := false
@@ -510,6 +511,36 @@ func _apply_visual_theme() -> void:
 
 	_side_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.98)
 
+	var sep_node := HSeparator.new()
+	var sep_sfb := StyleBoxFlat.new()
+	sep_sfb.bg_color = Color(0.46, 0.34, 0.24, 0.45)
+	sep_sfb.content_margin_top = 1
+	sep_sfb.content_margin_bottom = 1
+	sep_node.add_theme_stylebox_override("separator", sep_sfb)
+	sep_node.add_theme_constant_override("separation", 2)
+	var setup_vbox := $SetupOverlay/SetupPanel/SetupScroll/SetupContent as VBoxContainer
+	setup_vbox.add_child(sep_node)
+	if setup_title_label != null:
+		setup_vbox.move_child(sep_node, setup_title_label.get_index() + 1)
+
+	var player_label_rcs := [
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2RightCol,
+		$SetupOverlay/SetupPanel/SetupScroll/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3RightCol,
+	]
+	_seat_player_labels = []
+	for i in range(4):
+		var plbl := Label.new()
+		plbl.text = "Player %d" % (i + 1)
+		plbl.add_theme_color_override("font_color", PLAYER_COLORS[i].lerp(Color.WHITE, 0.30))
+		plbl.add_theme_font_size_override("font_size", 13)
+		plbl.add_theme_constant_override("outline_size", 1)
+		plbl.add_theme_color_override("font_outline_color", Color(0.06, 0.04, 0.03, 0.80))
+		player_label_rcs[i].add_child(plbl)
+		player_label_rcs[i].move_child(plbl, 0)
+		_seat_player_labels.append(plbl)
+
 func _populate_dropdowns() -> void:
 	var opts := [_seat_option_0, _seat_option_1, _seat_option_2, _seat_option_3]
 	for opt in opts:
@@ -730,8 +761,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		setup_title.add_theme_font_size_override("font_size", roundi(26.0 * ui_scale))
 
 	var card_pad      := roundi(14.0 * ui_scale)
-	var card_w        := roundi((panel_w - 2.0 * hpad) * 0.80)
-	# name_w derives from the full panel interior so card narrowing doesn't affect field widths
+	var card_w        := roundi(panel_w - 2.0 * hpad)
 	var name_interior_w := roundi(panel_w) - 2 * hpad - 2 * 14
 
 	var dot_size      := roundi(28.0 * ui_scale)
@@ -778,9 +808,11 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 			cs.content_margin_right  = card_pad
 			cs.content_margin_top    = card_pad
 			cs.content_margin_bottom = card_pad
-		# Mirror the dot+gap weight on the right so ALIGNMENT_CENTER places the
-		# name/picker column — not the dot+column group — at the card's center.
-		right_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
+		card_inners[i].alignment = BoxContainer.ALIGNMENT_BEGIN
+		right_cols[i].size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		right_spacers[i].custom_minimum_size = Vector2.ZERO
+		if i < _seat_player_labels.size():
+			_seat_player_labels[i].add_theme_font_size_override("font_size", roundi(14.0 * ui_scale))
 
 	for opt in _seat_options():
 		opt.custom_minimum_size = Vector2(name_w, option_height)
