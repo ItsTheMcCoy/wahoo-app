@@ -5,7 +5,7 @@ const WahooRules = preload("res://scripts/wahoo_rules.gd")
 const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
-const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.svg")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
 const PLAYER_COLORS := [

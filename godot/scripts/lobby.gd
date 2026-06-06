@@ -2,7 +2,7 @@ extends Control
 
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 
-const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.svg")
 
 const PLAYER_COLORS := [
 	Color(0.86, 0.20, 0.17),
