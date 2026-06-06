@@ -720,9 +720,6 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		sps.content_margin_top    = vpad
 		sps.content_margin_bottom = vpad
 
-	_setup_brand_title.custom_minimum_size = Vector2(0, roundi(130.0 * ui_scale))
-	_setup_brand_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-
 	var setup_content := $SetupOverlay/SetupPanel/SetupScroll/SetupContent as VBoxContainer
 	var setup_title   := $SetupOverlay/SetupPanel/SetupScroll/SetupContent/SetupTitle as Label
 	if setup_content != null:
@@ -732,6 +729,14 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 
 	var card_pad      := roundi(14.0 * ui_scale)
 	var card_w        := roundi((panel_w - 2.0 * hpad) * 0.80)
+	var wordmark_aspect := 1400.0 / 520.0
+	if WORDMARK_TEXTURE != null:
+		var wsize := WORDMARK_TEXTURE.get_size()
+		if wsize.y > 0.0:
+			wordmark_aspect = wsize.x / wsize.y
+	_setup_brand_title.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_setup_brand_title.custom_minimum_size = Vector2(card_w, roundi(float(card_w) / wordmark_aspect))
+	_setup_brand_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# name_w derives from the full panel interior so card narrowing doesn't affect field widths
 	var name_interior_w := roundi(panel_w) - 2 * hpad - 2 * 14
 
