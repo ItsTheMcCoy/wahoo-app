@@ -778,9 +778,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 			cs.content_margin_right  = card_pad
 			cs.content_margin_top    = card_pad
 			cs.content_margin_bottom = card_pad
-		# Mirror the dot+gap weight on the right so ALIGNMENT_CENTER places the
-		# name/picker column — not the dot+column group — at the card's center.
-		right_spacers[i].custom_minimum_size = Vector2(dot_size + header_sep, 0)
+		right_spacers[i].custom_minimum_size = Vector2.ZERO
 
 	for opt in _seat_options():
 		opt.custom_minimum_size = Vector2(name_w, option_height)
