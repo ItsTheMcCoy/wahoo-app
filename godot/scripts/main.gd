@@ -721,6 +721,7 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 		sps.content_margin_bottom = vpad
 
 	_setup_brand_title.custom_minimum_size = Vector2(0, roundi(130.0 * ui_scale))
+	_setup_brand_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var setup_content := $SetupOverlay/SetupPanel/SetupScroll/SetupContent as VBoxContainer
 	var setup_title   := $SetupOverlay/SetupPanel/SetupScroll/SetupContent/SetupTitle as Label
