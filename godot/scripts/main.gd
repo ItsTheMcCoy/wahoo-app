@@ -702,8 +702,9 @@ func _compute_setup_ui_scale(viewport_size: Vector2) -> float:
 func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var ui_scale := _compute_setup_ui_scale(viewport_size)
 
-	var panel_w := minf(viewport_size.x * 0.88, 500.0 * ui_scale)
-	var panel_h := viewport_size.y * 0.85
+	# Panel nearly fills the screen; ScrollContainer handles overflow
+	var panel_w := minf(viewport_size.x * 0.96, 600.0 * ui_scale)
+	var panel_h := viewport_size.y * 0.97
 	_setup_panel.offset_left   = -panel_w * 0.5
 	_setup_panel.offset_right  =  panel_w * 0.5
 	_setup_panel.offset_top    = -panel_h * 0.5
