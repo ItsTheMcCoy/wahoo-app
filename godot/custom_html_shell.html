@@ -222,6 +222,43 @@ html, body {
 
 	<button id="fullscreen-btn" type="button" aria-label="Enter fullscreen">Fullscreen</button>
 
+	<script>
+(function () {
+	let backCallback = null;
+	let suppressNextPopstate = false;
+
+	// Called from GDScript when a screen with an in-app "back" action becomes
+	// active. Pushes a history entry so the device/browser back button has
+	// something to consume, and remembers which action to run.
+	window.wahuloPushBack = function (callback) {
+		backCallback = callback;
+		history.pushState({ wahuloBack: true }, '');
+	};
+
+	// Called from GDScript when the in-app back action runs via its own
+	// button, so the pushed history entry doesn't linger.
+	window.wahuloPopBack = function () {
+		if (backCallback) {
+			backCallback = null;
+			suppressNextPopstate = true;
+			history.back();
+		}
+	};
+
+	window.addEventListener('popstate', function () {
+		if (suppressNextPopstate) {
+			suppressNextPopstate = false;
+			return;
+		}
+		if (backCallback) {
+			const cb = backCallback;
+			backCallback = null;
+			cb();
+		}
+	});
+}());
+	</script>
+
 	<script src="index.js"></script>
 	<script>
 const GODOT_CONFIG = $GODOT_CONFIG;

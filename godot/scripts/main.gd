@@ -64,6 +64,7 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _setup_overlay: ColorRect = $SetupOverlay
 @onready var _setup_panel: PanelContainer = $SetupOverlay/SetupCenter/SetupPanel
 @onready var _setup_brand_title: TextureRect = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/BrandTitle
+@onready var _setup_back_button: Button = $SetupOverlay/SetupBackButton
 @onready var _start_button: Button = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/StartButton
 @onready var _seat_option_0: OptionButton = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard0/PlayerCard0Inner/Seat0RightCol/Seat0Option
 @onready var _seat_option_1: OptionButton = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1RightCol/Seat1Option
@@ -112,6 +113,8 @@ func _ready() -> void:
 	_new_game_button.pressed.connect(_on_new_game_from_win)
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
+	_setup_back_button.pressed.connect(_on_setup_back_pressed)
+	WahooResponsiveLayout.style_icon_button(_setup_back_button)
 	_smoke_summary = _build_smoke_summary()
 	_setup_game_menu()
 	_die_label.text = "–"
@@ -132,6 +135,7 @@ func _ready() -> void:
 	else:
 		_setup_overlay.visible = true
 		WahooResponsiveLayout.set_menu_mode(true)
+		WahooResponsiveLayout.push_back_handler(_on_setup_back_pressed)
 
 func _normalize_profile_name(name: String) -> String:
 	return name.strip_edges().to_lower()
@@ -814,7 +818,12 @@ func _on_start_pressed() -> void:
 			_seat_display_names[i] = _profile_labels.get(_seat_types[i], _seat_types[i])
 	_setup_overlay.visible = false
 	WahooResponsiveLayout.set_menu_mode(false)
+	WahooResponsiveLayout.pop_back_handler()
 	_new_game()
+
+func _on_setup_back_pressed() -> void:
+	WahooResponsiveLayout.pop_back_handler()
+	get_tree().change_scene_to_file("res://scenes/HomeScreen.tscn")
 
 func _on_new_game_from_win() -> void:
 	if _is_multiplayer:
@@ -826,6 +835,7 @@ func _on_new_game_from_win() -> void:
 	_win_overlay.visible = false
 	_setup_overlay.visible = true
 	WahooResponsiveLayout.set_menu_mode(true)
+	WahooResponsiveLayout.push_back_handler(_on_setup_back_pressed)
 	_refresh_setup_name_fields()
 
 func _new_game() -> void:

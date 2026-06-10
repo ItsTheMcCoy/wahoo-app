@@ -224,9 +224,46 @@ html, body {
 
 	<button id="fullscreen-btn" type="button" aria-label="Enter fullscreen">Fullscreen</button>
 
+	<script>
+(function () {
+	let backCallback = null;
+	let suppressNextPopstate = false;
+
+	// Called from GDScript when a screen with an in-app "back" action becomes
+	// active. Pushes a history entry so the device/browser back button has
+	// something to consume, and remembers which action to run.
+	window.wahuloPushBack = function (callback) {
+		backCallback = callback;
+		history.pushState({ wahuloBack: true }, '');
+	};
+
+	// Called from GDScript when the in-app back action runs via its own
+	// button, so the pushed history entry doesn't linger.
+	window.wahuloPopBack = function () {
+		if (backCallback) {
+			backCallback = null;
+			suppressNextPopstate = true;
+			history.back();
+		}
+	};
+
+	window.addEventListener('popstate', function () {
+		if (suppressNextPopstate) {
+			suppressNextPopstate = false;
+			return;
+		}
+		if (backCallback) {
+			const cb = backCallback;
+			backCallback = null;
+			cb();
+		}
+	});
+}());
+	</script>
+
 	<script src="index.js"></script>
 	<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1792688,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1801696,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 GODOT_CONFIG.executable = "/index";
 GODOT_CONFIG.mainPack = "/index.pck?v=" + String(Date.now());
 const GODOT_THREADS_ENABLED = false;

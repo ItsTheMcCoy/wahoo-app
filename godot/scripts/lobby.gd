@@ -46,6 +46,7 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _start_game_btn: Button          = $ScrollContainer/Center/LobbyPanel/Content/ActionRow/StartGameBtn
 @onready var _leave_btn: Button               = $ScrollContainer/Center/LobbyPanel/Content/ActionRow/LeaveBtn
 @onready var _action_row: BoxContainer        = $ScrollContainer/Center/LobbyPanel/Content/ActionRow
+@onready var _back_btn: Button                = $LobbyBackButton
 
 var _role := ""
 var _game_id := ""
@@ -84,8 +85,11 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_setup_ui()
 	_connect_signals()
+	_back_btn.pressed.connect(_on_leave)
+	WahooResponsiveLayout.style_icon_button(_back_btn)
 	_on_viewport_resized()
 	WahooResponsiveLayout.set_menu_mode(true)
+	WahooResponsiveLayout.push_back_handler(_on_leave)
 
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size
@@ -444,6 +448,7 @@ func _on_game_started(payload: Dictionary) -> void:
 	Network.ctx["role"]           = _role
 	Network.ctx["awaiting_opening_roll"] = bool(payload.get("awaitingOpeningRoll", false))
 	Network.ctx["opening_roll_rounds"] = payload.get("openingRollRounds", [])
+	WahooResponsiveLayout.pop_back_handler()
 	get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 # --- Host actions ---
@@ -481,6 +486,7 @@ func _on_chat_send() -> void:
 # --- Leave ---
 
 func _on_leave() -> void:
+	WahooResponsiveLayout.pop_back_handler()
 	_disconnect_signals()
 	Network.disconnect_from_relay()
 	Network.ctx = {}
