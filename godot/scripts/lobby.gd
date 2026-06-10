@@ -86,6 +86,7 @@ func _ready() -> void:
 	_setup_ui()
 	_connect_signals()
 	_back_btn.pressed.connect(_on_leave)
+	_back_btn.text = "<"
 	WahooResponsiveLayout.style_icon_button(_back_btn)
 	_on_viewport_resized()
 	WahooResponsiveLayout.set_menu_mode(true)
@@ -113,6 +114,14 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_start_game_btn.custom_minimum_size = Vector2(0, action_height)
 	_chat_log.custom_minimum_size = Vector2(0, 148 if _compact_layout else 192)
 	_chat_send_btn.custom_minimum_size = Vector2(74 if _compact_layout else 60, 48)
+	call_deferred("_position_back_button")
+
+func _position_back_button() -> void:
+	WahooResponsiveLayout.position_back_button_near_panel(
+		_back_btn,
+		$ScrollContainer/Center/LobbyPanel,
+		get_viewport_rect().size
+	)
 
 func _normalize_profile_name(name: String) -> String:
 	return name.strip_edges().to_lower()

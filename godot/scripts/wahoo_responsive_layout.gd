@@ -1,6 +1,8 @@
 class_name WahooResponsiveLayout
 extends RefCounted
 
+const BACK_ICON = preload("res://assets/textures/back_chevron.svg")
+
 const MAIN_COMPACT_BREAKPOINT := 980.0
 const MAIN_COMPACT_ASPECT_THRESHOLD := 1.12
 const MOBILE_LIKE_SHORT_SIDE_MAX := 600.0
@@ -52,6 +54,11 @@ static func pop_back_handler() -> void:
 # Applies a compact, icon-sized button style for navigation controls (e.g.
 # back buttons) that float over a screen without affecting panel layout.
 static func style_icon_button(btn: Button, font_size: int = 22) -> void:
+	btn.custom_minimum_size = Vector2(44, 44)
+	btn.tooltip_text = "Back"
+	btn.text = ""
+	btn.icon = BACK_ICON
+
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0.30, 0.22, 0.15, 0.92)
 	normal.border_color = Color(0.73, 0.56, 0.39, 0.92)
@@ -77,3 +84,30 @@ static func style_icon_button(btn: Button, font_size: int = 22) -> void:
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.90))
 	btn.add_theme_color_override("font_pressed_color", Color(0.97, 0.93, 0.86))
 	btn.add_theme_font_size_override("font_size", font_size)
+
+static func position_back_button_near_panel(
+	btn: Button,
+	panel: Control,
+	viewport_size: Vector2,
+	gap: float = 12.0,
+	edge_margin: float = 14.0
+) -> void:
+	var button_size := btn.size
+	if button_size.x <= 0.0 or button_size.y <= 0.0:
+		button_size = btn.custom_minimum_size
+	if button_size.x <= 0.0 or button_size.y <= 0.0:
+		button_size = Vector2(44, 44)
+
+	btn.size = button_size
+
+	var panel_rect := panel.get_global_rect()
+	var parent_origin := (btn.get_parent() as Control).get_global_position()
+	var max_x := maxf(edge_margin, viewport_size.x - button_size.x - edge_margin)
+	var max_y := maxf(edge_margin, viewport_size.y - button_size.y - edge_margin)
+	var target_x := panel_rect.position.x - button_size.x - gap
+	var target_y := panel_rect.position.y
+
+	btn.position = Vector2(
+		clampf(target_x, edge_margin, max_x),
+		clampf(target_y, edge_margin, max_y)
+	) - parent_origin

@@ -114,6 +114,7 @@ func _ready() -> void:
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
 	_setup_back_button.pressed.connect(_on_setup_back_pressed)
+	_setup_back_button.text = "<"
 	WahooResponsiveLayout.style_icon_button(_setup_back_button)
 	_smoke_summary = _build_smoke_summary()
 	_setup_game_menu()
@@ -800,6 +801,14 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	_start_button.custom_minimum_size = Vector2(card_w, roundi(68.0 * 0.85 * ui_scale))
 	_start_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_button.add_theme_font_size_override("font_size", roundi(24.0 * ui_scale))
+	call_deferred("_position_setup_back_button")
+
+func _position_setup_back_button() -> void:
+	WahooResponsiveLayout.position_back_button_near_panel(
+		_setup_back_button,
+		_setup_panel,
+		get_viewport_rect().size
+	)
 
 func _on_start_pressed() -> void:
 	var opts := _seat_options()

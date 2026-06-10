@@ -23,7 +23,6 @@ const MOBILE_BROWSER_LANDSCAPE_PROMPT_WIDTH_RATIO := 0.50
 @onready var _host_name_label: Label    = $HostPromptLayer/Center/HostPanel/HostContent/HostNameLabel
 @onready var _host_name_field: LineEdit = $HostPromptLayer/Center/HostPanel/HostContent/HostNameField
 @onready var _host_error: Label         = $HostPromptLayer/Center/HostPanel/HostContent/HostErrorLabel
-@onready var _host_back_btn: Button     = $HostPromptLayer/HostBackButton
 @onready var _host_cancel_btn: Button   = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons/HostCancelBtn
 @onready var _host_create_btn: Button   = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons/HostCreateBtn
 @onready var _host_buttons: BoxContainer = $HostPromptLayer/Center/HostPanel/HostContent/HostButtons
@@ -37,7 +36,6 @@ const MOBILE_BROWSER_LANDSCAPE_PROMPT_WIDTH_RATIO := 0.50
 @onready var _join_name_label: Label        = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinNameLabel
 @onready var _join_name_field: LineEdit     = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinNameField
 @onready var _join_error: Label             = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinErrorLabel
-@onready var _join_back_btn: Button         = $JoinPromptLayer/JoinBackButton
 @onready var _join_cancel_btn: Button       = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinCancelBtn
 @onready var _join_player_btn: Button       = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinAsPlayerBtn
 @onready var _join_spectator_btn: Button    = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons/JoinAsSpectatorBtn
@@ -61,13 +59,9 @@ func _ready() -> void:
 	_join_btn.pressed.connect(_on_join)
 	_host_cancel_btn.pressed.connect(_close_prompts)
 	_host_create_btn.pressed.connect(_on_host_create)
-	_host_back_btn.pressed.connect(_close_prompts)
 	_join_cancel_btn.pressed.connect(_close_prompts)
 	_join_player_btn.pressed.connect(_on_join_as_player)
 	_join_spectator_btn.pressed.connect(_on_join_as_spectator)
-	_join_back_btn.pressed.connect(_close_prompts)
-	WahooResponsiveLayout.style_icon_button(_host_back_btn)
-	WahooResponsiveLayout.style_icon_button(_join_back_btn)
 	_host_name_field.text_submitted.connect(func(_t): _on_host_create())
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
 	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:

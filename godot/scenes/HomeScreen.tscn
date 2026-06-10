@@ -126,14 +126,6 @@ size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 56)
 text = "Create Room"
 
-[node name="HostBackButton" type="Button" parent="HostPromptLayer"]
-layout_mode = 1
-offset_left = 14.0
-offset_top = 14.0
-offset_right = 58.0
-offset_bottom = 58.0
-text = "←"
-
 [node name="JoinPromptLayer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -221,10 +213,3 @@ size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 56)
 text = "Watch"
 
-[node name="JoinBackButton" type="Button" parent="JoinPromptLayer"]
-layout_mode = 1
-offset_left = 14.0
-offset_top = 14.0
-offset_right = 58.0
-offset_bottom = 58.0
-text = "←"
