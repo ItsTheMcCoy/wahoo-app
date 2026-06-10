@@ -707,8 +707,12 @@ func _compute_setup_ui_scale(viewport_size: Vector2) -> float:
 
 func _apply_setup_layout(viewport_size: Vector2) -> void:
 	var ui_scale := _compute_setup_ui_scale(viewport_size)
+	var setup_mobile_like := WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
+	var web_window_size := _web_window_size()
+	if web_window_size.x > 0.0 and web_window_size.y > 0.0:
+		setup_mobile_like = setup_mobile_like or WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
 
-	var panel_w := minf(viewport_size.x * 0.88, 520.0 * ui_scale)
+	var panel_w := minf(viewport_size.x * 0.85, 500.0 * ui_scale)
 
 	# Scale the outer panel padding so it's proportional on all screen densities
 	var hpad := roundi(20.0 * ui_scale)
@@ -801,6 +805,9 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	_start_button.custom_minimum_size = Vector2(card_w, roundi(68.0 * 0.85 * ui_scale))
 	_start_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_button.add_theme_font_size_override("font_size", roundi(24.0 * ui_scale))
+	var back_button_base_size := 56.0 if setup_mobile_like else 50.0
+	var back_button_size := maxf(back_button_base_size, back_button_base_size * ui_scale)
+	_setup_back_button.custom_minimum_size = Vector2(back_button_size, back_button_size)
 	call_deferred("_position_setup_back_button")
 
 func _position_setup_back_button() -> void:
