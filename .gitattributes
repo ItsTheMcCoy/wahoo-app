@@ -12,6 +12,13 @@
 *.cfg  text eol=lf
 *.txt  text eol=lf
 *.sh   text eol=lf
+*.gd   text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.import text eol=lf
+*.html text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
 
 # Windows-native scripts use CRLF
 *.bat  text eol=crlf
