@@ -805,9 +805,11 @@ func _apply_setup_layout(viewport_size: Vector2) -> void:
 	_start_button.custom_minimum_size = Vector2(card_w, roundi(68.0 * 0.85 * ui_scale))
 	_start_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_button.add_theme_font_size_override("font_size", roundi(24.0 * ui_scale))
-	var back_button_base_size := 56.0 if setup_mobile_like else 50.0
-	var back_button_size := maxf(back_button_base_size, back_button_base_size * ui_scale)
-	_setup_back_button.custom_minimum_size = Vector2(back_button_size, back_button_size)
+	var back_button_base_width := 44.0 if setup_mobile_like else 40.0
+	var back_button_base_height := 56.0 if setup_mobile_like else 50.0
+	var back_button_width := maxf(back_button_base_width, back_button_base_width * ui_scale)
+	var back_button_height := maxf(back_button_base_height, back_button_base_height * ui_scale)
+	_setup_back_button.custom_minimum_size = Vector2(back_button_width, back_button_height)
 	call_deferred("_position_setup_back_button")
 
 func _position_setup_back_button() -> void:
