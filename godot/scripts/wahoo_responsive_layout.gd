@@ -26,10 +26,8 @@ static func is_short_landscape(viewport_size: Vector2) -> bool:
 static func set_menu_mode(active: bool) -> void:
 	if not OS.has_feature("web"):
 		return
-	if active:
-		JavaScriptBridge.eval("document.body.classList.add('menu-mode')")
-	else:
-		JavaScriptBridge.eval("document.body.classList.remove('menu-mode')")
+	var window := JavaScriptBridge.get_interface("window")
+	window.call("wahuloSetMenuMode", active)
 
 # Registers `callback` as the action to run when the user presses the
 # device/browser back button, and pushes a browser history entry so that

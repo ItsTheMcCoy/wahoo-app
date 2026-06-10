@@ -185,10 +185,8 @@ html, body {
 	50% { transform: rotate(-90deg); }
 }
 
-@media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-	body.menu-mode #rotate-overlay {
-		display: flex;
-	}
+#rotate-overlay.active {
+	display: flex;
 }
 	</style>
 	<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -228,6 +226,35 @@ html, body {
 (function () {
 	let backCallback = null;
 	let suppressNextPopstate = false;
+	let menuModeActive = false;
+
+	const rotateOverlay = document.getElementById('rotate-overlay');
+
+	// Decides whether the "rotate to portrait" curtain should be shown.
+	// Driven by JS (rather than a CSS media query alone) because mobile
+	// browsers report transient/incorrect viewport heights for a moment
+	// after a rotation while their UI chrome is still animating, which can
+	// make a pure `(max-height: ...)` query flicker. window.screen stays
+	// stable across that animation, so it's used to tell phones from
+	// tablets/desktops.
+	function updateRotateOverlay() {
+		const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+		const isLandscape = window.innerWidth > window.innerHeight;
+		const isPhoneSized = Math.min(window.screen.width, window.screen.height) <= 600;
+		const shouldShow = menuModeActive && isCoarsePointer && isLandscape && isPhoneSized;
+		rotateOverlay.classList.toggle('active', shouldShow);
+	}
+
+	// Called from GDScript whenever a menu screen becomes (in)active, so the
+	// rotate-to-portrait curtain only applies while a menu is showing.
+	window.wahuloSetMenuMode = function (active) {
+		menuModeActive = active;
+		document.body.classList.toggle('menu-mode', active);
+		updateRotateOverlay();
+	};
+
+	window.addEventListener('resize', updateRotateOverlay);
+	window.addEventListener('orientationchange', updateRotateOverlay);
 
 	// Called from GDScript when a screen with an in-app "back" action becomes
 	// active. Pushes a history entry so the device/browser back button has
@@ -263,7 +290,7 @@ html, body {
 
 	<script src="index.js"></script>
 	<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1801696,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1801584,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 GODOT_CONFIG.executable = "/index";
 GODOT_CONFIG.mainPack = "/index.pck?v=" + String(Date.now());
 const GODOT_THREADS_ENABLED = false;
