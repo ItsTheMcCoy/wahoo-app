@@ -150,6 +150,46 @@ html, body {
 		display: inline-flex;
 	}
 }
+
+#rotate-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 14px;
+	padding: 24px;
+	background: rgba(7, 5, 3, 0.97);
+	color: #f3ddad;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	z-index: 250;
+}
+
+#rotate-overlay .rotate-icon {
+	font-size: 48px;
+	animation: rotate-hint 1.6s ease-in-out infinite;
+}
+
+#rotate-overlay p {
+	margin: 0;
+	max-width: 320px;
+	font-size: 1rem;
+	line-height: 1.5;
+	letter-spacing: 0.04em;
+}
+
+@keyframes rotate-hint {
+	0%, 100% { transform: rotate(0deg); }
+	50% { transform: rotate(-90deg); }
+}
+
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+	body.menu-mode #rotate-overlay {
+		display: flex;
+	}
+}
 	</style>
 	$GODOT_HEAD_INCLUDE
 </head>
@@ -173,6 +213,11 @@ html, body {
 
 	<div id="error-overlay">
 		<div id="error-box"></div>
+	</div>
+
+	<div id="rotate-overlay">
+		<div class="rotate-icon">&#128241;</div>
+		<p>Rotate your device to portrait to use the menu.</p>
 	</div>
 
 	<button id="fullscreen-btn" type="button" aria-label="Enter fullscreen">Fullscreen</button>

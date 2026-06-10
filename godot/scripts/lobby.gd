@@ -85,6 +85,7 @@ func _ready() -> void:
 	_setup_ui()
 	_connect_signals()
 	_on_viewport_resized()
+	WahooResponsiveLayout.set_menu_mode(true)
 
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size

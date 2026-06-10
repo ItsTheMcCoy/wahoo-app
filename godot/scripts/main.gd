@@ -131,6 +131,7 @@ func _ready() -> void:
 		_enter_multiplayer_mode()
 	else:
 		_setup_overlay.visible = true
+		WahooResponsiveLayout.set_menu_mode(true)
 
 func _normalize_profile_name(name: String) -> String:
 	return name.strip_edges().to_lower()
@@ -812,6 +813,7 @@ func _on_start_pressed() -> void:
 		else:
 			_seat_display_names[i] = _profile_labels.get(_seat_types[i], _seat_types[i])
 	_setup_overlay.visible = false
+	WahooResponsiveLayout.set_menu_mode(false)
 	_new_game()
 
 func _on_new_game_from_win() -> void:
@@ -823,6 +825,7 @@ func _on_new_game_from_win() -> void:
 		return
 	_win_overlay.visible = false
 	_setup_overlay.visible = true
+	WahooResponsiveLayout.set_menu_mode(true)
 	_refresh_setup_name_fields()
 
 func _new_game() -> void:
@@ -1292,6 +1295,7 @@ func _load_game() -> void:
 	_pending_roll = null
 	_win_overlay.visible = false
 	_setup_overlay.visible = false
+	WahooResponsiveLayout.set_menu_mode(false)
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
@@ -1340,6 +1344,7 @@ func _enter_multiplayer_mode() -> void:
 
 	_win_overlay.visible = false
 	_setup_overlay.visible = false
+	WahooResponsiveLayout.set_menu_mode(false)
 	_board.set_turn_focus_enabled(true)
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)

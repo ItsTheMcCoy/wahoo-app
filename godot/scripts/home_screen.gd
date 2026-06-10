@@ -71,6 +71,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	call_deferred("_on_viewport_resized")
 	_check_deep_link()
+	WahooResponsiveLayout.set_menu_mode(true)
 
 func _on_viewport_resized() -> void:
 	var viewport_size := _effective_window_size()
