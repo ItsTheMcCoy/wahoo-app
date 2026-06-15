@@ -64,6 +64,8 @@ func _ready() -> void:
 	_join_spectator_btn.pressed.connect(_on_join_as_spectator)
 	_host_name_field.text_submitted.connect(func(_t): _on_host_create())
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
+	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
+		WahooResponsiveLayout.configure_mobile_text_field(field)
 
 	_apply_theme()
 	get_viewport().size_changed.connect(_on_viewport_resized)

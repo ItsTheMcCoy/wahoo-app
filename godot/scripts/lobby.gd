@@ -84,6 +84,7 @@ func _ready() -> void:
 	_apply_theme()
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_setup_ui()
+	WahooResponsiveLayout.configure_mobile_text_field(_chat_input)
 	_connect_signals()
 	_back_btn.pressed.connect(_on_leave)
 	_back_btn.text = "<"

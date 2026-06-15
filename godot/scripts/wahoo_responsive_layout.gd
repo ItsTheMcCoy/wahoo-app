@@ -111,3 +111,40 @@ static func position_back_button_near_panel(
 		clampf(target_x, edge_margin, max_x),
 		clampf(target_y, edge_margin, max_y)
 	) - parent_origin
+
+static func configure_mobile_text_field(field: LineEdit) -> void:
+	if field == null:
+		return
+	field.focus_mode = Control.FOCUS_ALL
+	field.mouse_filter = Control.MOUSE_FILTER_STOP
+	field.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventScreenTouch:
+			var touch := event as InputEventScreenTouch
+			if touch.pressed:
+				_focus_mobile_text_field(field)
+		elif event is InputEventMouseButton:
+			var mouse := event as InputEventMouseButton
+			if mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT and DisplayServer.is_touchscreen_available():
+				_focus_mobile_text_field(field)
+	)
+	field.focus_entered.connect(func() -> void:
+		if DisplayServer.is_touchscreen_available():
+			_show_virtual_keyboard_for_field(field)
+	)
+
+static func _focus_mobile_text_field(field: LineEdit) -> void:
+	field.grab_focus()
+	_show_virtual_keyboard_for_field(field)
+
+static func _show_virtual_keyboard_for_field(field: LineEdit) -> void:
+	if not OS.has_feature("web") and not DisplayServer.is_touchscreen_available():
+		return
+	var max_length := field.max_length if field.max_length > 0 else -1
+	DisplayServer.virtual_keyboard_show(
+		field.text,
+		field.get_global_rect(),
+		DisplayServer.KEYBOARD_TYPE_DEFAULT,
+		max_length,
+		field.caret_column,
+		field.caret_column
+	)

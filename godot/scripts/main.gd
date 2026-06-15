@@ -110,6 +110,7 @@ func _ready() -> void:
 	_end_turn_button.pressed.connect(_on_end_turn_pressed)
 	_chat_send_btn.pressed.connect(_on_chat_send)
 	_chat_input.text_submitted.connect(func(_t): _on_chat_send())
+	WahooResponsiveLayout.configure_mobile_text_field(_chat_input)
 	_new_game_button.pressed.connect(_on_new_game_from_win)
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
