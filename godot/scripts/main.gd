@@ -599,18 +599,16 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var mobile_landscape := mobile_like and viewport_size.x > viewport_size.y
 	var mobile_portrait := mobile_like and viewport_size.y > viewport_size.x
 
-	# Mobile browser detection: the Godot canvas runs at physical pixel resolution
-	# (CSS pixels × DPR), so is_mobile_like_layout() misses high-DPR mobile devices.
-	# Use window.innerWidth/innerHeight (CSS pixels) to reliably detect mobile browser.
+	# Phone browser detection: the Godot canvas always stretches to a virtual
+	# viewport of at least 1280x720, so is_mobile_like_layout() misses phones.
+	# Detect them from window.innerWidth/innerHeight (CSS pixels) and use
+	# phone_scale to convert CSS-pixel design sizes into virtual units.
 	var web_window_size := _web_window_size()
-	var mobile_browser_portrait := web_window_size.x > 0.0 \
-		and web_window_size.y > web_window_size.x \
-		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
-	var mobile_browser_landscape := web_window_size.x > 0.0 \
-		and web_window_size.x >= web_window_size.y \
-		and WahooResponsiveLayout.is_mobile_like_layout(web_window_size)
+	var phone_portrait := WahooResponsiveLayout.is_phone_browser_portrait(web_window_size)
+	var phone_landscape := WahooResponsiveLayout.is_phone_browser_landscape(web_window_size)
+	var phone_scale := WahooResponsiveLayout.phone_browser_unit_scale(viewport_size, web_window_size)
 	var frame_margin := 12.0
-	if mobile_landscape:
+	if mobile_landscape or phone_landscape:
 		frame_margin = 6.0
 	_root_container.offset_left = frame_margin
 	_root_container.offset_top = frame_margin
@@ -619,6 +617,10 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var portrait_scale := 1.0
 	if _compact_layout and mobile_portrait:
 		portrait_scale = 1.24
+	if _compact_layout and phone_portrait:
+		# Side-panel widgets are designed at 0.8x the compact baseline in CSS
+		# pixels so the board keeps the full screen width on typical phones.
+		portrait_scale = 0.8 * phone_scale
 	_root_container.vertical = _compact_layout
 	_root_container.add_theme_constant_override("separation", 12 if _compact_layout else 16)
 	var desktop_ui_scale := 1.0
@@ -626,6 +628,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		desktop_ui_scale = clampf(viewport_size.y / 980.0, 0.72, 1.0)
 		if mobile_landscape:
 			desktop_ui_scale = minf(desktop_ui_scale, 0.62)
+		if phone_landscape:
+			# Landscape phone: 0.65x the desktop baseline in CSS pixels.
+			desktop_ui_scale = 0.65 * phone_scale
 
 	var desktop_side_width := (320.0 if short_landscape else 350.0) * desktop_ui_scale
 	_side_panel.custom_minimum_size = Vector2(0, 0) if _compact_layout else Vector2(desktop_side_width, 0)
@@ -655,6 +660,11 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round((46.0 if short_landscape else 52.0) * desktop_ui_scale))
 	var action_button_font_size: int = round(22.0 * portrait_scale) if _compact_layout else round((20.0 if short_landscape else 26.0) * desktop_ui_scale)
 	_game_menu_button.add_theme_font_size_override("font_size", action_button_font_size)
+	var menu_popup := _game_menu_button.get_popup()
+	if phone_scale > 1.0:
+		menu_popup.add_theme_font_size_override("font_size", action_button_font_size)
+	elif menu_popup.has_theme_font_size_override("font_size"):
+		menu_popup.remove_theme_font_size_override("font_size")
 
 	_status.custom_minimum_size = Vector2(0, round(108.0 * portrait_scale)) if _compact_layout else Vector2(0, round((92.0 if short_landscape else 172.0) * desktop_ui_scale))
 	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 24.0) * desktop_ui_scale))
@@ -668,8 +678,14 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_end_turn_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
 	_roll_button.add_theme_font_size_override("font_size", action_button_font_size)
 	_end_turn_button.add_theme_font_size_override("font_size", action_button_font_size)
-	if _compact_layout and mobile_portrait:
-		var action_width: float = round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
+	if _compact_layout and (mobile_portrait or phone_portrait):
+		# On phone browsers the clamp works in CSS pixels, then converts to
+		# virtual units; elsewhere viewport units already are CSS pixels.
+		var action_width: float
+		if phone_portrait:
+			action_width = round(clampf(web_window_size.x * 0.46, 140.0, 220.0) * phone_scale)
+		else:
+			action_width = round(clampf(viewport_size.x * 0.46, 140.0, 220.0))
 		_roll_button.custom_minimum_size.x = action_width
 		_end_turn_button.custom_minimum_size.x = action_width
 		_roll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -680,21 +696,47 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 
 	if _chat_section.visible:
 		_chat_log.custom_minimum_size = Vector2(0, round(100.0 * portrait_scale)) if _compact_layout else Vector2(0, round(150.0 * desktop_ui_scale))
+	if phone_scale > 1.0:
+		_chat_log.add_theme_font_size_override("normal_font_size", roundi(14.0 * phone_scale))
+		_chat_input.custom_minimum_size = Vector2(0, round(40.0 * phone_scale))
+		_chat_input.add_theme_font_size_override("font_size", roundi(15.0 * phone_scale))
+		_chat_send_btn.custom_minimum_size = Vector2(round(52.0 * phone_scale), round(40.0 * phone_scale))
+		_chat_send_btn.add_theme_font_size_override("font_size", roundi(18.0 * phone_scale))
+	else:
+		# Defaults from Main.tscn and _apply_visual_theme().
+		_chat_log.add_theme_font_size_override("normal_font_size", 18)
+		_chat_input.custom_minimum_size = Vector2(0, 48)
+		_chat_send_btn.custom_minimum_size = Vector2(60, 48)
+		if _chat_input.has_theme_font_size_override("font_size"):
+			_chat_input.remove_theme_font_size_override("font_size")
+		if _chat_send_btn.has_theme_font_size_override("font_size"):
+			_chat_send_btn.remove_theme_font_size_override("font_size")
 
 	_apply_setup_layout(viewport_size)
 
 	var win_panel := $WinOverlay/WinPanel as PanelContainer
 	if win_panel != null:
 		var win_size := Vector2(
-			minf(viewport_size.x * 0.86, 420.0),
-			minf(viewport_size.y * 0.56, 320.0)
+			minf(viewport_size.x * 0.86, 420.0 * phone_scale),
+			minf(viewport_size.y * 0.56, 320.0 * phone_scale)
 		)
 		win_panel.offset_left = -win_size.x * 0.5
 		win_panel.offset_right = win_size.x * 0.5
 		win_panel.offset_top = -win_size.y * 0.5
 		win_panel.offset_bottom = win_size.y * 0.5
 
-	_win_brand_title.custom_minimum_size = Vector2(0, 112 if _compact_layout else 162)
+	_win_brand_title.custom_minimum_size = Vector2(0, round((112.0 if _compact_layout else 162.0) * phone_scale))
+	if phone_scale > 1.0:
+		_win_title.add_theme_font_size_override("font_size", roundi(24.0 * phone_scale))
+		_win_subtitle.add_theme_font_size_override("font_size", roundi(14.0 * phone_scale))
+		_new_game_button.custom_minimum_size = Vector2(round(200.0 * phone_scale), round(48.0 * phone_scale))
+		_new_game_button.add_theme_font_size_override("font_size", roundi(17.0 * phone_scale))
+	else:
+		# Defaults from Main.tscn.
+		_win_title.add_theme_font_size_override("font_size", 28)
+		_win_subtitle.add_theme_font_size_override("font_size", 16)
+		_new_game_button.custom_minimum_size = Vector2(220, 54)
+		_new_game_button.add_theme_font_size_override("font_size", 18)
 
 func _compute_setup_ui_scale(viewport_size: Vector2) -> float:
 	if OS.has_feature("web"):

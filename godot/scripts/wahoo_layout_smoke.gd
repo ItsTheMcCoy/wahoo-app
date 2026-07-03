@@ -20,6 +20,8 @@ static func run() -> Dictionary:
         _test_main_scene_uses_compact_layout_for_mobile_landscape,
         _test_main_scene_uses_short_landscape_sizing_for_wide_short_viewports,
         _test_mobile_like_detection_covers_phone_portrait_and_landscape,
+        _test_phone_browser_detection_uses_css_pixels,
+        _test_phone_browser_unit_scale_converts_css_to_virtual_units,
     ]:
         total += 1
         var result: Dictionary = test.call()
@@ -173,4 +175,43 @@ static func _test_mobile_like_detection_covers_phone_portrait_and_landscape() ->
         return _fail(name, "expected 844x390 viewport to use mobile-like layout")
     if WahooResponsiveLayout.is_mobile_like_layout(Vector2(1280, 720)):
         return _fail(name, "expected 1280x720 viewport to remain desktop-like")
+    return _ok(name)
+
+static func _test_phone_browser_detection_uses_css_pixels() -> Dictionary:
+    var name := "phone browser detection classifies CSS window sizes"
+    if not WahooResponsiveLayout.is_phone_browser_portrait(Vector2(390, 844)):
+        return _fail(name, "expected 390x844 CSS window to be a portrait phone")
+    if WahooResponsiveLayout.is_phone_browser_landscape(Vector2(390, 844)):
+        return _fail(name, "portrait phone must not classify as landscape")
+    if not WahooResponsiveLayout.is_phone_browser_landscape(Vector2(844, 390)):
+        return _fail(name, "expected 844x390 CSS window to be a landscape phone")
+    if WahooResponsiveLayout.is_phone_browser_portrait(Vector2(1920, 1080)):
+        return _fail(name, "desktop window must not classify as portrait phone")
+    if WahooResponsiveLayout.is_phone_browser_landscape(Vector2(1900, 550)):
+        return _fail(name, "short wide desktop window must keep desktop layout")
+    if WahooResponsiveLayout.is_phone_browser_portrait(Vector2(768, 1024)):
+        return _fail(name, "tablet portrait must keep current behavior")
+    if WahooResponsiveLayout.is_phone_browser_portrait(Vector2.ZERO):
+        return _fail(name, "native builds (no CSS size) must not classify as phone")
+    return _ok(name)
+
+static func _test_phone_browser_unit_scale_converts_css_to_virtual_units() -> Dictionary:
+    var name := "phone browser unit scale converts CSS px to virtual units"
+    # Portrait phone: CSS 390x844 stretches to a 1280-wide virtual viewport.
+    var portrait_scale: float = WahooResponsiveLayout.phone_browser_unit_scale(
+        Vector2(1280, 2770), Vector2(390, 844))
+    if absf(portrait_scale - 1280.0 / 390.0) > 0.001:
+        return _fail(name, "portrait scale was %f, expected %f" % [portrait_scale, 1280.0 / 390.0])
+    # Landscape phone: CSS 844x390 stretches to a 720-tall virtual viewport.
+    var landscape_scale: float = WahooResponsiveLayout.phone_browser_unit_scale(
+        Vector2(1558, 720), Vector2(844, 390))
+    if absf(landscape_scale - 720.0 / 390.0) > 0.001:
+        return _fail(name, "landscape scale was %f, expected %f" % [landscape_scale, 720.0 / 390.0])
+    # Desktop windows and native builds must stay unscaled.
+    if WahooResponsiveLayout.phone_browser_unit_scale(Vector2(1920, 1080), Vector2(1920, 1080)) != 1.0:
+        return _fail(name, "desktop window must stay unscaled")
+    if WahooResponsiveLayout.phone_browser_unit_scale(Vector2(2487, 720), Vector2(1900, 550)) != 1.0:
+        return _fail(name, "short wide desktop window must stay unscaled")
+    if WahooResponsiveLayout.phone_browser_unit_scale(Vector2(1280, 720), Vector2.ZERO) != 1.0:
+        return _fail(name, "native builds must stay unscaled")
     return _ok(name)

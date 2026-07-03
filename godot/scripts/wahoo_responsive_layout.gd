@@ -8,11 +8,45 @@ const MAIN_COMPACT_ASPECT_THRESHOLD := 1.12
 const MOBILE_LIKE_SHORT_SIDE_MAX := 600.0
 const MOBILE_LIKE_LONG_SIDE_MAX := 2200.0
 const SHORT_LANDSCAPE_HEIGHT_MAX := 760.0
+const PHONE_LANDSCAPE_LONG_SIDE_MAX := 950.0
 
 static func is_mobile_like_layout(viewport_size: Vector2) -> bool:
 	var short_side := minf(viewport_size.x, viewport_size.y)
 	var long_side := maxf(viewport_size.x, viewport_size.y)
 	return short_side <= MOBILE_LIKE_SHORT_SIDE_MAX and long_side <= MOBILE_LIKE_LONG_SIDE_MAX
+
+# CSS-pixel window size of the hosting browser, or Vector2.ZERO outside web.
+static func web_window_size() -> Vector2:
+	if not OS.has_feature("web"):
+		return Vector2.ZERO
+	var web_width := float(JavaScriptBridge.eval("window.innerWidth || 0"))
+	var web_height := float(JavaScriptBridge.eval("window.innerHeight || 0"))
+	if web_width > 0.0 and web_height > 0.0:
+		return Vector2(web_width, web_height)
+	return Vector2.ZERO
+
+# Phone-browser checks work in CSS pixels (web_window_size): with the project's
+# canvas_items/expand stretch the virtual viewport never drops below 1280x720,
+# so is_mobile_like_layout() can never identify a phone from viewport units.
+static func is_phone_browser_portrait(web_size: Vector2) -> bool:
+	return web_size.x > 0.0 and web_size.y > web_size.x and is_mobile_like_layout(web_size)
+
+# Landscape uses a tighter long-side cap so short-but-wide desktop browser
+# windows (e.g. 1900x550) keep the desktop layout.
+static func is_phone_browser_landscape(web_size: Vector2) -> bool:
+	return web_size.x > 0.0 and web_size.x >= web_size.y \
+		and web_size.y <= MOBILE_LIKE_SHORT_SIDE_MAX \
+		and web_size.x <= PHONE_LANDSCAPE_LONG_SIDE_MAX
+
+# Virtual canvas units per CSS pixel on a phone browser (1.0 everywhere else).
+# Multiply CSS-pixel design sizes by this factor so controls render at the
+# intended physical size on phones without touching desktop layouts.
+static func phone_browser_unit_scale(viewport_size: Vector2, web_size: Vector2) -> float:
+	if is_phone_browser_portrait(web_size):
+		return maxf(1.0, viewport_size.x / web_size.x)
+	if is_phone_browser_landscape(web_size):
+		return maxf(1.0, viewport_size.y / web_size.y)
+	return 1.0
 
 static func is_main_scene_compact(viewport_size: Vector2) -> bool:
 	return viewport_size.x <= MAIN_COMPACT_BREAKPOINT \
