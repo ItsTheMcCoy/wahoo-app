@@ -3,6 +3,7 @@ extends Control
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.svg")
+const WORDMARK_ASPECT_RATIO := 1400.0 / 520.0
 
 const PLAYER_COLORS := [
 	Color(0.86, 0.20, 0.17),
@@ -57,6 +58,8 @@ var _spectator_count := 0
 var _ai_profile_order: Array = []
 var _ai_profile_labels: Dictionary = {}
 var _compact_layout := false
+var _phone_scale := 1.0
+var _last_phone_scale := -1.0
 
 func _ready() -> void:
 	_role            = str(Network.ctx.get("role", "spectator"))
@@ -95,26 +98,66 @@ func _ready() -> void:
 
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size
+	var web_window_size := WahooResponsiveLayout.web_window_size()
+	_phone_scale = WahooResponsiveLayout.phone_browser_unit_scale(viewport_size, web_window_size)
 	_compact_layout = viewport_size.x <= 920.0 \
 		or viewport_size.x < viewport_size.y * 1.04 \
 		or WahooResponsiveLayout.is_mobile_like_layout(viewport_size)
-	_apply_responsive_layout(viewport_size)
+	_apply_responsive_layout(viewport_size, web_window_size)
 
-func _apply_responsive_layout(viewport_size: Vector2) -> void:
+func _apply_responsive_layout(viewport_size: Vector2, web_window_size: Vector2) -> void:
+	var s := _phone_scale
+	if s != _last_phone_scale:
+		_last_phone_scale = s
+		_apply_theme(s)
+		_refresh_seat_list()
+		_refresh_host_controls()
+
 	var panel_width := minf(viewport_size.x * 0.96, 500.0)
+	if s > 1.0:
+		# Phone browser: fill the CSS width minus panel margins, in virtual units.
+		panel_width = minf((web_window_size.x - 40.0) * s, 500.0 * s)
 	_content.custom_minimum_size = Vector2(panel_width, 0)
-	_brand_title.custom_minimum_size = Vector2(0, 150 if _compact_layout else 195)
+	if s > 1.0:
+		_brand_title.custom_minimum_size = Vector2(0, round(panel_width / WORDMARK_ASPECT_RATIO))
+	else:
+		_brand_title.custom_minimum_size = Vector2(0, 150 if _compact_layout else 195)
+	_content.add_theme_constant_override("separation", roundi((10.0 if s > 1.0 else 16.0) * s))
 
 	_host_code_buttons_row.vertical = _compact_layout
-	_host_code_buttons_row.add_theme_constant_override("separation", 8)
+	_host_code_buttons_row.add_theme_constant_override("separation", roundi(8.0 * s))
 	_action_row.vertical = _compact_layout
-	_action_row.add_theme_constant_override("separation", 10 if _compact_layout else 12)
+	_action_row.add_theme_constant_override("separation", roundi(float(10 if _compact_layout else 12) * s))
 
-	var action_height := 54 if _compact_layout else 60
-	_leave_btn.custom_minimum_size = Vector2(100, action_height)
+	_copy_code_btn.custom_minimum_size = Vector2(0, round(44.0 * s))
+	_copy_link_btn.custom_minimum_size = Vector2(0, round(44.0 * s))
+
+	var code_label := $ScrollContainer/Center/LobbyPanel/Content/CodeRow/CodeLabel as Label
+	code_label.add_theme_font_size_override("font_size", roundi(20.0 * s))
+	_code_value.add_theme_font_size_override("font_size", roundi(24.0 * s))
+	_share_link_label.add_theme_font_size_override("font_size", roundi(17.0 * s))
+	var seat_list_label := $ScrollContainer/Center/LobbyPanel/Content/SeatListLabel as Label
+	seat_list_label.add_theme_font_size_override("font_size", roundi(20.0 * s))
+	_spectator_count_label.add_theme_font_size_override("font_size", roundi(18.0 * s))
+	var host_controls_label := $ScrollContainer/Center/LobbyPanel/Content/HostControlsSection/HostControlsLabel as Label
+	host_controls_label.add_theme_font_size_override("font_size", roundi(18.0 * s))
+	_waiting_label.add_theme_font_size_override("font_size", roundi(16.0 * s))
+
+	var action_height := roundi(float(54 if _compact_layout else 60) * s)
+	_leave_btn.custom_minimum_size = Vector2(round(100.0 * s), action_height)
 	_start_game_btn.custom_minimum_size = Vector2(0, action_height)
-	_chat_log.custom_minimum_size = Vector2(0, 148 if _compact_layout else 192)
-	_chat_send_btn.custom_minimum_size = Vector2(74 if _compact_layout else 60, 48)
+	_chat_log.custom_minimum_size = Vector2(0, round(120.0 * s) if s > 1.0 else float(148 if _compact_layout else 192))
+	_chat_input.custom_minimum_size = Vector2(0, round(48.0 * s))
+	_chat_send_btn.custom_minimum_size = Vector2(round(float(74 if _compact_layout else 60) * s), round(48.0 * s))
+	if s > 1.0:
+		_chat_input.add_theme_font_size_override("font_size", roundi(15.0 * s))
+		_back_btn.custom_minimum_size = Vector2(44, 44) * s
+		_back_btn.expand_icon = true
+	else:
+		if _chat_input.has_theme_font_size_override("font_size"):
+			_chat_input.remove_theme_font_size_override("font_size")
+		_back_btn.custom_minimum_size = Vector2(44, 44)
+		_back_btn.expand_icon = false
 	call_deferred("_position_back_button")
 
 func _position_back_button() -> void:
@@ -298,20 +341,20 @@ func _refresh_seat_list() -> void:
 		var seat_name: Variant = seat.get("name", null)
 
 		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 10)
+		row.add_theme_constant_override("separation", roundi(10.0 * _phone_scale))
 
 		var dot := ColorRect.new()
-		dot.custom_minimum_size = Vector2(18, 18)
+		dot.custom_minimum_size = Vector2(18, 18) * _phone_scale
 		dot.color = PLAYER_COLORS[i]
 		dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(dot)
 
 		var name_lbl := Label.new()
 		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_lbl.add_theme_font_size_override("font_size", 20)
+		name_lbl.add_theme_font_size_override("font_size", roundi(20.0 * _phone_scale))
 
 		var tag_lbl := Label.new()
-		tag_lbl.add_theme_font_size_override("font_size", 17)
+		tag_lbl.add_theme_font_size_override("font_size", roundi(17.0 * _phone_scale))
 
 		match seat_type:
 			"human":
@@ -357,18 +400,18 @@ func _refresh_host_controls() -> void:
 
 		any_configurable = true
 		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 12)
+		row.add_theme_constant_override("separation", roundi(12.0 * _phone_scale))
 
 		var lbl := Label.new()
 		lbl.text = "Seat %d:" % (i + 1)
-		lbl.custom_minimum_size = Vector2(72, 0)
+		lbl.custom_minimum_size = Vector2(round(72.0 * _phone_scale), 0)
 		lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		lbl.add_theme_font_size_override("font_size", 18)
+		lbl.add_theme_font_size_override("font_size", roundi(18.0 * _phone_scale))
 		row.add_child(lbl)
 
 		var opt := OptionButton.new()
 		opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		opt.custom_minimum_size = Vector2(0, 44)
+		opt.custom_minimum_size = Vector2(0, round(44.0 * _phone_scale))
 		opt.add_item("Wait for player", 0)
 		for j in range(_ai_profile_order.size()):
 			var profile_key: String = _ai_profile_order[j]
@@ -504,37 +547,40 @@ func _on_leave() -> void:
 
 # --- Theme ---
 
-func _apply_theme() -> void:
+func _apply_theme(ui_scale: float = 1.0) -> void:
+	# Panel margins shrink to 14 CSS px on phone browsers to leave room for content.
+	var panel_margin := 14.0 * ui_scale if ui_scale > 1.0 else 24.0
+
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.17, 0.13, 0.10, 0.94)
 	panel_style.border_color = Color(0.46, 0.34, 0.24, 0.95)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.corner_radius_top_left = 14
-	panel_style.corner_radius_top_right = 14
-	panel_style.corner_radius_bottom_left = 14
-	panel_style.corner_radius_bottom_right = 14
+	panel_style.border_width_left = roundi(2.0 * ui_scale)
+	panel_style.border_width_top = roundi(2.0 * ui_scale)
+	panel_style.border_width_right = roundi(2.0 * ui_scale)
+	panel_style.border_width_bottom = roundi(2.0 * ui_scale)
+	panel_style.corner_radius_top_left = roundi(14.0 * ui_scale)
+	panel_style.corner_radius_top_right = roundi(14.0 * ui_scale)
+	panel_style.corner_radius_bottom_left = roundi(14.0 * ui_scale)
+	panel_style.corner_radius_bottom_right = roundi(14.0 * ui_scale)
 	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.24)
-	panel_style.shadow_size = 6
-	panel_style.content_margin_left = 24
-	panel_style.content_margin_top = 24
-	panel_style.content_margin_right = 24
-	panel_style.content_margin_bottom = 24
+	panel_style.shadow_size = roundi(6.0 * ui_scale)
+	panel_style.content_margin_left = panel_margin
+	panel_style.content_margin_top = panel_margin
+	panel_style.content_margin_right = panel_margin
+	panel_style.content_margin_bottom = panel_margin
 	($ScrollContainer/Center/LobbyPanel as PanelContainer).add_theme_stylebox_override("panel", panel_style)
 
 	var btn_normal := StyleBoxFlat.new()
 	btn_normal.bg_color = Color(0.30, 0.22, 0.15, 0.98)
 	btn_normal.border_color = Color(0.73, 0.56, 0.39, 0.98)
-	btn_normal.border_width_left = 2
-	btn_normal.border_width_top = 2
-	btn_normal.border_width_right = 2
-	btn_normal.border_width_bottom = 2
-	btn_normal.corner_radius_top_left = 10
-	btn_normal.corner_radius_top_right = 10
-	btn_normal.corner_radius_bottom_left = 10
-	btn_normal.corner_radius_bottom_right = 10
+	btn_normal.border_width_left = roundi(2.0 * ui_scale)
+	btn_normal.border_width_top = roundi(2.0 * ui_scale)
+	btn_normal.border_width_right = roundi(2.0 * ui_scale)
+	btn_normal.border_width_bottom = roundi(2.0 * ui_scale)
+	btn_normal.corner_radius_top_left = roundi(10.0 * ui_scale)
+	btn_normal.corner_radius_top_right = roundi(10.0 * ui_scale)
+	btn_normal.corner_radius_bottom_left = roundi(10.0 * ui_scale)
+	btn_normal.corner_radius_bottom_right = roundi(10.0 * ui_scale)
 
 	var btn_hover := btn_normal.duplicate()
 	btn_hover.bg_color = Color(0.38, 0.28, 0.19, 0.98)
@@ -547,7 +593,7 @@ func _apply_theme() -> void:
 	btn_disabled.border_color = Color(0.41, 0.34, 0.28, 0.74)
 
 	for btn: Button in [_copy_code_btn, _copy_link_btn, _chat_send_btn, _leave_btn, _start_game_btn]:
-		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled)
+		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled, ui_scale)
 
 	var chat_style := StyleBoxFlat.new()
 	chat_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)
@@ -556,22 +602,22 @@ func _apply_theme() -> void:
 	chat_style.border_width_top = 1
 	chat_style.border_width_right = 1
 	chat_style.border_width_bottom = 1
-	chat_style.corner_radius_top_left = 8
-	chat_style.corner_radius_top_right = 8
-	chat_style.corner_radius_bottom_left = 8
-	chat_style.corner_radius_bottom_right = 8
-	chat_style.content_margin_left = 8
-	chat_style.content_margin_top = 6
-	chat_style.content_margin_right = 8
-	chat_style.content_margin_bottom = 6
+	chat_style.corner_radius_top_left = roundi(8.0 * ui_scale)
+	chat_style.corner_radius_top_right = roundi(8.0 * ui_scale)
+	chat_style.corner_radius_bottom_left = roundi(8.0 * ui_scale)
+	chat_style.corner_radius_bottom_right = roundi(8.0 * ui_scale)
+	chat_style.content_margin_left = 8.0 * ui_scale
+	chat_style.content_margin_top = 6.0 * ui_scale
+	chat_style.content_margin_right = 8.0 * ui_scale
+	chat_style.content_margin_bottom = 6.0 * ui_scale
 	_chat_log.add_theme_stylebox_override("normal", chat_style)
 	_chat_log.add_theme_color_override("default_color", Color(0.92, 0.87, 0.78))
-	_chat_log.add_theme_font_size_override("normal_font_size", 18)
+	_chat_log.add_theme_font_size_override("normal_font_size", roundi((15.0 if ui_scale > 1.0 else 18.0) * ui_scale))
 
 	_chat_input.add_theme_color_override("font_color", Color(0.95, 0.92, 0.86))
 	_chat_input.add_theme_color_override("font_placeholder_color", Color(0.62, 0.58, 0.52))
 
-func _apply_button_theme(btn: Button, normal: StyleBoxFlat, hover: StyleBoxFlat, pressed: StyleBoxFlat, disabled: StyleBoxFlat) -> void:
+func _apply_button_theme(btn: Button, normal: StyleBoxFlat, hover: StyleBoxFlat, pressed: StyleBoxFlat, disabled: StyleBoxFlat, ui_scale: float = 1.0) -> void:
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
@@ -580,7 +626,7 @@ func _apply_button_theme(btn: Button, normal: StyleBoxFlat, hover: StyleBoxFlat,
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.90))
 	btn.add_theme_color_override("font_pressed_color", Color(0.97, 0.93, 0.86))
 	btn.add_theme_color_override("font_disabled_color", Color(0.67, 0.62, 0.57))
-	btn.add_theme_font_size_override("font_size", 20)
+	btn.add_theme_font_size_override("font_size", roundi(20.0 * ui_scale))
 
 func _apply_option_button_theme(opt: OptionButton) -> void:
 	var opt_normal := StyleBoxFlat.new()
@@ -590,16 +636,18 @@ func _apply_option_button_theme(opt: OptionButton) -> void:
 	opt_normal.border_width_top = 1
 	opt_normal.border_width_right = 1
 	opt_normal.border_width_bottom = 1
-	opt_normal.corner_radius_top_left = 6
-	opt_normal.corner_radius_top_right = 6
-	opt_normal.corner_radius_bottom_left = 6
-	opt_normal.corner_radius_bottom_right = 6
-	opt_normal.content_margin_left = 8
-	opt_normal.content_margin_right = 8
+	opt_normal.corner_radius_top_left = roundi(6.0 * _phone_scale)
+	opt_normal.corner_radius_top_right = roundi(6.0 * _phone_scale)
+	opt_normal.corner_radius_bottom_left = roundi(6.0 * _phone_scale)
+	opt_normal.corner_radius_bottom_right = roundi(6.0 * _phone_scale)
+	opt_normal.content_margin_left = 8.0 * _phone_scale
+	opt_normal.content_margin_right = 8.0 * _phone_scale
 	var opt_hover := opt_normal.duplicate()
 	opt_hover.bg_color = Color(0.96, 0.91, 0.82, 0.98)
 	opt.add_theme_stylebox_override("normal", opt_normal)
 	opt.add_theme_stylebox_override("hover", opt_hover)
 	opt.add_theme_color_override("font_color", Color(0.10, 0.08, 0.06))
 	opt.add_theme_color_override("font_hover_color", Color(0.10, 0.08, 0.06))
-	opt.add_theme_font_size_override("font_size", 18)
+	opt.add_theme_font_size_override("font_size", roundi(18.0 * _phone_scale))
+	if _phone_scale > 1.0:
+		opt.get_popup().add_theme_font_size_override("font_size", roundi(16.0 * _phone_scale))
