@@ -106,12 +106,6 @@ disabled = true
 text = "End Turn"
 theme_override_font_sizes/font_size = 26
 
-[node name="HowToPlayButton" type="Button" parent="Root/SidePanel"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 52)
-text = "How to Play"
-theme_override_font_sizes/font_size = 18
-
 [node name="ChatSection" type="VBoxContainer" parent="Root/SidePanel"]
 layout_mode = 2
 visible = false

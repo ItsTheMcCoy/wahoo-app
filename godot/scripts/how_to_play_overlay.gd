@@ -21,7 +21,7 @@ const PAGE_BODIES: Array = [
 
 	"The center position is a major shortcut.\n\n[b]To enter:[/b]  Your marble must be in the first 6 squares after leaving base. Roll exactly the number that lands you in the center position. Entering is [b]optional[/b], you can choose to advance around the board normally instead.\n\n[b]To Exit:[/b] You must roll a 1. Your marble exits into the position that is both closest to the center position and your home row.\n\n[b]The Catch:[/b] Only one marble fits at a time. An opponent who rolls the right number to enter bumps you back to base.\n\n[b]One chance per trip[/b] — once past the entry window, no shortcut for that marble.",
 
-	"Did you not read the first page?\n\nIt was literally the first sentence of the first page.
+	"Did you not read the first page?\n\nIt was literally the first sentence of the first page.",
 ]
 
 @onready var _title_label: Label          = $Center/HowToPlayPanel/HowToPlayContent/HowToPlayTitle

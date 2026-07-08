@@ -20,6 +20,7 @@ const MENU_LOAD_GAME := 1
 const MENU_RESTART_GAME := 2
 const MENU_EXIT_TO_SETUP := 3
 const MENU_QUIT_APP := 4
+const MENU_HOW_TO_PLAY := 5
 # Profile keys in easiest→hardest order for builtin profiles.
 const BUILTIN_PROFILE_ORDER := [
 	"human", "random", "swarm", "tortoise", "engineer",
@@ -78,7 +79,6 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _seat_label_1: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Dot
 @onready var _seat_label_2: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Dot
 @onready var _seat_label_3: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Dot
-@onready var _how_to_play_btn: Button = $Root/SidePanel/HowToPlayButton
 @onready var _how_to_play_overlay = $HowToPlayOverlay
 
 signal _opening_roll_pressed
@@ -116,7 +116,6 @@ func _ready() -> void:
 	_new_game_button.pressed.connect(_on_new_game_from_win)
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
-	_how_to_play_btn.pressed.connect(func(): _how_to_play_overlay.show_overlay())
 	_setup_back_button.pressed.connect(_on_setup_back_pressed)
 	_setup_back_button.text = "<"
 	WahooResponsiveLayout.style_icon_button(_setup_back_button)
@@ -415,7 +414,6 @@ func _apply_visual_theme() -> void:
 		_new_game_button,
 		_start_button,
 		_game_menu_button,
-		_how_to_play_btn,
 	]
 	for button in action_buttons:
 		button.add_theme_stylebox_override("normal", button_style_normal)
@@ -1214,6 +1212,8 @@ func _setup_game_menu() -> void:
 	popup.clear()
 	if not popup.id_pressed.is_connected(_on_game_menu_id_pressed):
 		popup.id_pressed.connect(_on_game_menu_id_pressed)
+	popup.add_item("How to Play", MENU_HOW_TO_PLAY)
+	popup.add_separator()
 	if OS.has_feature("web"):
 		if _is_multiplayer:
 			popup.add_item("Leave Match", MENU_EXIT_TO_SETUP)
@@ -1234,6 +1234,8 @@ func _on_game_menu_id_pressed(id: int) -> void:
 	if _is_multiplayer and id in [MENU_SAVE_GAME, MENU_LOAD_GAME, MENU_RESTART_GAME]:
 		return
 	match id:
+		MENU_HOW_TO_PLAY:
+			_how_to_play_overlay.show_overlay()
 		MENU_SAVE_GAME:
 			_save_game()
 		MENU_LOAD_GAME:

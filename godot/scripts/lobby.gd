@@ -115,7 +115,8 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var action_height := 54 if _compact_layout else 60
 	_leave_btn.custom_minimum_size = Vector2(100, action_height)
 	_start_game_btn.custom_minimum_size = Vector2(0, action_height)
-	_how_to_play_btn.custom_minimum_size = Vector2(0, action_height)
+	_how_to_play_btn.custom_minimum_size = Vector2(0, 40 if _compact_layout else 44)
+	_how_to_play_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_chat_log.custom_minimum_size = Vector2(0, 148 if _compact_layout else 192)
 	_chat_send_btn.custom_minimum_size = Vector2(74 if _compact_layout else 60, 48)
 	call_deferred("_position_back_button")
@@ -552,6 +553,7 @@ func _apply_theme() -> void:
 
 	for btn: Button in [_copy_code_btn, _copy_link_btn, _chat_send_btn, _leave_btn, _start_game_btn, _how_to_play_btn]:
 		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled)
+	_how_to_play_btn.add_theme_font_size_override("font_size", 16)
 
 	var chat_style := StyleBoxFlat.new()
 	chat_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)

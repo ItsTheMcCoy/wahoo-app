@@ -46,6 +46,13 @@ custom_minimum_size = Vector2(0, 195)
 expand_mode = 1
 stretch_mode = 5
 
+[node name="HowToPlayButton" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(0, 44)
+text = "How to Play"
+theme_override_font_sizes/font_size = 16
+
 [node name="CodeRow" type="HBoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
 layout_mode = 2
 
@@ -166,11 +173,6 @@ custom_minimum_size = Vector2(0, 60)
 visible = false
 disabled = true
 text = "START GAME"
-
-[node name="HowToPlayButton" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 56)
-text = "How to Play"
 
 [node name="LobbyBackButton" type="Button" parent="."]
 layout_mode = 1
