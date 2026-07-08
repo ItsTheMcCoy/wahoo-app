@@ -47,7 +47,7 @@ theme_override_constants/separation = 10
 [node name="GameTitle" type="TextureRect" parent="Root/SidePanel"]
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(326, 138)
+custom_minimum_size = Vector2(326, 121)
 texture = ExtResource("3_0dv5w")
 expand_mode = 1
 stretch_mode = 5
@@ -55,6 +55,7 @@ stretch_mode = 5
 [node name="GameMenuButton" type="MenuButton" parent="Root/SidePanel"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 52)
+flat = false
 text = "Menu"
 theme_override_font_sizes/font_size = 26
 

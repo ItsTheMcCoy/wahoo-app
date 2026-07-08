@@ -7,6 +7,7 @@ const WahooAI = preload("res://scripts/wahoo_ai.gd")
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
 const SEND_ICON = preload("res://assets/textures/send_icon.svg")
+const MENU_CHEVRON_ICON = preload("res://assets/textures/menu_chevron_down.svg")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
 const PLAYER_COLORS := [
@@ -426,6 +427,10 @@ func _apply_visual_theme() -> void:
 		button.add_theme_color_override("font_pressed_color", Color(0.97, 0.93, 0.86))
 		button.add_theme_color_override("font_disabled_color", Color(0.67, 0.62, 0.57))
 
+	_game_menu_button.flat = false
+	_game_menu_button.icon = MENU_CHEVRON_ICON
+	_game_menu_button.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+
 	_chat_send_btn.text = ""
 	_chat_send_btn.icon = SEND_ICON
 	_chat_send_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -658,7 +663,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 		_side_panel_title.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		_side_panel_title.custom_minimum_size = Vector2(
 			round(target_wordmark_width),
-			round(maxf(target_wordmark_height, 110.0 if short_landscape else 138.0))
+			round(target_wordmark_height)
 		)
 
 	_game_menu_button.custom_minimum_size = Vector2(0, round(48.0 * portrait_scale)) if _compact_layout else Vector2(0, round((46.0 if short_landscape else 52.0) * desktop_ui_scale))

@@ -177,6 +177,7 @@ A grayscale gloss mask applied on top of the player-colored marble circles. It i
 | `godot/assets/textures/wahulo_wordmark.svg`       | SVG | 1400×520  | In use — loading screen |
 | `godot/assets/textures/wahulo_wordmark.png`       | PNG | 1400×520  | In use — all in-engine title branding (home screen, lobby, in-game) |
 | `godot/assets/textures/send_icon.svg`             | SVG | 40×40     | In use — chat send buttons (lobby and in-game) |
+| `godot/assets/textures/menu_chevron_down.svg`     | SVG | 64×64     | In use — in-game Menu button dropdown affordance |
 | `godot/assets/textures/background_felt_tile_512.svg` | SVG | 512×512 | In use — loading screen background |
 | `godot/build/web/og_preview.png`                  | PNG | 1200×630  | Place manually — see below |
 | `godot/build/web/index.icon.png`                  | PNG | 32×32     | Replace with branded favicon |
