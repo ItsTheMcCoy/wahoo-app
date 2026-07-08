@@ -556,6 +556,26 @@ func _apply_theme() -> void:
 		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled)
 	_how_to_play_btn.add_theme_font_size_override("font_size", 16)
 
+	# HowToPlayButton shrink-wraps to its text (size_flags_horizontal =
+	# SHRINK_CENTER, no minimum width), so unlike the other lobby buttons here
+	# it needs its own padded styleboxes -- the shared btn_normal has no
+	# content margin, which is fine for buttons that already have extra width
+	# from a fixed min-size or fill/expand, but leaves this one touching text
+	# edge-to-edge. Widening the shared stylebox instead would also pad the
+	# icon-only chat send button and clip its icon.
+	var how_to_play_normal := btn_normal.duplicate() as StyleBoxFlat
+	how_to_play_normal.content_margin_left = 18.0
+	how_to_play_normal.content_margin_right = 18.0
+	var how_to_play_hover := btn_hover.duplicate() as StyleBoxFlat
+	how_to_play_hover.content_margin_left = 18.0
+	how_to_play_hover.content_margin_right = 18.0
+	var how_to_play_pressed := btn_pressed.duplicate() as StyleBoxFlat
+	how_to_play_pressed.content_margin_left = 18.0
+	how_to_play_pressed.content_margin_right = 18.0
+	_how_to_play_btn.add_theme_stylebox_override("normal", how_to_play_normal)
+	_how_to_play_btn.add_theme_stylebox_override("hover", how_to_play_hover)
+	_how_to_play_btn.add_theme_stylebox_override("pressed", how_to_play_pressed)
+
 	_chat_send_btn.text = ""
 	_chat_send_btn.icon = SEND_ICON
 	_chat_send_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
