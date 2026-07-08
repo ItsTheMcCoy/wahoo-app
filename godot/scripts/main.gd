@@ -430,6 +430,8 @@ func _apply_visual_theme() -> void:
 	_game_menu_button.flat = false
 	_game_menu_button.icon = MENU_CHEVRON_ICON
 	_game_menu_button.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_game_menu_button.expand_icon = false
+	_game_menu_button.add_theme_constant_override("icon_max_width", 18)
 
 	_chat_send_btn.text = ""
 	_chat_send_btn.icon = SEND_ICON
