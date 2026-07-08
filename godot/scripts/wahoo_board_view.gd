@@ -673,14 +673,14 @@ func _draw_seat_labels() -> void:
         color.a = 0.95
         var anchor := _seat_label_anchor(player)
         if player == 1 or player == 3:
-            var angle := PI * 0.5 if player == 1 else -PI * 0.5
+            var angle := -PI * 0.5 if player == 1 else PI * 0.5
             _draw_centered_rotated_text(font, font_size, font_height, label, anchor, angle, color)
         else:
             _draw_centered_text(font, font_size, font_height, label, anchor, color)
 
 func _seat_label_anchor(player: int) -> Vector2:
     var bounds := _base_cluster_bounds(player)
-    var inset := _cell_size * 0.58
+    var inset := _cell_size * 0.34
 
     if player == 0:
         return Vector2(bounds.get_center().x, bounds.end.y + inset)
