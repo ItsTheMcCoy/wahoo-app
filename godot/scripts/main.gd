@@ -43,7 +43,7 @@ const BUILTIN_PROFILE_LABELS := {
 }
 
 @onready var _turn_label: Label = $Root/SidePanel/TurnLabel
-@onready var _die_label: Label = $Root/SidePanel/DieFrame/DieLabel
+@onready var _die_view = $Root/SidePanel/DieFrame/DieView
 @onready var _game_menu_button: MenuButton = $Root/SidePanel/GameMenuButton
 @onready var _board_frame: PanelContainer = $Root/BoardFrame
 @onready var _root_container: BoxContainer = $Root
@@ -123,7 +123,7 @@ func _ready() -> void:
 	WahooResponsiveLayout.style_icon_button(_setup_back_button)
 	_smoke_summary = _build_smoke_summary()
 	_setup_game_menu()
-	_die_label.text = "–"
+	_die_view.set_idle()
 	_profiles = _make_profiles_with_manager()
 	_rebuild_profile_catalog()
 	_apply_wordmark_branding()
@@ -372,10 +372,6 @@ func _apply_visual_theme() -> void:
 	_turn_label.add_theme_color_override("font_color", Color(0.98, 0.95, 0.88))
 	_turn_label.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.05, 0.92))
 	_turn_label.add_theme_constant_override("outline_size", 3)
-
-	_die_label.add_theme_color_override("font_color", Color(0.98, 0.95, 0.88))
-	_die_label.add_theme_color_override("font_outline_color", Color(0.10, 0.07, 0.05, 0.95))
-	_die_label.add_theme_constant_override("outline_size", 4)
 
 	var menu_popup := _game_menu_button.get_popup()
 	menu_popup.add_theme_color_override("font_color", Color(0.95, 0.90, 0.82))
@@ -676,8 +672,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	_status.add_theme_font_size_override("normal_font_size", round(18.0 * portrait_scale) if _compact_layout else round((17.0 if short_landscape else 24.0) * desktop_ui_scale))
 
 	_die_frame.custom_minimum_size = Vector2(round(112.0 * portrait_scale), round(112.0 * portrait_scale)) if _compact_layout else Vector2(round((126.0 if short_landscape else 152.0) * desktop_ui_scale), round((126.0 if short_landscape else 152.0) * desktop_ui_scale))
-	_die_label.custom_minimum_size = _die_frame.custom_minimum_size
-	_die_label.add_theme_font_size_override("font_size", round(74.0 * portrait_scale) if _compact_layout else round((82.0 if short_landscape else 96.0) * desktop_ui_scale))
+	_die_view.custom_minimum_size = _die_frame.custom_minimum_size
 	_turn_label.add_theme_font_size_override("font_size", round(24.0 * portrait_scale) if _compact_layout else round((22.0 if short_landscape else 30.0) * desktop_ui_scale))
 
 	_roll_button.custom_minimum_size = Vector2(0, round(64.0 * portrait_scale)) if _compact_layout else Vector2(0, round((58.0 if short_landscape else 80.0) * desktop_ui_scale))
@@ -886,8 +881,7 @@ func _new_game() -> void:
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
 	_board.set_turn_focus_enabled(true)
-	_die_label.text = "–"
-	_die_label.scale = Vector2.ONE
+	_die_view.set_idle()
 	_set_roll_ready(false)
 	_roll_button.text = "Roll"
 	_set_status_text("")
@@ -1348,23 +1342,12 @@ func _load_game() -> void:
 	_board.clear_legal_moves()
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
-	_die_label.text = "–"
+	_die_view.set_idle()
 	_set_roll_ready(true)
 	_render_status("Saved game loaded")
 
-func _die_face(value: int) -> String:
-	return str(clampi(value, 1, 6))
-
 func _play_roll_visual(final_roll: int) -> void:
-	_die_label.pivot_offset = _die_label.size * 0.5
-	for _i in range(14):
-		_die_label.text = _die_face(_rng.randi_range(1, 6))
-		await get_tree().create_timer(0.04).timeout
-	_die_label.text = _die_face(final_roll)
-	var tween := create_tween()
-	tween.tween_property(_die_label, "scale", Vector2(1.30, 1.30), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_die_label, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	await tween.finished
+	await _die_view.play_roll(final_roll)
 
 # ─── Multiplayer (Phase 4c) ───────────────────────────────────────────────────
 
@@ -1398,7 +1381,7 @@ func _enter_multiplayer_mode() -> void:
 	_board.set_state(_state)
 	_board.set_seat_labels(_seat_display_names)
 	_board.clear_legal_moves()
-	_die_label.text = "–"
+	_die_view.set_idle()
 	_turn_number = 1
 	_chat_section.visible = true
 	_chat_log.clear()
@@ -1528,7 +1511,7 @@ func _mp_on_state_update(payload: Dictionary) -> void:
 	var opening_rounds: Array = payload.get("openingRollRounds", [])
 
 	_state = _mp_deserialize_state(gs)
-	_die_label.text = "–"
+	_die_view.set_idle()
 	if opening_resolved:
 		_mp_waiting_for_opening_roll = false
 

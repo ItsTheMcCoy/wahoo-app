@@ -115,6 +115,14 @@ Marble sphere shading (center light source at ~35% X, 28% Y):
 | Menu disabled text   | `#a19485`   | 100%    | Desaturated mid-tone grey         |
 | Button label text    | `#f7eddb`   | 100%    | Warm cream                        |
 
+### Animated Die Widget (Current)
+
+- The in-panel die is rendered as a rounded ivory square with pip dots (not numerals).
+- Base body: `#f2ead8` family, dark edge `#33261c`, and a warm lower-half shade for depth.
+- Pips: dark brown/near-black (`#241a12` family) with a tiny warm highlight to keep a glassy tabletop feel.
+- Roll motion: face cycling + rotation wobble + squash/stretch for about 0.8s, then a short landing pop.
+- Idle state: keeps the last face visible but dimmed to indicate "not currently rolling".
+
 ### Buttons
 
 | State    | Background | Border    | Notes                          |

@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://df5k61dj4w6by"]
+[gd_scene load_steps=6 format=3 uid="uid://df5k61dj4w6by"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_ukqg8"]
 [ext_resource type="Script" path="res://scripts/wahoo_board_view.gd" id="2_cw3fq"]
 [ext_resource type="Texture2D" path="res://assets/textures/wahulo_wordmark.png" id="3_0dv5w"]
+[ext_resource type="Script" path="res://scripts/die_view.gd" id="4_die01"]
 [ext_resource type="PackedScene" path="res://scenes/HowToPlayOverlay.tscn" id="5_htp01"]
 
 [node name="Main" type="Control"]
@@ -77,13 +78,11 @@ layout_mode = 2
 custom_minimum_size = Vector2(152, 152)
 size_flags_horizontal = 4
 
-[node name="DieLabel" type="Label" parent="Root/SidePanel/DieFrame"]
+[node name="DieView" type="Control" parent="Root/SidePanel/DieFrame"]
 layout_mode = 2
 custom_minimum_size = Vector2(152, 152)
-text = "–"
-horizontal_alignment = 1
-vertical_alignment = 1
-theme_override_font_sizes/font_size = 96
+mouse_filter = 2
+script = ExtResource("4_die01")
 
 [node name="TurnLabel" type="Label" parent="Root/SidePanel"]
 layout_mode = 2

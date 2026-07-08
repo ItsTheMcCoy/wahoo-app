@@ -92,7 +92,7 @@ Removed move-reveal highlights (restores physical board feel); added explicit En
 
 ### Phase 3f — Layout Redesign — *Complete*
 
-Two-column layout (board left, info panel right), Unicode die faces, 14-frame die animation, Mobile-sized tap targets, DieFrame panel for dominant die display.
+Two-column layout (board left, info panel right), animated pip-face die with tumble-and-settle roll animation, Mobile-sized tap targets, DieFrame panel for dominant die display.
 
 ### Phase 3g — Mobile Polish & Opening Phase UX — *Complete*
 
