@@ -293,7 +293,7 @@ func _draw_board_surface() -> void:
 
     draw_rect(_board_rect, BOARD_BG, true)
     if _board_texture != null:
-        draw_texture_rect(_board_texture, _board_rect, true, Color(1.0, 1.0, 1.0, 0.72))
+        draw_texture_rect(_board_texture, _board_rect, false, Color(1.0, 1.0, 1.0, 0.72))
 
     var grain_rows := 28
     for i in range(grain_rows):
