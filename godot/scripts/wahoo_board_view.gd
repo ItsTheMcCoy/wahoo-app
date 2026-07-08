@@ -680,16 +680,16 @@ func _draw_seat_labels() -> void:
 
 func _seat_label_anchor(player: int) -> Vector2:
     var bounds := _base_cluster_bounds(player)
-    var inset := _cell_size * 0.88
+    var inset := _cell_size * 0.58
 
     if player == 0:
         return Vector2(bounds.get_center().x, bounds.end.y + inset)
     if player == 2:
         return Vector2(bounds.get_center().x, bounds.position.y - inset)
     if player == 1:
-        return Vector2(bounds.end.x + inset, bounds.get_center().y)
+        return Vector2(bounds.position.x - inset, bounds.get_center().y)
 
-    return Vector2(bounds.position.x - inset, bounds.get_center().y)
+    return Vector2(bounds.end.x + inset, bounds.get_center().y)
 
 func _base_cluster_center(player: int) -> Vector2:
     var coords := WahooLayout.base_cluster_grid_coords(player)
