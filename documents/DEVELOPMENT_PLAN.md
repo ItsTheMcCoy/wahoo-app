@@ -103,6 +103,7 @@ Font and tap-target pass to meet 48dp/44pt minimums; Status log repositioned abo
 Full design and step-by-step implementation plan: **[MULTIPLAYER_PLAN.md](MULTIPLAYER_PLAN.md)**
 
 Summary of sub-phases:
+
 - **4a:** ✅ Node.js WebSocket relay server — deployed to Render at `https://wahulo.onrender.com`; `/healthz` verified; 9/9 tests passing.
 - **4b:** ✅ Godot client — `HomeScreen.tscn` (entry point with host/join prompt overlays and deep-link detection), `Lobby.tscn` (host view with seat dropdowns/code share, guest/spectator view, chat for all roles), `network.gd` autoload singleton with `ctx` dict for cross-scene data passing.
 - **4c:** ✅ Online game flow — `Main.tscn` doubled as multiplayer scene; server-driven turns via roll_request/submit_move; AI seats handled by host; disconnect/reconnect/game-over handling; solo play untouched.
@@ -112,6 +113,7 @@ Summary of sub-phases:
 ### Phase 5 — Decide Next Direction — *Not started*
 
 After Phase 4, decide whether to ship as-is (Tier A — browser game with room codes) or invest further:
+
 - **Tier B:** Stable persistent hosting, reliable public URL. Mostly ops work.
 - **Tier C:** Accounts, game history, leaderboards. Real product scope.
 
@@ -134,6 +136,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 **Web deployment hygiene.** Whenever Godot gameplay or UI files change (`godot/scenes/*.tscn`, `godot/scripts/*.gd`, or relevant assets), perform a fresh Web export to `godot/build/web` and commit those export artifacts before pushing. Netlify deploys from `godot/build/web`, so missing re-exports can cause hosted behavior to lag behind local behavior.
 
 **Known-good Godot Web re-export workflow (2026-06-03).**
+
 1. Start from a clean status check: `git status --short --branch`.
 2. Use the repo wrapper instead of assuming `godot` is on PATH: `powershell -ExecutionPolicy Bypass -File scripts\launch_godot.ps1 export`.
    - This resolves `Godot_v4.6.3-stable_win64_console.exe` from PATH or the local fallback in `scripts/launch_godot.ps1`.

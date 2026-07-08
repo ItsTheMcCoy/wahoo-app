@@ -13,15 +13,15 @@ const PAGE_TITLES: Array = [
 ]
 
 const PAGE_BODIES: Array = [
-	"[b]Objective[/b]\nBe the first player to move all 4 of your marbles into your home row.\n\n[b]Setup[/b]\n4 players, 4 marbles each — all start in your base.\n\nOne six-sided die. Highest opening roll goes first; play passes clockwise.",
+	"[b]Objective[/b]\nBe the first player to move all 4 of your marbles into your home row.\n\n[b]Setup[/b]\n4 players, 4 marbles each. All start in your base.\n\nOne six-sided die. Highest opening roll goes first; play passes clockwise.",
 
-	"Roll the die and move one marble according to the rules.\n\n[b]If you can make a legal move, you must.[/b] No legal move? Your turn passes.\n\n[b]Rolling a 6 lets you roll again[/b] — no limit on consecutive 6s.",
+	"Roll the die and move one marble according to the rules.\n\n[b]If you can make a legal move, you must.[/b] No legal move? Your turn passes.\n\n[b]Rolling a 6 lets you roll again[/b], no limit on consecutive 6s.",
 
-	"[b]Getting out of base[/b]\nRoll a 1 or 6 to move a marble from base onto your start square.\n\n[b]On the track[/b]\nMove forward the exact number rolled. You can't land on your own marbles. Landing on an opponent's marble sends it back to their base.\n\n[b]Into home[/b]\nPast the home-entry square your marble must turn into your home row. You need an exact roll to land in each slot — no overshooting. If you can't make the move, that marble stays put.\n\n[b]Inside home[/b]\nHome marbles are safe and can't be captured.",
+	"[b]Getting out of base[/b]\nRoll a 1 or 6 to move a marble from base onto your start square.\n\n[b]On the track[/b]\nMove forward the exact number rolled. You can't land on your own marbles. Landing on an opponent's marble sends it back to their base.\n\n[b]Into home[/b]\nOnce a marble makes it around the board (or takes the center shortcut, see the next page) it cannot go past your home row. You need an exact roll to land in each slot, no overshooting. If you can't make the move, that marble stays put.\n\n[b]Inside home[/b]\nHome marbles are safe and can't be captured.",
 
-	"The center hole is a major shortcut.\n\n[b]To enter:[/b] your marble must be in the first 6 squares after leaving base. Roll exactly the number that lands you on the 6th square (from square 1 roll a 6; from square 2 roll a 5; and so on). Entering is [b]optional[/b] — you can advance normally instead.\n\n[b]To exit:[/b] roll a 1. Your marble skips most of the loop and lands close to home.\n\n[b]The catch:[/b] only one marble fits at a time. An opponent who rolls the right number to enter bumps you back to base.\n\n[b]One chance per trip[/b] — once past the entry window, no shortcut for that marble.",
+	"The center position is a major shortcut.\n\n[b]To enter:[/b]  Your marble must be in the first 6 squares after leaving base. Roll exactly the number that lands you in the center position. Entering is [b]optional[/b], you can choose to advance around the board normally instead.\n\n[b]To Exit:[/b] You must roll a 1. Your marble exits into the position that is both closest to the center position and your home row.\n\n[b]The Catch:[/b] Only one marble fits at a time. An opponent who rolls the right number to enter bumps you back to base.\n\n[b]One chance per trip[/b] — once past the entry window, no shortcut for that marble.",
 
-	"You win the moment your [b]fourth marble enters your home row[/b].\n\nThe home slots don't need to be filled in any particular order — each marble just needs to be somewhere in home.",
+	"Did you not read the first page?\n\nIt was literally the first sentence of the first page.
 ]
 
 @onready var _title_label: Label          = $Center/HowToPlayPanel/HowToPlayContent/HowToPlayTitle

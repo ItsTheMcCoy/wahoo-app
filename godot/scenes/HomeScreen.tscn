@@ -59,7 +59,7 @@ text = "JOIN / SPECTATE"
 [node name="HowToPlayButton" type="Button" parent="MainCenter/HomePanel/Content"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 56)
-text = "How to Play"
+text = "HOW TO PLAY"
 
 [node name="HostPromptLayer" type="Control" parent="."]
 layout_mode = 1
