@@ -681,9 +681,10 @@ func _draw_seat_labels() -> void:
 func _seat_label_anchor(player: int) -> Vector2:
     var bounds := _base_cluster_bounds(player)
     var inset := _cell_size * 0.34
+    var red_inset := _cell_size * 0.20
 
     if player == 0:
-        return Vector2(bounds.get_center().x, bounds.end.y + inset)
+        return Vector2(bounds.get_center().x, bounds.end.y + red_inset)
     if player == 2:
         return Vector2(bounds.get_center().x, bounds.position.y - inset)
     if player == 1:
