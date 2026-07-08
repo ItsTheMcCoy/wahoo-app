@@ -35,8 +35,11 @@ const TOUCH_MOUSE_DEBOUNCE_RADIUS_PX := 24.0
 const BOARD_SCALE := 0.97
 const POSITION_SPOT_RADIUS_RATIO := 0.37
 const MARBLE_SIZE_RATIO := 0.71
-const BOARD_EDGE_PADDING_UNITS := 1.10
+const BOARD_EDGE_PADDING_UNITS := 1.24
 const SEAT_LABEL_OFFSET_UNITS := 1.30
+const STATIC_CLEARANCE_RATIO := 0.25
+const SPOT_HALO_RATIO := 1.488
+const GRAIN_SAMPLE_STEPS := 220
 const ANIMATION_STYLE_PRESETS := {
     "subtle": {
         "move_seconds": 0.28,
@@ -285,6 +288,9 @@ func _draw() -> void:
     _draw_seat_labels()
 
 func _draw_board_surface() -> void:
+    var static_spot_data := _collect_static_spot_data()
+    var safety := _compute_static_safety_regions(static_spot_data)
+
     draw_rect(_board_rect, BOARD_BG, true)
     if _board_texture != null:
         draw_texture_rect(_board_texture, _board_rect, true, Color(1.0, 1.0, 1.0, 0.72))
@@ -294,31 +300,183 @@ func _draw_board_surface() -> void:
         var t := float(i) / float(grain_rows - 1)
         var y := lerpf(_board_rect.position.y, _board_rect.end.y, t)
         var sway: float = sin(t * TAU * 2.4) * _cell_size * 0.22
-        var line_from := Vector2(_board_rect.position.x, y + sway)
-        var line_to := Vector2(_board_rect.end.x, y - sway * 0.55)
         var grain_color := BOARD_GRAIN_DARK if i % 2 == 0 else BOARD_GRAIN_LIGHT
-        draw_line(line_from, line_to, grain_color, max(1.0, _cell_size * 0.05), true)
+        _draw_grain_line_without_spots(y, sway, grain_color, max(1.0, _cell_size * 0.05), static_spot_data)
 
-    var inner := Rect2(
-        _board_rect.position + Vector2(_cell_size * 0.48, _cell_size * 0.48),
-        _board_rect.size - Vector2(_cell_size * 0.96, _cell_size * 0.96)
-    )
+    var inner: Rect2 = safety["inner"]
     draw_rect(inner, BOARD_BG_INNER, true)
 
-    var bevel_light := BOARD_BG_INNER.lerp(Color.WHITE, 0.24)
-    bevel_light.a = 0.62
-    draw_rect(inner.grow(_cell_size * 0.08), bevel_light, false, max(2.0, _cell_size * 0.07))
+    var bevel_rect := inner.grow(_cell_size * 0.04)
+    var bevel_light := BOARD_BG_INNER.lerp(Color.WHITE, 0.28)
+    bevel_light.a = 0.52
+    var bevel_dark := BOARD_EDGE.lerp(BOARD_BG, 0.35)
+    bevel_dark.a = 0.42
+    var bevel_width: float = max(1.5, _cell_size * 0.045)
+    _draw_bevel_edge_lines(bevel_rect, bevel_light, bevel_dark, bevel_width)
     draw_rect(_board_rect, BOARD_EDGE, false, max(3.0, _cell_size * 0.10))
 
-    var vignette_inset := _cell_size * 0.82
-    var top_band := Rect2(_board_rect.position, Vector2(_board_rect.size.x, vignette_inset))
-    var bottom_band := Rect2(Vector2(_board_rect.position.x, _board_rect.end.y - vignette_inset), Vector2(_board_rect.size.x, vignette_inset))
-    var left_band := Rect2(Vector2(_board_rect.position.x, _board_rect.position.y + vignette_inset), Vector2(vignette_inset, _board_rect.size.y - vignette_inset * 2.0))
-    var right_band := Rect2(Vector2(_board_rect.end.x - vignette_inset, _board_rect.position.y + vignette_inset), Vector2(vignette_inset, _board_rect.size.y - vignette_inset * 2.0))
-    draw_rect(top_band, BOARD_VIGNETTE, true)
-    draw_rect(bottom_band, BOARD_VIGNETTE, true)
-    draw_rect(left_band, BOARD_VIGNETTE, true)
-    draw_rect(right_band, BOARD_VIGNETTE, true)
+    _draw_soft_safe_vignette(safety)
+
+func _draw_bevel_edge_lines(rect: Rect2, light: Color, dark: Color, width: float) -> void:
+    var tl := rect.position
+    var tr := Vector2(rect.end.x, rect.position.y)
+    var br := rect.end
+    var bl := Vector2(rect.position.x, rect.end.y)
+    draw_line(tl, tr, light, width, true)
+    draw_line(tl, bl, light, width, true)
+    draw_line(tr, br, dark, width, true)
+    draw_line(bl, br, dark, width, true)
+
+func _draw_soft_safe_vignette(safety: Dictionary) -> void:
+    var max_insets: Dictionary = safety["max_vignette_insets"]
+    var top_max: float = float(max_insets["top"])
+    var bottom_max: float = float(max_insets["bottom"])
+    var left_max: float = float(max_insets["left"])
+    var right_max: float = float(max_insets["right"])
+    var layer_count := 4
+    for i in range(layer_count):
+        var t0 := float(i) / float(layer_count)
+        var t1 := float(i + 1) / float(layer_count)
+        var alpha := BOARD_VIGNETTE.a * (1.0 - t0) * 0.60
+        var vignette_color := BOARD_VIGNETTE
+        vignette_color.a = alpha
+
+        var top_inset0: float = top_max * t0
+        var top_inset1: float = top_max * t1
+        var bottom_inset0: float = bottom_max * t0
+        var bottom_inset1: float = bottom_max * t1
+        var left_inset0: float = left_max * t0
+        var left_inset1: float = left_max * t1
+        var right_inset0: float = right_max * t0
+        var right_inset1: float = right_max * t1
+
+        var top_band := Rect2(
+            _board_rect.position + Vector2(0.0, top_inset0),
+            Vector2(_board_rect.size.x, max(0.0, top_inset1 - top_inset0))
+        )
+        var bottom_band := Rect2(
+            Vector2(_board_rect.position.x, _board_rect.end.y - bottom_inset1),
+            Vector2(_board_rect.size.x, max(0.0, bottom_inset1 - bottom_inset0))
+        )
+        var left_band := Rect2(
+            _board_rect.position + Vector2(left_inset0, top_inset1),
+            Vector2(max(0.0, left_inset1 - left_inset0), max(0.0, _board_rect.size.y - top_inset1 - bottom_inset1))
+        )
+        var right_band := Rect2(
+            Vector2(_board_rect.end.x - right_inset1, _board_rect.position.y + top_inset1),
+            Vector2(max(0.0, right_inset1 - right_inset0), max(0.0, _board_rect.size.y - top_inset1 - bottom_inset1))
+        )
+
+        if top_band.size.x > 0.0 and top_band.size.y > 0.0:
+            draw_rect(top_band, vignette_color, true)
+        if bottom_band.size.x > 0.0 and bottom_band.size.y > 0.0:
+            draw_rect(bottom_band, vignette_color, true)
+        if left_band.size.x > 0.0 and left_band.size.y > 0.0:
+            draw_rect(left_band, vignette_color, true)
+        if right_band.size.x > 0.0 and right_band.size.y > 0.0:
+            draw_rect(right_band, vignette_color, true)
+
+func _draw_grain_line_without_spots(y: float, sway: float, color: Color, width: float, spot_data: Array) -> void:
+    var last_outside := false
+    var segment_start := Vector2.ZERO
+    for step in range(GRAIN_SAMPLE_STEPS + 1):
+        var t := float(step) / float(GRAIN_SAMPLE_STEPS)
+        var x := lerpf(_board_rect.position.x, _board_rect.end.x, t)
+        var local_y := lerpf(y + sway, y - sway * 0.55, t)
+        var point := Vector2(x, local_y)
+        var outside := not _point_in_spot_clearance(point, spot_data, 0.0)
+
+        if outside and not last_outside:
+            segment_start = point
+        elif not outside and last_outside:
+            if segment_start.distance_to(point) >= _cell_size * 0.12:
+                draw_line(segment_start, point, color, width, true)
+
+        if step == GRAIN_SAMPLE_STEPS and outside and segment_start.distance_to(point) >= _cell_size * 0.12:
+            draw_line(segment_start, point, color, width, true)
+
+        last_outside = outside
+
+func _collect_static_spot_data() -> Array:
+    var data: Array = []
+    var halo_radius := _position_spot_radius() * SPOT_HALO_RATIO
+
+    for coord in WahooLayout.all_track_grid_coords():
+        data.append({"center": _grid_to_local(coord), "radius": halo_radius})
+
+    for player in range(WahooState.NUM_PLAYERS):
+        for coord in WahooLayout.home_row_grid_coords(player):
+            data.append({"center": _grid_to_local(coord), "radius": halo_radius * 0.96})
+        for coord in WahooLayout.base_cluster_grid_coords(player):
+            data.append({"center": _grid_to_local(coord), "radius": halo_radius * 0.96})
+
+    data.append({"center": _grid_to_local(WahooLayout.center_grid_coord()), "radius": halo_radius * 1.24})
+    return data
+
+func _compute_static_safety_regions(spot_data: Array) -> Dictionary:
+    var clearance := _cell_size * STATIC_CLEARANCE_RATIO
+    var center := _board_rect.get_center()
+    var min_x := INF
+    var max_x := -INF
+    var min_y := INF
+    var max_y := -INF
+    var left_limit := _board_rect.position.x + _cell_size * 0.36
+    var right_limit := _board_rect.end.x - _cell_size * 0.36
+    var top_limit := _board_rect.position.y + _cell_size * 0.36
+    var bottom_limit := _board_rect.end.y - _cell_size * 0.36
+
+    for item in spot_data:
+        var c: Vector2 = item["center"]
+        var r: float = float(item["radius"])
+        min_x = minf(min_x, c.x - r)
+        max_x = maxf(max_x, c.x + r)
+        min_y = minf(min_y, c.y - r)
+        max_y = maxf(max_y, c.y + r)
+
+        if c.x <= center.x:
+            left_limit = maxf(left_limit, c.x + r + clearance)
+        if c.x >= center.x:
+            right_limit = minf(right_limit, c.x - r - clearance)
+        if c.y <= center.y:
+            top_limit = maxf(top_limit, c.y + r + clearance)
+        if c.y >= center.y:
+            bottom_limit = minf(bottom_limit, c.y - r - clearance)
+
+    var min_inner_size := _cell_size * 2.6
+    if right_limit - left_limit < min_inner_size:
+        var mid_x := (left_limit + right_limit) * 0.5
+        left_limit = mid_x - min_inner_size * 0.5
+        right_limit = mid_x + min_inner_size * 0.5
+    if bottom_limit - top_limit < min_inner_size:
+        var mid_y := (top_limit + bottom_limit) * 0.5
+        top_limit = mid_y - min_inner_size * 0.5
+        bottom_limit = mid_y + min_inner_size * 0.5
+
+    var inner := Rect2(
+        Vector2(left_limit, top_limit),
+        Vector2(max(0.0, right_limit - left_limit), max(0.0, bottom_limit - top_limit))
+    )
+
+    var max_vignette_insets := {
+        "top": max(0.0, min_y - _board_rect.position.y - clearance),
+        "bottom": max(0.0, _board_rect.end.y - max_y - clearance),
+        "left": max(0.0, min_x - _board_rect.position.x - clearance),
+        "right": max(0.0, _board_rect.end.x - max_x - clearance),
+    }
+
+    return {
+        "inner": inner,
+        "spot_extents": {"min_x": min_x, "max_x": max_x, "min_y": min_y, "max_y": max_y},
+        "max_vignette_insets": max_vignette_insets,
+    }
+
+func _point_in_spot_clearance(point: Vector2, spot_data: Array, extra_padding: float) -> bool:
+    for item in spot_data:
+        var c: Vector2 = item["center"]
+        var r: float = float(item["radius"]) + extra_padding
+        if point.distance_squared_to(c) <= r * r:
+            return true
+    return false
 
 func _draw_ambient_occlusion() -> void:
     var lane_radius := _position_spot_radius() * 1.20
@@ -486,6 +644,9 @@ func _draw_grid_spot(coord: Vector2i, fill: Color, edge: Color) -> void:
     var radius: float = _position_spot_radius()
     draw_circle(center + Vector2(0.0, radius * 0.16), radius * 0.98, SPOT_CAVITY)
     draw_circle(center, radius, fill)
+    var inner_rim_shadow := fill.darkened(0.38)
+    inner_rim_shadow.a = 0.34
+    draw_arc(center - Vector2(0.0, radius * 0.05), radius * 0.56, PI * 1.02, PI * 1.98, 24, inner_rim_shadow, max(1.0, radius * 0.09), true)
     var highlight := fill.lerp(Color.WHITE, 0.26)
     highlight.a = 0.46
     draw_circle(center - Vector2(radius * 0.22, radius * 0.28), radius * 0.38, highlight)
@@ -502,36 +663,77 @@ func _draw_seat_labels() -> void:
     var font: Font = ThemeDB.fallback_font
     if font == null:
         return
-    var font_size := int(max(16.0, _cell_size * 0.66))
+    var font_size := int(max(12.0, _cell_size * 0.56))
     var font_height: float = font.get_height(font_size)
+    var spot_data := _collect_static_spot_data()
     for player in range(WahooState.NUM_PLAYERS):
         var label := String(_seat_labels[player]).strip_edges()
         if label.is_empty():
             continue
         var color: Color = PLAYER_COLORS[player].darkened(0.28)
         color.a = 0.95
-        var anchor := _seat_label_anchor(player)
+        var text_size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+        var half_size := Vector2(text_size.x * 0.5, font_height * 0.45)
+        if player == 1 or player == 3:
+            half_size = Vector2(half_size.y, half_size.x)
+        var anchor := _resolve_seat_label_anchor(player, _seat_label_anchor(player), half_size, spot_data)
         if player == 1 or player == 3:
             var angle := PI * 0.5 if player == 1 else -PI * 0.5
             _draw_centered_rotated_text(font, font_size, font_height, label, anchor, angle, color)
         else:
             _draw_centered_text(font, font_size, font_height, label, anchor, color)
 
-func _seat_label_anchor(player: int) -> Vector2:
-    var base_center := _base_cluster_center(player)
-    var inward_dirs := [
-        Vector2(0.0, 1.0),
-        Vector2(-1.0, 0.0),
+func _resolve_seat_label_anchor(player: int, base_anchor: Vector2, half_size: Vector2, spot_data: Array) -> Vector2:
+    var outward_dirs := [
         Vector2(0.0, -1.0),
+        Vector2(-1.0, 0.0),
+        Vector2(0.0, 1.0),
         Vector2(1.0, 0.0),
     ]
-    var offset_dirs := inward_dirs.duplicate()
-    # Yellow (player 2) is on the bottom edge; give it a small extra lift so the text clears the base row.
-    offset_dirs[2] = Vector2(0.0, -1.0)
-    var offset_units := 0.72
+    var anchor := base_anchor
+    var step_size: float = max(1.0, _cell_size * 0.08)
+    var edge_margin := _cell_size * 0.06
+    var viewport_rect := Rect2(Vector2.ZERO, size)
+    for _step in range(90):
+        if not _label_box_overlaps_spots(anchor, half_size, spot_data):
+            break
+        anchor += outward_dirs[player] * step_size
+        anchor.x = clampf(anchor.x, viewport_rect.position.x + half_size.x + edge_margin, viewport_rect.end.x - half_size.x - edge_margin)
+        anchor.y = clampf(anchor.y, viewport_rect.position.y + half_size.y + edge_margin, viewport_rect.end.y - half_size.y - edge_margin)
+    return anchor
+
+func _label_box_overlaps_spots(anchor: Vector2, half_size: Vector2, spot_data: Array) -> bool:
+    for y_step in range(5):
+        var ty := float(y_step) / 4.0
+        for x_step in range(9):
+            var tx := float(x_step) / 8.0
+            var point := Vector2(
+                anchor.x + lerpf(-half_size.x, half_size.x, tx),
+                anchor.y + lerpf(-half_size.y, half_size.y, ty)
+            )
+            if _point_in_spot_clearance(point, spot_data, 0.0):
+                return true
+    return false
+
+func _seat_label_anchor(player: int) -> Vector2:
+    var safety := _compute_static_safety_regions(_collect_static_spot_data())
+    var extents: Dictionary = safety["spot_extents"]
+    var edge_margin := _cell_size * 0.22
+    var clearance := _cell_size * STATIC_CLEARANCE_RATIO
+    var center := _board_rect.get_center()
+
+    if player == 0:
+        var y_top := lerpf(_board_rect.position.y + edge_margin, extents["min_y"] - clearance, 0.52)
+        return Vector2(center.x, y_top)
     if player == 2:
-        offset_units = 0.98
-    return base_center + offset_dirs[player] * (_cell_size * offset_units)
+        var y_bottom := lerpf(_board_rect.end.y - edge_margin, extents["max_y"] + clearance, 0.48)
+        return Vector2(center.x, y_bottom)
+    if player == 1:
+        var x_left := lerpf(_board_rect.position.x + edge_margin, extents["min_x"] - clearance, 0.52)
+        return Vector2(x_left, center.y)
+
+    var x_right := lerpf(_board_rect.end.x - edge_margin, extents["max_x"] + clearance, 0.48)
+    return Vector2(x_right, center.y)
 
 func _base_cluster_center(player: int) -> Vector2:
     var coords := WahooLayout.base_cluster_grid_coords(player)

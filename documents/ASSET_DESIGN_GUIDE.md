@@ -45,19 +45,27 @@ Base zone spot color = primary color blended 52% toward board wood (`#917049`):
 | Yellow | `#b3a369`            |
 | Blue   | `#6778a6`            |
 
-### Cuurent Board Surface
+### Current Board Surface
 
 | Role                | Hex         | Opacity | Notes                                      |
 |---------------------|-------------|---------|---------------------------------------------|
 | Board base fill     | `#917049`   | 100%    | Warm mid-tone oak                           |
-| Board inner lighter | `#c4a882`   | 80%     | Interior field, slightly lighter than edge  |
+| Board inner lighter | `#c4a882`   | 80%     | Interior field, now inset to a spot-safe area |
 | Board outer edge    | `#241c14`   | 100%    | Dark walnut frame                           |
 | Wood grain dark     | `#543d29`   | 20%     | Subtle dark grain lines                     |
 | Wood grain light    | `#dbbd96`   | 12%     | Subtle light grain lines                    |
-| Edge vignette       | `#140f0a`   | 23%     | Corners darken to frame the board           |
+| Edge vignette       | `#140f0a`   | 23%     | Soft layered edge darkening; no hard bands  |
 | Ambient occlusion   | `#120d08`   | 12%     | Depth shadow under/around spots             |
 
-## Board Surface Notes: The current board surface feels pretty plain.  Use the above as a general guide, but let's make the board surface look more realistic.  With visible wood grain.
+## Board Surface Notes
+
+The board renderer now uses geometry-aware safety spacing so static surface details never intersect spot circles or their halo region.
+
+1. Grain lines are segmented so they stop before entering any track/home/base/center spot halo.
+2. Vignette shading is layered and soft (no hard rectangular cutoff lines).
+3. Inner panel and bevel lines are constrained to a center-safe rectangle with minimum clearance from all spot halos.
+4. Seat labels are anchored in margin regions between the board edge and the outer halo extents.
+5. Spot cavities include a subtle inner rim shadow arc for a more recessed drilled-hole look.
 
 ### Track Elements
 
@@ -320,4 +328,4 @@ If describing the game world to an image generation model:
 
 ---
 
-*Last updated: 2026-05-31. All color values sourced from `godot/scripts/wahoo_board_view.gd`, `godot/scripts/main.gd`, `godot/assets/textures/board_wood.svg`, `godot/assets/textures/marble_gloss.svg`, `godot/build/web/index.html`, and `godot/scenes/Main.tscn`.*
+*Last updated: 2026-07-08. All color values sourced from `godot/scripts/wahoo_board_view.gd`, `godot/scripts/main.gd`, `godot/assets/textures/board_wood.svg`, `godot/assets/textures/marble_gloss.svg`, `godot/build/web/index.html`, and `godot/scenes/Main.tscn`.*

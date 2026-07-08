@@ -101,6 +101,14 @@ Style Name: Warm Tabletop Realism
 4. Stronger lane depth via shadow underlay beneath the path polyline.
 5. Typography/readability pass for side panel labels and die/status text.
 
+## Third-Pass Scope (implemented)
+
+1. Geometry-safe board surface spacing so static board elements preserve clearance from all spot halos.
+2. Soft layered vignette bands replacing hard edge bands.
+3. Spot-aware grain rendering that avoids crossing track/home/base/center circles.
+4. Recessed-hole enhancement with inner rim shadow arc on board spots.
+5. Margin-anchored seat labels that remain clear of board circles across aspect ratios.
+
 ## Out of Scope After Second Pass
 
 1. Full lighting/shader graph system.
