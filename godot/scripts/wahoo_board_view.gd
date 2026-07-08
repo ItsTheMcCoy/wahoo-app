@@ -3,7 +3,7 @@ extends Control
 
 const WahooLayout = preload("res://scripts/wahoo_layout.gd")
 const WahooState = preload("res://scripts/wahoo_state.gd")
-const BOARD_TEXTURE_PATH := "res://assets/textures/board_wood.svg"
+const BOARD_TEXTURE_PATH := "res://assets/textures/walnut-board-texture.png"
 const MARBLE_TEXTURE_PATH := "res://assets/textures/marble_gloss.svg"
 
 signal move_selected(move: Dictionary)
