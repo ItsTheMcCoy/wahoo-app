@@ -665,75 +665,31 @@ func _draw_seat_labels() -> void:
         return
     var font_size := int(max(12.0, _cell_size * 0.56))
     var font_height: float = font.get_height(font_size)
-    var spot_data := _collect_static_spot_data()
     for player in range(WahooState.NUM_PLAYERS):
         var label := String(_seat_labels[player]).strip_edges()
         if label.is_empty():
             continue
         var color: Color = PLAYER_COLORS[player].darkened(0.28)
         color.a = 0.95
-        var text_size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-        var half_size := Vector2(text_size.x * 0.5, font_height * 0.45)
-        if player == 1 or player == 3:
-            half_size = Vector2(half_size.y, half_size.x)
-        var anchor := _resolve_seat_label_anchor(player, _seat_label_anchor(player), half_size, spot_data)
+        var anchor := _seat_label_anchor(player)
         if player == 1 or player == 3:
             var angle := PI * 0.5 if player == 1 else -PI * 0.5
             _draw_centered_rotated_text(font, font_size, font_height, label, anchor, angle, color)
         else:
             _draw_centered_text(font, font_size, font_height, label, anchor, color)
 
-func _resolve_seat_label_anchor(player: int, base_anchor: Vector2, half_size: Vector2, spot_data: Array) -> Vector2:
-    var outward_dirs := [
-        Vector2(0.0, -1.0),
-        Vector2(-1.0, 0.0),
-        Vector2(0.0, 1.0),
-        Vector2(1.0, 0.0),
-    ]
-    var anchor := base_anchor
-    var step_size: float = max(1.0, _cell_size * 0.08)
-    var edge_margin := _cell_size * 0.06
-    var viewport_rect := Rect2(Vector2.ZERO, size)
-    for _step in range(90):
-        if not _label_box_overlaps_spots(anchor, half_size, spot_data):
-            break
-        anchor += outward_dirs[player] * step_size
-        anchor.x = clampf(anchor.x, viewport_rect.position.x + half_size.x + edge_margin, viewport_rect.end.x - half_size.x - edge_margin)
-        anchor.y = clampf(anchor.y, viewport_rect.position.y + half_size.y + edge_margin, viewport_rect.end.y - half_size.y - edge_margin)
-    return anchor
-
-func _label_box_overlaps_spots(anchor: Vector2, half_size: Vector2, spot_data: Array) -> bool:
-    for y_step in range(5):
-        var ty := float(y_step) / 4.0
-        for x_step in range(9):
-            var tx := float(x_step) / 8.0
-            var point := Vector2(
-                anchor.x + lerpf(-half_size.x, half_size.x, tx),
-                anchor.y + lerpf(-half_size.y, half_size.y, ty)
-            )
-            if _point_in_spot_clearance(point, spot_data, 0.0):
-                return true
-    return false
-
 func _seat_label_anchor(player: int) -> Vector2:
-    var safety := _compute_static_safety_regions(_collect_static_spot_data())
-    var extents: Dictionary = safety["spot_extents"]
-    var edge_margin := _cell_size * 0.22
-    var clearance := _cell_size * STATIC_CLEARANCE_RATIO
-    var center := _board_rect.get_center()
+    var bounds := _base_cluster_bounds(player)
+    var inset := _cell_size * 0.88
 
     if player == 0:
-        var y_top := lerpf(_board_rect.position.y + edge_margin, extents["min_y"] - clearance, 0.52)
-        return Vector2(center.x, y_top)
+        return Vector2(bounds.get_center().x, bounds.end.y + inset)
     if player == 2:
-        var y_bottom := lerpf(_board_rect.end.y - edge_margin, extents["max_y"] + clearance, 0.48)
-        return Vector2(center.x, y_bottom)
+        return Vector2(bounds.get_center().x, bounds.position.y - inset)
     if player == 1:
-        var x_left := lerpf(_board_rect.position.x + edge_margin, extents["min_x"] - clearance, 0.52)
-        return Vector2(x_left, center.y)
+        return Vector2(bounds.end.x + inset, bounds.get_center().y)
 
-    var x_right := lerpf(_board_rect.end.x - edge_margin, extents["max_x"] + clearance, 0.48)
-    return Vector2(x_right, center.y)
+    return Vector2(bounds.position.x - inset, bounds.get_center().y)
 
 func _base_cluster_center(player: int) -> Vector2:
     var coords := WahooLayout.base_cluster_grid_coords(player)
