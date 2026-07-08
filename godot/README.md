@@ -140,5 +140,5 @@ Current status:
 - Mobile browser validation: complete (Roll interaction and state updates verified over HTTPS).
 - Mobile text readability: fixed (responsive full-viewport layout, 22 px title, 16 px status, 60 px tap target for Roll).
 - Phase 2b final validation on May 28, 2026: Godot smoke checks `32/32 passed`, Python tests `80 passed`, Web export rebuilt successfully, and required Web artifacts verified.
-- Latest verification (June 3, 2026): Godot smoke checks `51/51 passed`.
+- Latest verification (July 7, 2026): Godot smoke checks `55/55 passed`.
 - Latest Python-suite snapshot (June 3, 2026): `100 collected`, `20 failed`, `80 passed`; current failures are tied to profile-name expectations when `wahoo/profiles_manager.json` overrides builtin profile keys.

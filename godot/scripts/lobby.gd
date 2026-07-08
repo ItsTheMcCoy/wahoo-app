@@ -47,6 +47,8 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _leave_btn: Button               = $ScrollContainer/Center/LobbyPanel/Content/ActionRow/LeaveBtn
 @onready var _action_row: BoxContainer        = $ScrollContainer/Center/LobbyPanel/Content/ActionRow
 @onready var _back_btn: Button                = $LobbyBackButton
+@onready var _how_to_play_btn: Button         = $ScrollContainer/Center/LobbyPanel/Content/HowToPlayButton
+@onready var _how_to_play_overlay            = $HowToPlayOverlay
 
 var _role := ""
 var _game_id := ""
@@ -113,6 +115,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	var action_height := 54 if _compact_layout else 60
 	_leave_btn.custom_minimum_size = Vector2(100, action_height)
 	_start_game_btn.custom_minimum_size = Vector2(0, action_height)
+	_how_to_play_btn.custom_minimum_size = Vector2(0, action_height)
 	_chat_log.custom_minimum_size = Vector2(0, 148 if _compact_layout else 192)
 	_chat_send_btn.custom_minimum_size = Vector2(74 if _compact_layout else 60, 48)
 	call_deferred("_position_back_button")
@@ -254,6 +257,7 @@ func _setup_ui() -> void:
 		_waiting_label.visible = true
 
 	_leave_btn.pressed.connect(_on_leave)
+	_how_to_play_btn.pressed.connect(func(): _how_to_play_overlay.show_overlay())
 	_chat_send_btn.pressed.connect(_on_chat_send)
 	_chat_input.text_submitted.connect(func(_t): _on_chat_send())
 
@@ -546,7 +550,7 @@ func _apply_theme() -> void:
 	btn_disabled.bg_color = Color(0.19, 0.15, 0.12, 0.74)
 	btn_disabled.border_color = Color(0.41, 0.34, 0.28, 0.74)
 
-	for btn: Button in [_copy_code_btn, _copy_link_btn, _chat_send_btn, _leave_btn, _start_game_btn]:
+	for btn: Button in [_copy_code_btn, _copy_link_btn, _chat_send_btn, _leave_btn, _start_game_btn, _how_to_play_btn]:
 		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled)
 
 	var chat_style := StyleBoxFlat.new()

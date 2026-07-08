@@ -10,9 +10,11 @@ Current state of the project and the path forward. Updated as phases complete.
 
 **In-game branding (complete as of 2026-05-31):** The game title "WAHULO" now appears in three in-game locations in the Godot scene (`godot/scenes/Main.tscn`): as a gold label at the top of the side panel (visible throughout play), as a header above "Game Setup" in the setup overlay (seen before each game), and as a header above the winner announcement in the win overlay (seen at game end). All three use the gold color `#c8922a` from the design guide.
 
-**Latest test snapshot (2026-06-03):** Godot smoke suite remains `51/51 passed`. Python suite currently reports `100 collected`, `20 failed`, `80 passed` because `wahoo/profiles_manager.json` overrides builtin profile names expected by several AI/self-play/play tests.
+**Latest test snapshot (2026-07-07):** Godot smoke suite now reports `55/55 passed`. In addition, headless scene smoke launches for `HomeScreen.tscn`, `Lobby.tscn`, and `Main.tscn` all exited cleanly in Godot 4.6.3 after the How to Play integration. Python suite currently reports `100 collected`, `20 failed`, `80 passed` because `wahoo/profiles_manager.json` overrides builtin profile names expected by several AI/self-play/play tests.
 
 **Multiplayer status (2026-06-03):** Phases 4a–4c are complete and pushed. The Node.js relay is deployed on Render at `https://wahulo.onrender.com` (`/healthz` verified). `HomeScreen.tscn` is the entry point (Play Solo / Host Game / Join Spectate). `Lobby.tscn` handles room creation/joining with seat configuration, chat, and a host-gated START GAME. `Main.tscn` doubles as the multiplayer game scene: when `Network.ctx` carries a `game_state`, `_enter_multiplayer_mode()` runs server-driven turns (roll_request → roll_result → submit_move → state_update) instead of the local solo loop. AI seats are handled by the host client. Solo play is unchanged. Remaining work: Godot web re-export + Netlify deploy for live end-to-end test (Phase 4d), then Phase 4e polish (in-game chat panel refinement, spectator indicator, and recap/page-level polish).
+
+**How to Play overlay status (2026-07-07):** Complete. A shared paginated `HowToPlayOverlay.tscn` now opens from the Home screen, Lobby, and in-game side panel, using the same modal/back-handler pattern as the other overlays. The content is sourced from `documents/HOW_TO_PLAY.md`, and the new UI is wired into existing theme and responsive-layout paths.
 
 **Netlify owner-task status (2026-06-03):** Netlify is the active static host. The repo includes `netlify.toml` with `publish = "godot/build/web"` and a catch-all rewrite to `/index.html` so `/join/<code>` multiplayer deep links load the Godot app. Owner-facing Netlify dashboard tasks and walkthrough steps are tracked in `documents/MULTIPLAYER_PLAN.md` under "Owner Task Tracking" and "Step 5: Verify Netlify Static Hosting for the Game Client". Update those sections whenever new implementation details change what the owner must do.
 
@@ -74,7 +76,7 @@ Full `wahoo_ai.gd` port: all 10 features, 9 profile weight dicts, `RandomPlayer`
 
 ### Phase 3b — AI Parity Smoke Tests — *Complete*
 
-All 6 scenario probes from `test_ai.py` ported to `wahoo_ai_smoke.gd` and passing headlessly. Current total Godot smoke count: 51/51.
+All 6 scenario probes from `test_ai.py` ported to `wahoo_ai_smoke.gd` and passing headlessly. Current total Godot smoke count: 55/55.
 
 ### Phase 3c — Game Loop AI Integration — *Complete*
 
@@ -162,6 +164,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `README.md` | Run/test instructions and current features | In repo |
 | `documents/RULES.md` | Authoritative rules spec; §8 covers AI design notes | In repo |
 | `documents/HOW_TO_PLAY.md` | Player-facing rules summary | In repo |
+| `documents/HOW_TO_PLAY_IMPL_HANDOFF.md` | Implementation handoff for the shared paginated How to Play overlay | In repo |
 | `documents/AI_Strategy_Spec.md` | Full AI design: 10 strategy dimensions, 8 playstyle profiles, scenario probe bank, logging schema | In repo |
 | `documents/AI_PLAYER_BUILD_PLAN.md` | Implementation spec for `wahoo/ai.py`: class interfaces, feature formulas, profile weights, test plan | In repo |
 | `documents/AI_TESTING_PLAN.md` | End-to-end benchmark protocol: baseline, robustness, pairwise confirmation, final ranking | In repo |
@@ -185,8 +188,10 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/scenes/Lobby.tscn` | Lobby scene: code display, seat list, host seat controls, waiting label, chat panel, Leave/Start | In repo |
 | `godot/scripts/lobby.gd` | Lobby logic: role-aware UI setup, seat_updated/chat/disconnect/game_started signal handling | In repo |
 | `godot/scenes/Main.tscn` | Game scene: solo board + overlays; also doubles as multiplayer game when `Network.ctx` has game_state | In repo |
+| `godot/scenes/HowToPlayOverlay.tscn` | Shared paginated How to Play modal used by Home, Lobby, and in-game scenes | In repo |
 | `godot/scripts/network.gd` | Autoload WebSocket singleton: relay connection, typed send methods, per-message-type signals, `ctx` dict | In repo |
 | `godot/scripts/main.gd` | Scene controller: solo turn UI, AI dispatch, save/load, game menu; multiplayer turn flow via `_enter_multiplayer_mode()` | In repo |
+| `godot/scripts/how_to_play_overlay.gd` | Shared How to Play overlay controller: page content, navigation, theme, and browser-back handling | In repo |
 | `godot/scripts/wahoo_board_view.gd` | Visual board surface, marble animation, and animation-style presets | In repo |
 | `godot/scripts/wahoo_state.gd` | GDScript port of Python state model | In repo |
 | `godot/scripts/wahoo_rules.gd` | GDScript port of Python rules engine | In repo |
@@ -196,7 +201,7 @@ Decision deferred until Phase 4 is functional and appetite for further work is c
 | `godot/scripts/wahoo_ai.gd` | GDScript AI engine: helpers, features, RandomPlayer, GreedyPlayer, 9 profile weight dicts | In repo |
 | `godot/profiles_manager.json` | Bundled Godot/web profile-manager config used by setup profile list | In repo |
 | `godot/scripts/wahoo_ai_smoke.gd` | GDScript AI scenario probes (6 parity checks) | In repo |
-| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (51 checks) | In repo |
+| `godot/scripts/run_smoke.gd` | Headless Godot smoke-test runner (55 checks) | In repo |
 | `godot/assets/textures/board_wood.svg` | 1024×1024 procedural wood texture overlay | In repo |
 | `godot/assets/textures/marble_gloss.svg` | 256×256 grayscale gloss mask for marble rendering | In repo |
 | `godot/assets/textures/wahulo_wordmark.svg` | Scalable wordmark (text + 4 marbles); used in loading screen | In repo |

@@ -78,6 +78,8 @@ const BUILTIN_PROFILE_LABELS := {
 @onready var _seat_label_1: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard1/PlayerCard1Inner/Seat1Dot
 @onready var _seat_label_2: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard2/PlayerCard2Inner/Seat2Dot
 @onready var _seat_label_3: Control = $SetupOverlay/SetupCenter/SetupPanel/SetupContent/PlayerCard3/PlayerCard3Inner/Seat3Dot
+@onready var _how_to_play_btn: Button = $Root/SidePanel/HowToPlayButton
+@onready var _how_to_play_overlay = $HowToPlayOverlay
 
 signal _opening_roll_pressed
 
@@ -114,6 +116,7 @@ func _ready() -> void:
 	_new_game_button.pressed.connect(_on_new_game_from_win)
 	_board.move_selected.connect(_on_board_move_selected)
 	_start_button.pressed.connect(_on_start_pressed)
+	_how_to_play_btn.pressed.connect(func(): _how_to_play_overlay.show_overlay())
 	_setup_back_button.pressed.connect(_on_setup_back_pressed)
 	_setup_back_button.text = "<"
 	WahooResponsiveLayout.style_icon_button(_setup_back_button)
@@ -412,6 +415,7 @@ func _apply_visual_theme() -> void:
 		_new_game_button,
 		_start_button,
 		_game_menu_button,
+		_how_to_play_btn,
 	]
 	for button in action_buttons:
 		button.add_theme_stylebox_override("normal", button_style_normal)

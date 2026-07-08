@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/lobby.gd" id="1_lob01"]
+[ext_resource type="PackedScene" path="res://scenes/HowToPlayOverlay.tscn" id="2_lob02"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -166,6 +167,11 @@ visible = false
 disabled = true
 text = "START GAME"
 
+[node name="HowToPlayButton" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "How to Play"
+
 [node name="LobbyBackButton" type="Button" parent="."]
 layout_mode = 1
 offset_left = 14.0
@@ -174,3 +180,11 @@ offset_right = 58.0
 offset_bottom = 58.0
 text = "<"
 tooltip_text = "Back"
+
+[node name="HowToPlayOverlay" parent="." instance=ExtResource("2_lob02")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

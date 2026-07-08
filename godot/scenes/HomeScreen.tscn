@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/home_screen.gd" id="1_hs001"]
+[ext_resource type="PackedScene" path="res://scenes/HowToPlayOverlay.tscn" id="2_hs002"]
 
 [node name="HomeScreen" type="Control"]
 layout_mode = 3
@@ -54,6 +55,11 @@ text = "HOST GAME"
 layout_mode = 2
 custom_minimum_size = Vector2(0, 72)
 text = "JOIN / SPECTATE"
+
+[node name="HowToPlayButton" type="Button" parent="MainCenter/HomePanel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "How to Play"
 
 [node name="HostPromptLayer" type="Control" parent="."]
 layout_mode = 1
@@ -213,3 +219,10 @@ size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 56)
 text = "Watch"
 
+[node name="HowToPlayOverlay" parent="." instance=ExtResource("2_hs002")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

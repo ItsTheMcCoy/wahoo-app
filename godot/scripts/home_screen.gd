@@ -42,6 +42,10 @@ const MOBILE_BROWSER_LANDSCAPE_PROMPT_WIDTH_RATIO := 0.50
 @onready var _join_buttons: BoxContainer    = $JoinPromptLayer/Center/JoinPanel/JoinContent/JoinButtons
 @onready var _join_content: VBoxContainer   = $JoinPromptLayer/Center/JoinPanel/JoinContent
 
+# How to Play
+@onready var _how_to_play_btn: Button       = $MainCenter/HomePanel/Content/HowToPlayButton
+@onready var _how_to_play_overlay           = $HowToPlayOverlay
+
 var _compact_layout := false
 var _mobile_like_layout := false
 
@@ -62,6 +66,7 @@ func _ready() -> void:
 	_join_cancel_btn.pressed.connect(_close_prompts)
 	_join_player_btn.pressed.connect(_on_join_as_player)
 	_join_spectator_btn.pressed.connect(_on_join_as_spectator)
+	_how_to_play_btn.pressed.connect(func(): _how_to_play_overlay.show_overlay())
 	_host_name_field.text_submitted.connect(func(_t): _on_host_create())
 	_join_name_field.text_submitted.connect(func(_t): _on_join_as_player())
 	for field: LineEdit in [_host_name_field, _join_code_field, _join_name_field]:
@@ -183,7 +188,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 	if not mobile_browser_layout:
 		main_button_height = int(round(float(main_button_height) * ui_scale))
 		main_button_font = int(round(float(main_button_font) * ui_scale))
-	for btn in [_play_solo_btn, _host_game_btn, _join_btn]:
+	for btn in [_play_solo_btn, _host_game_btn, _join_btn, _how_to_play_btn]:
 		btn.custom_minimum_size = Vector2(0, main_button_height)
 		btn.add_theme_font_size_override("font_size", main_button_font)
 
@@ -519,7 +524,7 @@ func _apply_theme(ui_scale: float = 1.0, mobile_browser_margin: float = -1.0) ->
 	field_focus.border_color = Color(0.85, 0.65, 0.45, 0.98)
 
 	var all_buttons: Array = [
-		_play_solo_btn, _host_game_btn, _join_btn,
+		_play_solo_btn, _host_game_btn, _join_btn, _how_to_play_btn,
 		_host_cancel_btn, _host_create_btn,
 		_join_cancel_btn, _join_player_btn, _join_spectator_btn,
 	]
