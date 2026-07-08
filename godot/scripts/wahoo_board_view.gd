@@ -9,7 +9,6 @@ const MARBLE_TEXTURE_PATH := "res://assets/textures/marble_gloss.svg"
 signal move_selected(move: Dictionary)
 
 const BOARD_BG := Color(0.57, 0.44, 0.30)
-const BOARD_BG_INNER := Color(0.77, 0.66, 0.51, 0.80)
 const BOARD_EDGE := Color(0.14, 0.11, 0.08)
 const BOARD_GRAIN_DARK := Color(0.33, 0.24, 0.16, 0.20)
 const BOARD_GRAIN_LIGHT := Color(0.86, 0.74, 0.59, 0.12)
@@ -303,29 +302,9 @@ func _draw_board_surface() -> void:
         var grain_color := BOARD_GRAIN_DARK if i % 2 == 0 else BOARD_GRAIN_LIGHT
         _draw_grain_line_without_spots(y, sway, grain_color, max(1.0, _cell_size * 0.05), static_spot_data)
 
-    var inner: Rect2 = safety["inner"]
-    draw_rect(inner, BOARD_BG_INNER, true)
-
-    var bevel_rect := inner.grow(_cell_size * 0.04)
-    var bevel_light := BOARD_BG_INNER.lerp(Color.WHITE, 0.28)
-    bevel_light.a = 0.52
-    var bevel_dark := BOARD_EDGE.lerp(BOARD_BG, 0.35)
-    bevel_dark.a = 0.42
-    var bevel_width: float = max(1.5, _cell_size * 0.045)
-    _draw_bevel_edge_lines(bevel_rect, bevel_light, bevel_dark, bevel_width)
     draw_rect(_board_rect, BOARD_EDGE, false, max(3.0, _cell_size * 0.10))
 
     _draw_soft_safe_vignette(safety)
-
-func _draw_bevel_edge_lines(rect: Rect2, light: Color, dark: Color, width: float) -> void:
-    var tl := rect.position
-    var tr := Vector2(rect.end.x, rect.position.y)
-    var br := rect.end
-    var bl := Vector2(rect.position.x, rect.end.y)
-    draw_line(tl, tr, light, width, true)
-    draw_line(tl, bl, light, width, true)
-    draw_line(tr, br, dark, width, true)
-    draw_line(bl, br, dark, width, true)
 
 func _draw_soft_safe_vignette(safety: Dictionary) -> void:
     var max_insets: Dictionary = safety["max_vignette_insets"]
