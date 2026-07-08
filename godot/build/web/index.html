@@ -265,12 +265,18 @@ html, body {
 	};
 
 	// Called from GDScript when the in-app back action runs via its own
-	// button, so the pushed history entry doesn't linger.
+	// button, so the pushed history entry doesn't linger. Only rewinds
+	// history when the current entry is the one wahuloPushBack pushed --
+	// otherwise the state is out of sync (e.g. a stale/duplicate call) and
+	// calling history.back() here could walk past the app's own history
+	// entries and out of the site entirely.
 	window.wahuloPopBack = function () {
 		if (backCallback) {
 			backCallback = null;
-			suppressNextPopstate = true;
-			history.back();
+			if (history.state && history.state.wahuloBack) {
+				suppressNextPopstate = true;
+				history.back();
+			}
 		}
 	};
 
@@ -290,7 +296,7 @@ html, body {
 
 	<script src="index.js"></script>
 	<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":1835760,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":1839416,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 GODOT_CONFIG.executable = "/index";
 GODOT_CONFIG.mainPack = "/index.pck?v=" + String(Date.now());
 const GODOT_THREADS_ENABLED = false;

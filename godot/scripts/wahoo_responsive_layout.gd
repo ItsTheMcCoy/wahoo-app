@@ -3,6 +3,14 @@ extends RefCounted
 
 const BACK_ICON = preload("res://assets/textures/back_chevron.svg")
 
+# Holds JavaScriptBridge callback objects alive for as long as the browser
+# might invoke them. JavaScriptBridge.create_callback() returns a JS-side
+# object that Godot will free once nothing on the GDScript side references
+# it; without this, a callback created and returned from a function goes out
+# of scope immediately, so a later browser-back press finds a dead reference
+# and silently no-ops instead of navigating.
+static var _back_callback_refs: Array = []
+
 const MAIN_COMPACT_BREAKPOINT := 980.0
 const MAIN_COMPACT_ASPECT_THRESHOLD := 1.12
 const MOBILE_LIKE_SHORT_SIDE_MAX := 600.0
@@ -39,7 +47,14 @@ static func push_back_handler(callback: Callable) -> void:
 	if not OS.has_feature("web"):
 		return
 	var window := JavaScriptBridge.get_interface("window")
-	var js_callback := JavaScriptBridge.create_callback(callback)
+	var ref_holder := [null]
+	var js_callback := JavaScriptBridge.create_callback(
+		func(_args):
+			_back_callback_refs.erase(ref_holder[0])
+			callback.call()
+	)
+	ref_holder[0] = js_callback
+	_back_callback_refs.append(js_callback)
 	window.call("wahuloPushBack", js_callback)
 
 # Consumes the currently registered back handler (if any) and rewinds the
@@ -50,6 +65,8 @@ static func pop_back_handler() -> void:
 		return
 	var window := JavaScriptBridge.get_interface("window")
 	window.call("wahuloPopBack")
+	if not _back_callback_refs.is_empty():
+		_back_callback_refs.pop_back()
 
 # Applies a compact, icon-sized button style for navigation controls (e.g.
 # back buttons) that float over a screen without affecting panel layout.

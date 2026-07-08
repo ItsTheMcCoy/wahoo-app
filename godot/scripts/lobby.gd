@@ -2,7 +2,8 @@ extends Control
 
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 
-const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.svg")
+const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const SEND_ICON = preload("res://assets/textures/send_icon.svg")
 
 const PLAYER_COLORS := [
 	Color(0.86, 0.20, 0.17),
@@ -554,6 +555,12 @@ func _apply_theme() -> void:
 	for btn: Button in [_copy_code_btn, _copy_link_btn, _chat_send_btn, _leave_btn, _start_game_btn, _how_to_play_btn]:
 		_apply_button_theme(btn, btn_normal, btn_hover, btn_pressed, btn_disabled)
 	_how_to_play_btn.add_theme_font_size_override("font_size", 16)
+
+	_chat_send_btn.text = ""
+	_chat_send_btn.icon = SEND_ICON
+	_chat_send_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_chat_send_btn.expand_icon = false
+	_chat_send_btn.tooltip_text = "Send"
 
 	var chat_style := StyleBoxFlat.new()
 	chat_style.bg_color = Color(0.13, 0.10, 0.08, 0.72)

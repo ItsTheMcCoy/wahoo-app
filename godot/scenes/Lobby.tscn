@@ -154,7 +154,6 @@ max_length = 140
 [node name="ChatSendBtn" type="Button" parent="ScrollContainer/Center/LobbyPanel/Content/ChatSection/ChatInputRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(60, 48)
-text = "→"
 
 [node name="ActionRow" type="BoxContainer" parent="ScrollContainer/Center/LobbyPanel/Content"]
 layout_mode = 2

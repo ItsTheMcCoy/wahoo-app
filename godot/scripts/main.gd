@@ -6,6 +6,7 @@ const WahooRulesSmoke = preload("res://scripts/wahoo_rules_smoke.gd")
 const WahooAI = preload("res://scripts/wahoo_ai.gd")
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
 const WORDMARK_TEXTURE = preload("res://assets/textures/wahulo_wordmark.png")
+const SEND_ICON = preload("res://assets/textures/send_icon.svg")
 
 const PLAYER_NAMES := ["Red", "Green", "Yellow", "Blue"]
 const PLAYER_COLORS := [
@@ -424,6 +425,12 @@ func _apply_visual_theme() -> void:
 		button.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.90))
 		button.add_theme_color_override("font_pressed_color", Color(0.97, 0.93, 0.86))
 		button.add_theme_color_override("font_disabled_color", Color(0.67, 0.62, 0.57))
+
+	_chat_send_btn.text = ""
+	_chat_send_btn.icon = SEND_ICON
+	_chat_send_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_chat_send_btn.expand_icon = false
+	_chat_send_btn.tooltip_text = "Send"
 
 	for opt in _seat_options():
 		var opt_style_normal := StyleBoxFlat.new()

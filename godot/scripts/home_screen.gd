@@ -217,7 +217,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 			field.add_theme_font_size_override("font_size", int(round(18.0 * ui_scale)))
 		for btn: Button in [_host_cancel_btn, _host_create_btn, _join_cancel_btn, _join_player_btn, _join_spectator_btn]:
 			btn.custom_minimum_size = Vector2(0, int(round(56.0 * ui_scale)))
-			btn.add_theme_font_size_override("font_size", int(round(22.0 * ui_scale)))
+			btn.add_theme_font_size_override("font_size", int(round(20.0 * ui_scale)))
 		for title: Label in [_host_title, _join_title]:
 			title.add_theme_font_size_override("font_size", int(round(24.0 * ui_scale)))
 		for label: Label in [_host_name_label, _join_code_label, _join_name_label, _host_error, _join_error]:
@@ -228,7 +228,7 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
 			field.add_theme_font_size_override("font_size", 16)
 		for btn: Button in [_host_cancel_btn, _host_create_btn, _join_cancel_btn, _join_player_btn, _join_spectator_btn]:
 			btn.custom_minimum_size = Vector2(0, 56)
-			btn.add_theme_font_size_override("font_size", 26)
+			btn.add_theme_font_size_override("font_size", 20)
 		for title: Label in [_host_title, _join_title]:
 			title.add_theme_font_size_override("font_size", 24)
 		for label: Label in [_host_name_label, _join_code_label, _join_name_label, _host_error, _join_error]:
@@ -493,6 +493,10 @@ func _apply_theme(ui_scale: float = 1.0, mobile_browser_margin: float = -1.0) ->
 	btn_normal.corner_radius_top_right = int(round(10.0 * ui_scale))
 	btn_normal.corner_radius_bottom_left = int(round(10.0 * ui_scale))
 	btn_normal.corner_radius_bottom_right = int(round(10.0 * ui_scale))
+	btn_normal.content_margin_left = 18.0 * ui_scale
+	btn_normal.content_margin_right = 18.0 * ui_scale
+	btn_normal.content_margin_top = 8.0 * ui_scale
+	btn_normal.content_margin_bottom = 8.0 * ui_scale
 
 	var btn_hover := btn_normal.duplicate()
 	btn_hover.bg_color = Color(0.38, 0.28, 0.19, 0.98)

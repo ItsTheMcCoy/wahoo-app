@@ -175,6 +175,8 @@ A grayscale gloss mask applied on top of the player-colored marble circles. It i
 | `godot/assets/textures/board_wood.svg`            | SVG | 1024×1024 | In use |
 | `godot/assets/textures/marble_gloss.svg`          | SVG | 256×256   | In use |
 | `godot/assets/textures/wahulo_wordmark.svg`       | SVG | 1400×520  | In use — loading screen |
+| `godot/assets/textures/wahulo_wordmark.png`       | PNG | 1400×520  | In use — all in-engine title branding (home screen, lobby, in-game) |
+| `godot/assets/textures/send_icon.svg`             | SVG | 40×40     | In use — chat send buttons (lobby and in-game) |
 | `godot/assets/textures/background_felt_tile_512.svg` | SVG | 512×512 | In use — loading screen background |
 | `godot/build/web/og_preview.png`                  | PNG | 1200×630  | Place manually — see below |
 | `godot/build/web/index.icon.png`                  | PNG | 32×32     | Replace with branded favicon |
@@ -287,13 +289,15 @@ Displayed by the Godot engine for ~0.5–2 seconds after WASM loads, before the 
 
 ## In-Game Title Branding ✅ Complete
 
-The game name uses the official wordmark SVG in all in-game title locations in `godot/scenes/Main.tscn`. Each title slot is a `TextureRect` wired to `res://assets/textures/wahulo_wordmark.svg`, and `godot/scripts/main.gd` re-applies this at runtime to enforce consistency.
+The game name uses the official wordmark **PNG** (`res://assets/textures/wahulo_wordmark.png`) in every in-engine title location — `godot/scenes/HomeScreen.tscn`, `godot/scenes/Main.tscn`, and `godot/scenes/Lobby.tscn`. Godot's SVG importer (ThorVG) does not rasterize `<text>` elements, only vector shapes, so the SVG version of the wordmark (whose "WAHULO" lettering is an SVG `<text>` element) renders with the text missing anywhere it's used inside the engine. The SVG is reserved for the HTML loading screen (`godot/custom_html_shell.html`), where the browser — not Godot — does the rendering and handles `<text>` correctly.
 
 | Location | Node path | Node type | Context |
 |----------|-----------|-----------|---------|
-| Side panel top | `Root/SidePanel/GameTitle` | `TextureRect` | Visible throughout all gameplay |
-| Setup overlay header | `SetupOverlay/SetupPanel/SetupContent/BrandTitle` | `TextureRect` | Shown above "Game Setup" before each game |
-| Win overlay header | `WinOverlay/WinPanel/WinContent/BrandTitle` | `TextureRect` | Shown above the winner announcement |
+| Home screen | `HomeScreen.gd` `WORDMARK_TEXTURE` | `TextureRect` | Shown on the main menu |
+| Side panel top | `Root/SidePanel/GameTitle` (`Main.tscn`) | `TextureRect` | Visible throughout all gameplay |
+| Setup overlay header | `SetupOverlay/SetupPanel/SetupContent/BrandTitle` (`Main.tscn`) | `TextureRect` | Shown above "Game Setup" before each game |
+| Win overlay header | `WinOverlay/WinPanel/WinContent/BrandTitle` (`Main.tscn`) | `TextureRect` | Shown above the winner announcement |
+| Lobby header | `lobby.gd` `WORDMARK_TEXTURE` | `TextureRect` | Shown in the multiplayer lobby (host/join/spectate) |
 
 **Rendering behavior:** Titles use `STRETCH_KEEP_ASPECT_CENTERED` so the full wordmark is preserved across desktop and mobile panel widths.
 

@@ -132,7 +132,6 @@ max_length = 140
 [node name="ChatSendBtn" type="Button" parent="Root/SidePanel/ChatSection/ChatInputRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(60, 48)
-text = "→"
 
 [node name="WinOverlay" type="ColorRect" parent="."]
 visible = false
