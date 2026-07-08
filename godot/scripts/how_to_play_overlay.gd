@@ -1,6 +1,7 @@
 extends Control
 
 const WahooResponsiveLayout = preload("res://scripts/wahoo_responsive_layout.gd")
+const OVERLAY_Z_INDEX := 1000
 
 signal closed
 
@@ -37,6 +38,8 @@ const PAGE_BODIES: Array = [
 var _current_page := 0
 
 func _ready() -> void:
+	z_as_relative = false
+	z_index = OVERLAY_Z_INDEX
 	_prev_btn.pressed.connect(_go_prev)
 	_next_btn.pressed.connect(_go_next)
 	_close_btn.pressed.connect(_close)
@@ -47,6 +50,8 @@ func _ready() -> void:
 func show_overlay() -> void:
 	_current_page = 0
 	_update_page()
+	move_to_front()
+	z_index = OVERLAY_Z_INDEX
 	visible = true
 	WahooResponsiveLayout.push_back_handler(_close)
 
