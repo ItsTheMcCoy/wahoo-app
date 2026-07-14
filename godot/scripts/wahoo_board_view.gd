@@ -31,6 +31,8 @@ const MOVE_DEST_RING_ALPHA := 0.98
 const TURN_FOCUS_RING_ALPHA := 0.55
 const TOUCH_MOUSE_DEBOUNCE_MS := 350
 const TOUCH_MOUSE_DEBOUNCE_RADIUS_PX := 24.0
+const TOUCH_MARBLE_HIT_RADIUS_RATIO := 0.72
+const TOUCH_BASE_SELECTION_PENALTY_RATIO := 0.26
 const BOARD_SCALE := 0.97
 const POSITION_SPOT_RADIUS_RATIO := 0.37
 const MARBLE_SIZE_RATIO := 0.71
@@ -107,6 +109,8 @@ var _board_texture: Texture2D = null
 var _marble_texture: Texture2D = null
 var _last_touch_press_msec := -1000
 var _last_touch_press_position := Vector2.INF
+var _selection_hint_player := -1
+var _selection_hint_marble := -1
 
 func _ready() -> void:
     _load_visual_assets()
@@ -153,9 +157,15 @@ func set_state(state: WahooState) -> void:
 func set_legal_moves(moves: Array, player: int) -> void:
     _legal_moves = moves.duplicate(true)
     _legal_move_player = player
-    _selected_marble = -1
+    _selected_marble = _selection_hint_marble if _selection_hint_player == player and _marble_is_legal(_selection_hint_marble) else -1
+    _selection_hint_player = -1
+    _selection_hint_marble = -1
     _refresh_marble_nodes()
     queue_redraw()
+
+func set_selection_hint(player: int, marble_id: int) -> void:
+    _selection_hint_player = player
+    _selection_hint_marble = marble_id
 
 func clear_legal_moves() -> void:
     _legal_moves = []
@@ -260,14 +270,14 @@ func _gui_input(event: InputEvent) -> void:
             if _is_duplicate_mouse_press_after_touch(mouse_event.position):
                 accept_event()
                 return
-            _handle_pointer_press(mouse_event.position)
+            _handle_pointer_press(mouse_event.position, false)
             accept_event()
     elif event is InputEventScreenTouch:
         var touch_event := event as InputEventScreenTouch
         if touch_event.pressed:
             _last_touch_press_msec = Time.get_ticks_msec()
             _last_touch_press_position = touch_event.position
-            _handle_pointer_press(touch_event.position)
+            _handle_pointer_press(touch_event.position, true)
             accept_event()
 
 func _draw() -> void:
@@ -804,16 +814,16 @@ func _visible_legal_moves() -> Array:
             moves.append(move)
     return moves
 
-func _handle_pointer_press(local_position: Vector2) -> void:
+func _handle_pointer_press(local_position: Vector2, is_touch: bool) -> void:
     # Phase 2: if a marble is already selected, check for a destination click
     if _selected_marble >= 0:
-        var dest_move: Variant = _move_at_destination(local_position)
+        var dest_move: Variant = _move_at_destination(local_position, is_touch)
         if dest_move != null:
             move_selected.emit(dest_move)
             return
 
     # Phase 1: click on a marble to select it (or execute if only one move)
-    var marble_id := _marble_at_position(local_position)
+    var marble_id := _marble_at_position(local_position, is_touch)
     if marble_id >= 0:
         var marble_moves: Array = _moves_for_marble(marble_id)
         if not marble_moves.is_empty():
@@ -839,34 +849,71 @@ func _is_duplicate_mouse_press_after_touch(local_position: Vector2) -> bool:
     var radius: float = max(TOUCH_MOUSE_DEBOUNCE_RADIUS_PX, _cell_size * 0.35)
     return local_position.distance_to(_last_touch_press_position) <= radius
 
-func _move_at_destination(local_position: Vector2) -> Variant:
+func _move_at_destination(local_position: Vector2, is_touch: bool) -> Variant:
     for move in _visible_legal_moves():
         var dest: Array = move["dest"]
         var coord := WahooLayout.location_grid_coord(dest, _legal_move_player, int(move["marble"]))
         var center := _grid_to_local(coord)
-        var radius: float = _cell_size * (0.64 if String(dest[0]) == "CENTER" else 0.52)
+        var radius: float = _cell_size * (0.72 if String(dest[0]) == "CENTER" else 0.58) if is_touch else _cell_size * (0.64 if String(dest[0]) == "CENTER" else 0.52)
         if local_position.distance_to(center) <= radius:
             return move
     return null
 
-func _marble_at_position(local_position: Vector2) -> int:
+func _marble_at_position(local_position: Vector2, is_touch: bool) -> int:
     if _state == null:
         return -1
 
     var best_marble := -1
-    var best_distance := INF
+    var best_score := INF
+    var hit_radius: float = max(16.0, _cell_size * 0.52)
+    if is_touch:
+        hit_radius = max(hit_radius, _cell_size * TOUCH_MARBLE_HIT_RADIUS_RATIO)
+
+    var has_non_base_candidate := false
+    var candidate_count := 0
+    var candidate_ids: Dictionary = {}
     for move in _legal_moves:
         var marble_id := int(move["marble"])
+        if candidate_ids.has(marble_id):
+            continue
+        candidate_ids[marble_id] = true
         var loc: Array = _state.marbles[_legal_move_player][marble_id]
         var coord := WahooLayout.location_grid_coord(loc, _legal_move_player, marble_id)
         var center := _grid_to_local(coord)
         var distance := local_position.distance_to(center)
-        if distance < best_distance:
-            best_distance = distance
-            best_marble = marble_id
+        if distance > hit_radius:
+            continue
+        candidate_count += 1
+        if String(loc[0]) != "BASE":
+            has_non_base_candidate = true
 
-    var hit_radius: float = max(16.0, _cell_size * 0.52)
-    return best_marble if best_distance <= hit_radius else -1
+    if candidate_count == 0:
+        return -1
+
+    for marble_id in candidate_ids.keys():
+        var marble_int := int(marble_id)
+        var loc: Array = _state.marbles[_legal_move_player][marble_int]
+        var coord := WahooLayout.location_grid_coord(loc, _legal_move_player, marble_int)
+        var center := _grid_to_local(coord)
+        var distance := local_position.distance_to(center)
+        if distance > hit_radius:
+            continue
+        var score := distance
+        if is_touch and has_non_base_candidate and String(loc[0]) == "BASE":
+            score += _cell_size * TOUCH_BASE_SELECTION_PENALTY_RATIO
+        if score < best_score:
+            best_score = score
+            best_marble = marble_int
+
+    return best_marble
+
+func _marble_is_legal(marble_id: int) -> bool:
+    if marble_id < 0:
+        return false
+    for move in _legal_moves:
+        if int(move["marble"]) == marble_id:
+            return true
+    return false
 
 func _moves_for_marble(marble_id: int) -> Array:
     var moves: Array = []

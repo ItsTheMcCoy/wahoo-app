@@ -980,6 +980,8 @@ func _execute_move(move: Dictionary, player: int, roll: int) -> void:
 		_render_status(line)
 		_show_win_screen(player)
 	elif roll == 6:
+		if _seat_types[player] == "human":
+			_board.set_selection_hint(player, int(move["marble"]))
 		line += "\nRolled a 6; %s rolls again" % _player_label(player)
 		_turn_number += 1
 		_render_status(line)
